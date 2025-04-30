@@ -1,0 +1,51 @@
+pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex(/com\.android.*/)
+                includeGroupByRegex(/com\.google.*/)
+                includeGroupByRegex(/androidx.*/)
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url "https://jitpack.io" }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { 
+            url "https://s01.oss.sonatype.org/content/repositories/releases/"
+            content {
+                includeGroupByRegex(/dev\.rikka.*/)
+                includeGroup "org.lsposed.hiddenapibypass"
+            }
+        }
+    }
+    plugins {
+        id 'org.jetbrains.kotlin.jvm' version '2.1.10'
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { 
+            url "https://s01.oss.sonatype.org/content/repositories/releases/"
+            content {
+                includeGroupByRegex(/dev\.rikka.*/)
+                includeGroup "org.lsposed.hiddenapibypass"
+            }
+        }
+    }
+}
+
+rootProject.name = "System Shell Forge"
+
+include ":app"
+
+include ":termcore:main" 
+include ":termcore:components"
+include ":termcore:resources"
+include ":termcore:rish"

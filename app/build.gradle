@@ -1,0 +1,136 @@
+
+plugins {
+    id 'com.android.application'
+    alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.compose.compiler)
+    
+}
+
+android {
+    namespace 'com.manager.ssb'
+    compileSdk 34
+    
+    buildFeatures {
+        buildConfig true
+    }
+    
+    defaultConfig {
+        applicationId "com.manager.ssb"
+        minSdk 24
+        targetSdk 28
+        versionCode 1
+        versionName "1.0.0"
+        
+        multiDexEnabled true
+        
+        vectorDrawables { 
+            useSupportLibrary true
+        }
+        
+        def getGitInfo = { commandParts ->
+            def proc = commandParts.execute([], project.rootDir)
+            def output = new ByteArrayOutputStream()
+            def error = new ByteArrayOutputStream()
+            proc.waitForProcessOutput(output, error)
+            if (proc.exitValue() != 0) {
+                logger.error("Git command failed: ${commandParts.join(' ')}\nError: ${error.toString()}")
+                return "unknown"
+            }
+            return output.toString().trim()
+        }
+
+        def gitBranchName = getGitInfo(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+        def gitCommitShortHash = getGitInfo(['git', 'rev-parse', '--short', 'HEAD'])
+        def gitCommitAuthor = getGitInfo(['git', 'log', '-1', '--pretty=format:%an'])
+        def gitCommitTime = getGitInfo(['git', 'log', '-1', '--pretty=format:%ct'])
+
+        buildConfigField "String", "GIT_BRANCH_NAME", "\"${gitBranchName}\""
+        buildConfigField "String", "GIT_COMMIT_SHORT_HASH", "\"${gitCommitShortHash}\""
+        buildConfigField "String", "GIT_COMMIT_AUTHOR", "\"${gitCommitAuthor}\""
+        buildConfigField "String", "GIT_COMMIT_TIME", "\"${gitCommitTime}\""
+        
+        buildConfigField "String", "BUILD_TIME", "\"${System.currentTimeMillis()}\""
+    }
+
+    buildTypes {
+        debug {
+            // 动态生成版本名称，追加 Build 号
+            def buildNumberFile = file("${project.rootDir}/buildNumber.txt")
+            def buildNumber = 0 // 默认构建号
+
+            // 如果 buildNumber 文件存在，读取其中的值
+            if (buildNumberFile.exists()) {
+                buildNumber = Integer.parseInt(buildNumberFile.text.trim())
+            } else {
+                    // 如果文件不存在，初始化为0
+                    buildNumberFile.text = "0"
+            }
+
+            // 修改版本名称
+            versionNameSuffix "-build${buildNumber + 1}"
+
+            // 在构建完成后递增 buildNumber 并写入文件
+            tasks.whenTaskAdded { task ->
+                    if (task.name == 'assembleDebug') {
+                            task.doLast {
+                                    // 更新 buildNumber 文件
+                                    buildNumber = buildNumber + 1
+                                    buildNumberFile.text = buildNumber.toString()
+                            }
+                    }
+            }
+        }
+        
+        release {
+            // 动态生成版本名称，追加 Build 号
+            def buildNumberFile = file("${project.rootDir}/buildNumber.txt")
+            def buildNumber = 0 // 默认构建号
+
+            // 如果 buildNumber 文件存在，读取其中的值
+            if (buildNumberFile.exists()) {
+                buildNumber = Integer.parseInt(buildNumberFile.text.trim())
+            } else {
+                    // 如果文件不存在，初始化为0
+                    buildNumberFile.text = "0"
+            }
+            
+            versionNameSuffix "-release${buildNumber + 1}"
+            
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+
+    buildFeatures {
+        viewBinding true
+        compose true
+    }
+    
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.15"
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
+}
+
+dependencies {
+    implementation("com.google.android.material:material:1.9.0")
+    implementation("com.google.code.gson:gson:2.8.8")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation project(":termcore:main")
+}
