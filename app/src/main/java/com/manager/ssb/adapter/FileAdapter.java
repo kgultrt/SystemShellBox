@@ -26,15 +26,20 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     private final List<FileItem> fileList;
     private final OnItemClickListener listener;
     private final ExecutorService executorService;
-    private final Handler mainHandler; // 用于在 UI 线程更新
+    private final Handler mainHandler;
     private static final ThreadLocal<SimpleDateFormat> dateFormat =
             ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()));
+    
+    // 新增防抖控制
+    private long lastClickTime = 0;
+    private static final long CLICK_DEBOUNCE_INTERVAL = 600; // 600毫秒防抖间隔
 
     public interface OnItemClickListener {
         void onItemClick(FileItem item);
     }
 
-    public FileAdapter(List<FileItem> fileList, OnItemClickListener listener, ExecutorService executorService, Handler mainHandler) {
+    public FileAdapter(List<FileItem> fileList, OnItemClickListener listener, 
+                      ExecutorService executorService, Handler mainHandler) {
         this.fileList = fileList;
         this.listener = listener;
         this.executorService = executorService;
@@ -54,11 +59,9 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         FileItem item = fileList.get(position);
         Context context = holder.itemView.getContext();
 
-        // 设置默认图标
         holder.ivIcon.setImageResource(item.isDirectory() ?
                 R.drawable.ic_folder : R.drawable.ic_file);
 
-        // 异步加载图标和文件信息
         executorService.submit(() -> {
             final int iconResId;
             if (item.isAudioFile()) {
@@ -80,7 +83,19 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             });
         });
 
-        holder.itemView.setOnClickListener(v -> listener.onItemClick(item));
+        // 修改后的点击监听器
+        holder.itemView.setOnClickListener(v -> {
+            // 防抖检查
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastClickTime < CLICK_DEBOUNCE_INTERVAL) {
+                return;
+            }
+            lastClickTime = currentTime;
+            
+            if (listener != null) {
+                listener.onItemClick(item);
+            }
+        });
     }
 
     @Override
@@ -121,7 +136,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         try {
             return dateFormat.get().format(new Date(timestamp));
         } catch (Exception e) {
-            return "(Unknow Date)";
+            return "(Unknown Date)";
         }
     }
 }
