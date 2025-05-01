@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
             intent.setData(Uri.parse("package:" + getPackageName()));
             startActivityForResult(intent, MANAGE_EXTERNAL_STORAGE_REQUEST_CODE);
-            showToast(R.string.high_android_permission_request);
+            showToast(getString(R.string.high_android_permission_request));
             return;
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Android 6-10 请求 READ_EXTERNAL_STORAGE
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                 permissionsToRequest.toArray(new String[0]),
                 PERMISSION_REQUEST_CODE
             );
-            showToast(R.string.request_appect_android_permission_request);
+            showToast(getString(R.string.request_appect_android_permission_request));
         } else {
             // 不需要请求权限的情况（Android 5.1及以下）
             initApp();
