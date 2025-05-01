@@ -64,7 +64,7 @@ public class NotifyingExecutorService extends AbstractExecutorService {
 
     // 任务包装基类
     private abstract class TrackedTask<V> {
-        protected final TaskInfo taskInfo;
+        protected volatile TaskInfo taskInfo;
         protected Future<V> future;
 
         TrackedTask(String taskId, String taskName) {
@@ -84,15 +84,17 @@ public class NotifyingExecutorService extends AbstractExecutorService {
         }
 
         TaskInfo getTaskInfo() {
+            TaskInfo current = this.taskInfo;
+            
             long endTime = taskInfo.endTime() > 0 ? taskInfo.endTime() : 
                 (taskInfo.status() == TaskStatus.RUNNING ? -1L : System.currentTimeMillis());
             
             return new TaskInfo(
-                taskInfo.taskId(),
-                taskInfo.taskName(),
-                taskInfo.status(),
-                taskInfo.submitTime(),
-                taskInfo.startTime(),
+                current.taskId(),
+                current.taskName(),
+                current.status(),
+                current.submitTime(),
+                current.startTime(),
                 endTime,
                 getException()
             );
@@ -113,7 +115,7 @@ public class NotifyingExecutorService extends AbstractExecutorService {
 
         @Override
         public V call() throws Exception {
-            TaskInfo current = getTaskInfo().withStatus(TaskStatus.RUNNING).withStartTime();
+            TaskInfo current = this.taskInfo.withStatus(TaskStatus.RUNNING).withStartTime();
             synchronized (this) {
                 this.taskInfo = current;
             }
@@ -132,16 +134,20 @@ public class NotifyingExecutorService extends AbstractExecutorService {
         }
 
         private void completeTask(TaskStatus status, Throwable ex) {
+            TaskInfo updated;
             synchronized (this) {
-                this.exception = ex;
-                this.taskInfo = taskInfo.withStatus(status)
+                updated = this.taskInfo
+                    .withStatus(status)
                     .withEndTime()
                     .withException(ex);
+            
+                this.taskInfo = updated;
+                this.exception = ex;
             }
 
             activeTasks.remove(taskInfo.taskId());
             completedTasks.add(this);
-            taskListener.onTaskFinished(taskInfo.taskId(), taskInfo.taskName(), status, ex);
+            taskListener.onTaskFinished(updated.taskId(), updated.taskName(), status, ex);
         }
 
         @Override
