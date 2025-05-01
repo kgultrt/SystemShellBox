@@ -39,6 +39,7 @@ import com.manager.ssb.core.FileOpener;
 import com.manager.ssb.core.task.TaskListener;
 import com.manager.ssb.core.task.NotifyingExecutorService;
 import com.manager.ssb.core.task.TaskNotificationManager;
+import com.manager.ssb.core.task.TaskTypes;
 import com.manager.ssb.core.config.Config;
 import com.manager.ssb.core.dialog.SettingsDialogFragment;
 import com.manager.ssb.databinding.ActivityMainBinding;
@@ -79,7 +80,8 @@ public class MainActivity extends AppCompatActivity {
         notificationManager = new TaskNotificationManager(this);
         executorService = new NotifyingExecutorService(
             Executors.newFixedThreadPool(4), 
-            notificationManager // 直接使用通知管理器作为监听器
+            notificationManager, // 直接使用通知管理器作为监听器
+            TaskTypes.MONITORED_TASKS
         );
         
         if (checkPermissions()) {
@@ -363,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
                 updateFileList(newItems);
                 binding.tvCurrentPath.setText(directory.getAbsolutePath());
             });
-        }, "Load Files");
+        }, TaskTypes.LOAD_FILES);
     }
 
     private FileItem createParentDirectoryItem(File currentDir) {
@@ -414,7 +416,7 @@ public class MainActivity extends AppCompatActivity {
             } catch (IllegalArgumentException e) {
                 mainHandler.post(() -> binding.tvStorage.setText(R.string.disk_info_unavailable));
             }
-        }, "Update Storage Info");
+        }, TaskTypes.UP_STOR_INF);
     }
 
 
@@ -526,7 +528,7 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton(android.R.string.ok, null)
                         .show();
             });
-        }, "Show Storage Details");
+        }, TaskTypes.STOR_DIALOG);
     }
 
     private String getStorageDetailsMessage() {
@@ -598,7 +600,7 @@ public class MainActivity extends AppCompatActivity {
                             showToast(getString(R.string.invalid_directory));
                         }
                     });
-                }, "Validate Directory Task");
+                });
             });
 
             MaterialButton negativeButton = (MaterialButton) dialog.getButton(DialogInterface.BUTTON_NEGATIVE);

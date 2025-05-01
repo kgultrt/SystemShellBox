@@ -21,6 +21,8 @@
    # Environment-specific settings (delete this line)
    android.aapt2FromMavenOverride=/data/data/com.termux/files/home/.androidide/aapt2
    ```
+   
+   And delete `local.properties` file.
 
 3. Build with Android Studio or command line:
    ```bash
@@ -35,6 +37,9 @@
 
 ## License
 This project is licensed under the **[MIT License](LICENSE.txt)**. You are free to use, modify, and distribute the code.
+
+## Used Project
+[ReTerminal by RohitKushvaha01 - MIT License](https://github.com/RohitKushvaha01/ReTerminal)
 
 ## Remind of something
 **This project is completely free of charge.** If you **pay** for this software, **please refund.**

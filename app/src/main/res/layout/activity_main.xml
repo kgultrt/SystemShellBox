@@ -2,8 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#F5F5F5">
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -25,8 +24,7 @@
                 android:textSize="16sp"
                 android:maxLines="1"
                 android:ellipsize="start"
-                android:paddingVertical="2dp"
-                android:textColor="#424242" />
+                android:paddingVertical="2dp" />
 
             <ImageButton
                 android:id="@+id/btn_menu"
@@ -49,8 +47,7 @@
                 android:id="@+id/tv_storage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="10sp"
-                android:textColor="#757575"/>
+                android:textSize="10sp"/>
 
             <ProgressBar
                 android:id="@+id/progressBar"

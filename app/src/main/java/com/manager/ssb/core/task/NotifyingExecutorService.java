@@ -8,19 +8,34 @@ import java.util.stream.Collectors;
 
 public class NotifyingExecutorService extends AbstractExecutorService {
     private static final AtomicLong TASK_ID_GEN = new AtomicLong(0);
+    private static final String UNNAMED_PREFIX = "Unnamed-";
 
     private final ExecutorService delegate;
     private final TaskListener taskListener;
+    private final Set<String> monitoredTasks;
     private final ConcurrentMap<String, TrackedTask<?>> activeTasks = new ConcurrentHashMap<>();
     private final List<TrackedTask<?>> completedTasks = new CopyOnWriteArrayList<>();
 
-    public NotifyingExecutorService(ExecutorService delegate, TaskListener taskListener) {
+    // 新增构造函数（带白名单）
+    public NotifyingExecutorService(ExecutorService delegate, 
+                                  TaskListener taskListener,
+                                  Set<String> monitoredTasks) {
         this.delegate = delegate;
         this.taskListener = taskListener;
+        this.monitoredTasks = Collections.unmodifiableSet(new HashSet<>(monitoredTasks));
     }
 
-    // 核心改进：带任务追踪的提交方法
+    // 兼容老代码的构造函数
+    public NotifyingExecutorService(ExecutorService delegate, TaskListener taskListener) {
+        this(delegate, taskListener, Collections.emptySet());
+    }
+
+    // 完整submit方法实现
     public <T> Future<T> submit(Callable<T> task, String taskName) {
+        if (!shouldTrack(taskName)) {
+            return delegate.submit(task);
+        }
+
         final String taskId = generateTaskId(taskName);
         TrackedCallable<T> trackedTask = new TrackedCallable<>(taskId, taskName, task);
         
@@ -40,7 +55,23 @@ public class NotifyingExecutorService extends AbstractExecutorService {
         return submit(Executors.callable(task, result), taskName);
     }
 
-    // 新增状态查询方法
+    // 完整的execute方法实现
+    public void execute(Runnable command, String taskName) {
+        if (!shouldTrack(taskName)) {
+            delegate.execute(command);
+            return;
+        }
+
+        submit(command, taskName);
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        String generatedName = UNNAMED_PREFIX + command.getClass().getSimpleName();
+        execute(command, generatedName);
+    }
+
+    // 完整的状态查询方法
     public List<TaskInfo> getActiveTasks() {
         return activeTasks.values().stream()
                 .map(TrackedTask::getTaskInfo)
@@ -62,7 +93,18 @@ public class NotifyingExecutorService extends AbstractExecutorService {
         return Optional.ofNullable(tracked).map(TrackedTask::getTaskInfo);
     }
 
-    // 任务包装基类
+    // 完整的跟踪判断逻辑
+    private boolean shouldTrack(String taskName) {
+        // 空名称或自动生成的未命名任务直接跳过
+        if (taskName == null || taskName.startsWith(UNNAMED_PREFIX)) {
+            return false;
+        }
+        // 白名单为空时跟踪所有命名任务（兼容模式）
+        // 白名单非空时只跟踪白名单内的任务
+        return monitoredTasks.isEmpty() ? true : monitoredTasks.contains(taskName);
+    }
+
+    // 完整内部类实现
     private abstract class TrackedTask<V> {
         protected volatile TaskInfo taskInfo;
         protected Future<V> future;
@@ -103,7 +145,6 @@ public class NotifyingExecutorService extends AbstractExecutorService {
         protected abstract Throwable getException();
     }
 
-    // 可调用任务包装
     private class TrackedCallable<V> extends TrackedTask<V> implements Callable<V> {
         private final Callable<V> delegate;
         private volatile Throwable exception;
@@ -156,28 +197,7 @@ public class NotifyingExecutorService extends AbstractExecutorService {
         }
     }
 
-    // 委托方法实现（保持原有功能）
-    @Override public void shutdown() { delegate.shutdown(); }
-    @Override public List<Runnable> shutdownNow() { return delegate.shutdownNow(); }
-    @Override public boolean isShutdown() { return delegate.isShutdown(); }
-    @Override public boolean isTerminated() { return delegate.isTerminated(); }
-    @Override public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-        return delegate.awaitTermination(timeout, unit);
-    }
-    @Override public void execute(Runnable command) {
-        submit(command, "Unnamed-" + command.getClass().getSimpleName());
-    }
-    
-
-    public void execute(Runnable command, String taskName) {
-        submit(command, taskName);
-    }
-
-    private static String generateTaskId(String taskName) {
-        return taskName + "-" + TASK_ID_GEN.incrementAndGet();
-    }
-
-    // 状态记录对象
+    // 完整的TaskInfo记录类
     public record TaskInfo(
         String taskId,
         String taskName,
@@ -202,5 +222,35 @@ public class NotifyingExecutorService extends AbstractExecutorService {
         TaskInfo withException(Throwable ex) {
             return new TaskInfo(taskId, taskName, status, submitTime, startTime, endTime, ex);
         }
+    }
+
+    // 完整委托方法实现
+    @Override
+    public void shutdown() {
+        delegate.shutdown();
+    }
+
+    @Override
+    public List<Runnable> shutdownNow() {
+        return delegate.shutdownNow();
+    }
+
+    @Override
+    public boolean isShutdown() {
+        return delegate.isShutdown();
+    }
+
+    @Override
+    public boolean isTerminated() {
+        return delegate.isTerminated();
+    }
+
+    @Override
+    public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+        return delegate.awaitTermination(timeout, unit);
+    }
+
+    private static String generateTaskId(String taskName) {
+        return taskName + "-" + TASK_ID_GEN.incrementAndGet();
     }
 }

@@ -22,6 +22,8 @@
    android.aapt2FromMavenOverride=/data/data/com.termux/files/home/.androidide/aapt2
    ```
 
+   并且删除 `local.properties` 文件
+
 3. 使用 Android Studio 或命令行构建 (请不要使用b.sh)：
    ```bash
    ./gradlew assembleDebug
@@ -37,6 +39,9 @@
 本项目采用 **[MIT 许可证](LICENSE.txt)**，您可以自由使用、修改和分发代码。
 
 其中，terminal-view 还有 terminal-emulator 来自于 https://github.com/termux/termux-app 它们是在 [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) 下进行分发，与 MIT 兼容
+
+## 使用的项目
+[ReTerminal by RohitKushvaha01 - MIT License](https://github.com/RohitKushvaha01/ReTerminal)
 
 ## 提醒
 **本项目完全免费，**若您是**付费**购买的此软件，**请退款。**

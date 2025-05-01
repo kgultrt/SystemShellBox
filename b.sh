@@ -6,7 +6,7 @@ usage() {
     echo "选项："
     echo "  -d, --debug      构建Debug版本（默认）"
     echo "  -r, --release    构建Release版本"
-    echo "  -nc, --no-commit 不执行Git提交直接构建"
+    echo "  -c, --commit     执行Git提交并且构建"
     exit 1
 }
 
@@ -14,7 +14,7 @@ usage() {
 TASK="app:assembleDebug"
 APK_DIR="debug"
 APK_PREFIX="app-debug"
-NO_COMMIT=0
+NO_COMMIT=1
 
 # 参数解析
 while [[ $# -gt 0 ]]; do
@@ -28,8 +28,8 @@ while [[ $# -gt 0 ]]; do
             APK_PREFIX="app-release"
             shift
             ;;
-        -nc|--no-commit)
-            NO_COMMIT=1
+        -c|--commit)
+            NO_COMMIT=0
             shift
             ;;
         *)
@@ -57,7 +57,7 @@ get_git_info() {
     echo "└─ 构建时间: $(date '+%Y-%m-%d %H:%M:%S')"
 }
 
-# 执行Git提交（除非使用 -nc 选项）
+# 执行Git提交（除非使用 -c 选项）
 if [[ $NO_COMMIT -eq 0 ]]; then
     echo "正在处理Git提交..."
     git add -A
