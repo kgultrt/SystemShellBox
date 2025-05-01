@@ -23,7 +23,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceManager;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -204,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
                     // 特别处理通知权限
                     if (Manifest.permission.POST_NOTIFICATIONS.equals(permissions[i])) {
                         // 记录用户拒绝通知权限
-                        PreferenceManager.getDefaultSharedPreferences(this)
+                        this.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
                             .edit()
                             .putBoolean("notifications_denied", true)
                             .apply();
