@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
 
+import com.manager.ssb.R;
+
 public class TaskNotificationManager implements TaskListener {
     private static final String CHANNEL_ID = "task_channel";
     private static final int NOTIFICATION_ID_BASE = 1000;
@@ -66,7 +68,7 @@ public class TaskNotificationManager implements TaskListener {
         return new NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(text)
-            .setSmallIcon(R.drawable.ic_task_notification)
+            .setSmallIcon(R.drawable.ic_task)
             .setProgress(100, progress, false)
             .setOnlyAlertOnce(true)
             .setContentIntent(getDefaultPendingIntent());
@@ -90,7 +92,7 @@ public class TaskNotificationManager implements TaskListener {
             case CANCELLED:
                 return R.drawable.ic_task_cancelled;
             default:
-                return R.drawable.ic_task_default;
+                return R.drawable.ic_task;
         }
     }
 
