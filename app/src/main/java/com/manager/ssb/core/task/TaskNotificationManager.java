@@ -12,6 +12,9 @@ import androidx.core.app.NotificationCompat;
 
 import com.manager.ssb.R;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class TaskNotificationManager implements TaskListener {
     private static final String CHANNEL_ID = "task_channel";
     private static final int NOTIFICATION_ID_BASE = 1000;
