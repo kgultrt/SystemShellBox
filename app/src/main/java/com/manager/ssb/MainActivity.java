@@ -81,23 +81,7 @@ public class MainActivity extends AppCompatActivity {
             Executors.newFixedThreadPool(4), 
             notificationManager // 直接使用通知管理器作为监听器
         );
-
-        // 初始化 TaskListener
-        TaskListener taskListener = new TaskListener() {
-            @Override
-            public void onTaskStarted(String taskName) {
-                mainHandler.post(() -> showToast("Task started: " + taskName));
-            }
-
-            @Override
-            public void onTaskFinished(String taskName) {
-                mainHandler.post(() -> showToast("Task finished: " + taskName));
-            }
-        };
-
-        // 初始化 ExecutorService
-        executorService = new NotifyingExecutorService(Executors.newFixedThreadPool(4), taskListener);
-
+        
         if (checkPermissions()) {
             initApp();
         } else {
