@@ -211,9 +211,4 @@ public class NotifyingExecutorService extends AbstractExecutorService {
         FAILED,
         CANCELLED
     }
-
-    public interface TaskListener {
-        default void onTaskStarted(String taskId, String taskName) {}
-        default void onTaskFinished(String taskId, String taskName, TaskStatus status, Throwable exception) {}
-    }
 }
