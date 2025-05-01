@@ -11,6 +11,7 @@ import android.os.Build;
 import androidx.core.app.NotificationCompat;
 
 import com.manager.ssb.R;
+import com.manager.ssb.MainActivity;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -112,7 +113,16 @@ public class TaskNotificationManager implements TaskListener {
         }
     }
 
-    private PendingIntent getDefaultPendingIntent() {}
+    private PendingIntent getDefaultPendingIntent() {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        return PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+    }
 
     // 进度更新方法（可选）
     public void updateTaskProgress(String taskId, int progress) {
