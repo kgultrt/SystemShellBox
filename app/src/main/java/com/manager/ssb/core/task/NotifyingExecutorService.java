@@ -203,12 +203,4 @@ public class NotifyingExecutorService extends AbstractExecutorService {
             return new TaskInfo(taskId, taskName, status, submitTime, startTime, endTime, ex);
         }
     }
-
-    public enum TaskStatus {
-        CREATED,
-        RUNNING,
-        COMPLETED,
-        FAILED,
-        CANCELLED
-    }
 }
