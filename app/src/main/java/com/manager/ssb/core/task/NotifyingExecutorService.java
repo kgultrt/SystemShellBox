@@ -161,6 +161,11 @@ public class NotifyingExecutorService extends AbstractExecutorService {
     @Override public void execute(Runnable command) {
         submit(command, "Unnamed-" + command.getClass().getSimpleName());
     }
+    
+
+    public void execute(Runnable command, String taskName) {
+        submit(command, taskName);
+    }
 
     private static String generateTaskId(String taskName) {
         return taskName + "-" + TASK_ID_GEN.incrementAndGet();
