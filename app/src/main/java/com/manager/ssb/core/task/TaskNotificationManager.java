@@ -110,14 +110,7 @@ public class TaskNotificationManager implements TaskListener {
     }
 
     private PendingIntent getDefaultPendingIntent() {
-        Intent intent = new Intent(context, TaskListActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        return PendingIntent.getActivity(
-            context,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+        
     }
 
     // 进度更新方法（可选）
