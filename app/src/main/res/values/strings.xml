@@ -24,6 +24,11 @@
     <string name="reject_permanently_android_permission_request">Permission has been permanently denied</string>
     <string name="go_to_setting_open">Please manually enable the permission in Settings</string>
     <string name="go_set">Go to Settings</string>
+    <!-- 新增通知权限相关说明 -->
+    <string name="notification_permission_rationale">Notification permission is required to display file operation progress and results, which you can enable in System Settings</string>
+    <string name="notifications_denied">You have denied notification rights and some functionality may be limited</string>
+    <string name="go_to_settings">Go to Settings</string>
+    <string name="permission_required">Necessary permission requirement</string>
     <string name="cancel">Cancel</string>
 
     <string name="refresh">Refresh</string>

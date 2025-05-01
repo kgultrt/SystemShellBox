@@ -1,136 +1,208 @@
-// NotifyingExecutorService.java (自定义的 ExecutorService 包装类)
+// NotifyingExecutorService.java
 package com.manager.ssb.core.task;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
-public class NotifyingExecutorService implements ExecutorService {
+public class NotifyingExecutorService extends AbstractExecutorService {
+    private static final AtomicLong TASK_ID_GEN = new AtomicLong(0);
 
-    private final ExecutorService executorService;
+    private final ExecutorService delegate;
     private final TaskListener taskListener;
+    private final ConcurrentMap<String, TrackedTask<?>> activeTasks = new ConcurrentHashMap<>();
+    private final List<TrackedTask<?>> completedTasks = new CopyOnWriteArrayList<>();
 
-    public NotifyingExecutorService(ExecutorService executorService, TaskListener taskListener) {
-        this.executorService = executorService;
+    public NotifyingExecutorService(ExecutorService delegate, TaskListener taskListener) {
+        this.delegate = delegate;
         this.taskListener = taskListener;
     }
 
-    @Override
-    public void shutdown() {
-        executorService.shutdown();
-    }
-
-    @Override
-    public java.util.List<Runnable> shutdownNow() {
-        return executorService.shutdownNow();
-    }
-
-    @Override
-    public boolean isShutdown() {
-        return executorService.isShutdown();
-    }
-
-    @Override
-    public boolean isTerminated() {
-        return executorService.isTerminated();
-    }
-
-    @Override
-    public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-        return executorService.awaitTermination(timeout, unit);
-    }
-
-    @Override
-    public <T> Future<T> submit(Callable<T> task) {
-        // 没有任务名称，不通知 TaskListener
-        return executorService.submit(task);
-    }
-
+    // 核心改进：带任务追踪的提交方法
     public <T> Future<T> submit(Callable<T> task, String taskName) {
-        taskListener.onTaskStarted(taskName);
-        return executorService.submit(() -> {
-            try {
-                T result = task.call();
-                taskListener.onTaskFinished(taskName);
-                return result;
-            } catch (Exception e) {
-                taskListener.onTaskFinished(taskName);
-                throw e;
-            }
-        });
-    }
+        final String taskId = generateTaskId(taskName);
+        TrackedCallable<T> trackedTask = new TrackedCallable<>(taskId, taskName, task);
+        
+        activeTasks.put(taskId, trackedTask);
+        taskListener.onTaskStarted(taskId, taskName);
 
-    @Override
-    public Future<?> submit(Runnable task) {
-        // 没有任务名称，不通知 TaskListener
-        return executorService.submit(task);
+        Future<T> future = delegate.submit(trackedTask);
+        trackedTask.setFuture(future);
+        return future;
     }
 
     public Future<?> submit(Runnable task, String taskName) {
-        taskListener.onTaskStarted(taskName);
-        return executorService.submit(() -> {
-            try {
-                task.run();
-                taskListener.onTaskFinished(taskName);
-            } catch (Exception e) {
-                taskListener.onTaskFinished(taskName);
-                throw new RuntimeException(e); // Changed to RuntimeException
-            }
-        });
-    }
-
-    @Override
-    public <T> Future<T> submit(Runnable task, T result) {
-        // 没有任务名称，不通知 TaskListener
-        return executorService.submit(task, result);
+        return submit(Executors.callable(task, null), taskName);
     }
 
     public <T> Future<T> submit(Runnable task, String taskName, T result) {
-         taskListener.onTaskStarted(taskName);
+        return submit(Executors.callable(task, result), taskName);
+    }
 
-        Callable<T> callable = () -> {
+    // 新增状态查询方法
+    public List<TaskInfo> getActiveTasks() {
+        return activeTasks.values().stream()
+                .map(TrackedTask::getTaskInfo)
+                .collect(Collectors.toList());
+    }
+
+    public List<TaskInfo> getCompletedTasks() {
+        return completedTasks.stream()
+                .map(TrackedTask::getTaskInfo)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<TaskInfo> getTaskInfo(String taskId) {
+        TrackedTask<?> tracked = activeTasks.getOrDefault(taskId, 
+            completedTasks.stream()
+                .filter(t -> t.getTaskInfo().taskId().equals(taskId))
+                .findFirst()
+                .orElse(null));
+        return Optional.ofNullable(tracked).map(TrackedTask::getTaskInfo);
+    }
+
+    // 任务包装基类
+    private abstract class TrackedTask<V> {
+        protected final TaskInfo taskInfo;
+        protected Future<V> future;
+
+        TrackedTask(String taskId, String taskName) {
+            this.taskInfo = new TaskInfo(
+                taskId,
+                taskName,
+                TaskStatus.CREATED,
+                System.currentTimeMillis(),
+                -1L,
+                -1L,
+                null
+            );
+        }
+
+        void setFuture(Future<V> future) {
+            this.future = future;
+        }
+
+        TaskInfo getTaskInfo() {
+            long endTime = taskInfo.endTime() > 0 ? taskInfo.endTime() : 
+                (taskInfo.status() == TaskStatus.RUNNING ? -1L : System.currentTimeMillis());
+            
+            return new TaskInfo(
+                taskInfo.taskId(),
+                taskInfo.taskName(),
+                taskInfo.status(),
+                taskInfo.submitTime(),
+                taskInfo.startTime(),
+                endTime,
+                getException()
+            );
+        }
+
+        protected abstract Throwable getException();
+    }
+
+    // 可调用任务包装
+    private class TrackedCallable<V> extends TrackedTask<V> implements Callable<V> {
+        private final Callable<V> delegate;
+        private volatile Throwable exception;
+
+        TrackedCallable(String taskId, String taskName, Callable<V> delegate) {
+            super(taskId, taskName);
+            this.delegate = delegate;
+        }
+
+        @Override
+        public V call() throws Exception {
+            TaskInfo current = getTaskInfo().withStatus(TaskStatus.RUNNING).withStartTime();
+            synchronized (this) {
+                this.taskInfo = current;
+            }
+
             try {
-                task.run();
-                taskListener.onTaskFinished(taskName);
+                V result = delegate.call();
+                completeTask(TaskStatus.COMPLETED, null);
                 return result;
             } catch (Exception e) {
-                taskListener.onTaskFinished(taskName);
-                throw new RuntimeException(e);
+                completeTask(TaskStatus.FAILED, e);
+                throw e;
+            } catch (Throwable t) {
+                completeTask(TaskStatus.FAILED, t);
+                throw new ExecutionException(t);
             }
-        };
-        return executorService.submit(callable);
+        }
+
+        private void completeTask(TaskStatus status, Throwable ex) {
+            synchronized (this) {
+                this.exception = ex;
+                this.taskInfo = taskInfo.withStatus(status)
+                    .withEndTime()
+                    .withException(ex);
+            }
+
+            activeTasks.remove(taskInfo.taskId());
+            completedTasks.add(this);
+            taskListener.onTaskFinished(taskInfo.taskId(), taskInfo.taskName(), status, ex);
+        }
+
+        @Override
+        protected Throwable getException() {
+            return exception;
+        }
     }
 
-    @Override
-    public <T> java.util.List<Future<T>> invokeAll(java.util.Collection<? extends Callable<T>> tasks) throws InterruptedException {
-        return executorService.invokeAll(tasks);
+    // 委托方法实现（保持原有功能）
+    @Override public void shutdown() { delegate.shutdown(); }
+    @Override public List<Runnable> shutdownNow() { return delegate.shutdownNow(); }
+    @Override public boolean isShutdown() { return delegate.isShutdown(); }
+    @Override public boolean isTerminated() { return delegate.isTerminated(); }
+    @Override public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+        return delegate.awaitTermination(timeout, unit);
+    }
+    @Override public void execute(Runnable command) {
+        submit(command, "Unnamed-" + command.getClass().getSimpleName());
     }
 
-    @Override
-    public <T> java.util.List<Future<T>> invokeAll(java.util.Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
-        return executorService.invokeAll(tasks, timeout, unit);
+    private static String generateTaskId(String taskName) {
+        return taskName + "-" + TASK_ID_GEN.incrementAndGet();
     }
 
-    @Override
-    public <T> T invokeAny(java.util.Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
-        return executorService.invokeAny(tasks);
+    // 状态记录对象
+    public record TaskInfo(
+        String taskId,
+        String taskName,
+        TaskStatus status,
+        long submitTime,
+        long startTime,
+        long endTime,
+        Throwable exception
+    ) {
+        TaskInfo withStatus(TaskStatus status) {
+            return new TaskInfo(taskId, taskName, status, submitTime, startTime, endTime, exception);
+        }
+
+        TaskInfo withStartTime() {
+            return new TaskInfo(taskId, taskName, status, submitTime, System.currentTimeMillis(), endTime, exception);
+        }
+
+        TaskInfo withEndTime() {
+            return new TaskInfo(taskId, taskName, status, submitTime, startTime, System.currentTimeMillis(), exception);
+        }
+
+        TaskInfo withException(Throwable ex) {
+            return new TaskInfo(taskId, taskName, status, submitTime, startTime, endTime, ex);
+        }
     }
 
-    @Override
-    public <T> T invokeAny(java.util.Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        return executorService.invokeAny(tasks, timeout, unit);
+    public enum TaskStatus {
+        CREATED,
+        RUNNING,
+        COMPLETED,
+        FAILED,
+        CANCELLED
     }
 
-    @Override
-    public void execute(Runnable command) {
-        execute(command, command.toString()); // 使用默认的任务名称
-    }
-
-    public void execute(Runnable command, String taskName) {
-        submit(command, taskName);
+    public interface TaskListener {
+        default void onTaskStarted(String taskId, String taskName) {}
+        default void onTaskFinished(String taskId, String taskName, TaskStatus status, Throwable exception) {}
     }
 }

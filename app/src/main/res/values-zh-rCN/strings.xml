@@ -25,6 +25,11 @@
     <string name="reject_permanently_android_permission_request">权限被永久拒绝</string>
     <string name="go_to_setting_open">请在设置中手动开启权限</string>
     <string name="go_set">去设置</string>
+    <!-- 新增通知权限相关说明 -->
+    <string name="notification_permission_rationale">需要通知权限来显示文件操作进度和结果，您可以在系统设置中启用</string>
+    <string name="notifications_denied">您已拒绝通知权限，部分功能可能受限</string>
+    <string name="go_to_settings">前往设置</string>
+    <string name="permission_required">必要权限要求</string>
     <string name="cancel">取消</string>
 
     <string name="refresh">刷新</string>

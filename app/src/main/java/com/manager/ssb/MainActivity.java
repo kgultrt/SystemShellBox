@@ -37,6 +37,7 @@ import com.manager.ssb.adapter.FileAdapter;
 import com.manager.ssb.core.FileOpener;
 import com.manager.ssb.core.task.TaskListener;
 import com.manager.ssb.core.task.NotifyingExecutorService;
+import com.manager.ssb.core.task.TaskNotificationManager;
 import com.manager.ssb.core.config.Config;
 import com.manager.ssb.core.dialog.SettingsDialogFragment;
 import com.manager.ssb.databinding.ActivityMainBinding;
@@ -62,15 +63,23 @@ public class MainActivity extends AppCompatActivity {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private NotifyingExecutorService executorService; // 使用 NotifyingExecutorService
     private boolean storageInfoLoaded = false; // 避免重复加载存储信息
+    private TaskNotificationManager notificationManager; // 新增通知管理器
 
     private static final int PERMISSION_REQUEST_CODE = 1001;
     private static final int MANAGE_EXTERNAL_STORAGE_REQUEST_CODE = 1002;
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1003;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        
+        notificationManager = new TaskNotificationManager(this);
+        executorService = new NotifyingExecutorService(
+            Executors.newFixedThreadPool(4), 
+            notificationManager // 直接使用通知管理器作为监听器
+        );
 
         // 初始化 TaskListener
         TaskListener taskListener = new TaskListener() {
@@ -99,34 +108,66 @@ public class MainActivity extends AppCompatActivity {
      * 检查权限状态
      */
     private boolean checkPermissions() {
+        List<String> missingPermissions = new ArrayList<>();
+
+        // 原有存储权限检查逻辑
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // Android 11+ 检查 MANAGE_EXTERNAL_STORAGE
-            return Environment.isExternalStorageManager();
+            if (!Environment.isExternalStorageManager()) {
+                // Android 11+ 需要特殊文件权限
+                return false;
+            }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // Android 6-10 检查 READ_EXTERNAL_STORAGE
-            return checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED;
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                missingPermissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }
         }
-        return true; // Android 5.1及以下默认有权限
+
+        // 新增通知权限检查（仅Android 13+）
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                missingPermissions.add(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+
+        // 如果有缺失权限需要请求
+        return missingPermissions.isEmpty();
     }
 
     /**
      * 动态请求权限
      */
     private void requestPermissions() {
+        List<String> permissionsToRequest = new ArrayList<>();
+
+        // 处理存储权限
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             // Android 11+ 跳转系统设置页申请 MANAGE_EXTERNAL_STORAGE
             Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
             intent.setData(Uri.parse("package:" + getPackageName()));
             startActivityForResult(intent, MANAGE_EXTERNAL_STORAGE_REQUEST_CODE);
-            showToast(getString(R.string.high_android_permission_request));
+            showToast(R.string.high_android_permission_request);
+            return;
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Android 6-10 请求 READ_EXTERNAL_STORAGE
+            permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
+
+        // 添加通知权限请求（仅Android 13+）
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS);
+        }
+
+        if (!permissionsToRequest.isEmpty()) {
             requestPermissions(
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    PERMISSION_REQUEST_CODE
+                permissionsToRequest.toArray(new String[0]),
+                PERMISSION_REQUEST_CODE
             );
-            showToast(getString(R.string.request_appect_android_permission_request));
+            showToast(R.string.request_appect_android_permission_request);
+        } else {
+            // 不需要请求权限的情况（Android 5.1及以下）
+            initApp();
         }
     }
 
@@ -150,8 +191,27 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    
         if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            boolean allGranted = true;
+        
+            // 检查所有请求的权限是否被授予
+            for (int i = 0; i < permissions.length; i++) {
+                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                
+                    // 特别处理通知权限
+                    if (Manifest.permission.POST_NOTIFICATIONS.equals(permissions[i])) {
+                        // 记录用户拒绝通知权限
+                        PreferenceManager.getDefaultSharedPreferences(this)
+                            .edit()
+                            .putBoolean("notifications_denied", true)
+                            .apply();
+                    }
+                }
+            }
+
+            if (allGranted) {
                 initApp();
             } else {
                 handlePermissionDenied();
@@ -159,26 +219,82 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     /**
      * 权限被拒绝后的处理
      */
     private void handlePermissionDenied() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // Android 11+ 提示用户前往设置
-            showSettingsDialog();
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                // 显示解释对话框
-                new MaterialAlertDialogBuilder(this)
-                        .setTitle(R.string.permission_desc_dialog1)
-                        .setMessage(R.string.permission_desc_dialog2)
-                        .setPositiveButton(R.string.retry_request_android_permission, (dialog, which) -> requestPermissions())
-                        .setNegativeButton(R.string.exit, (dialog, which) -> finish())
-                        .show();
-            } else {
-                showSettingsDialog();
+        boolean shouldShowRationale = false;
+    
+        // 检查是否有权限需要显示解释
+        for (String permission : getRequiredPermissions()) {
+            if (shouldShowRequestPermissionRationale(permission)) {
+                shouldShowRationale = true;
+                break;
             }
         }
+
+        if (shouldShowRationale) {
+            showRationaleDialog();
+        } else {
+            showSettingsDialog();
+        }
+    }
+
+    private List<String> getRequiredPermissions() {
+        List<String> required = new ArrayList<>();
+    
+        // 存储权限
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            required.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
+    
+        // 通知权限
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            required.add(Manifest.permission.POST_NOTIFICATIONS);
+        }
+    
+        return required;
+    }
+
+    private void showRationaleDialog() {
+        new MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.permission_desc_dialog1)
+            .setMessage(getRationaleMessage())
+            .setPositiveButton(R.string.retry_request_android_permission, (dialog, which) -> {
+                // 重新请求权限（排除用户永久拒绝的）
+                List<String> toRequest = new ArrayList<>();
+                for (String perm : getRequiredPermissions()) {
+                    if (!isPermissionPermanentlyDenied(perm)) {
+                        toRequest.add(perm);
+                    }
+                }
+                if (!toRequest.isEmpty()) {
+                    requestPermissions(toRequest.toArray(new String[0]), PERMISSION_REQUEST_CODE);
+                } else {
+                    showSettingsDialog();
+                }
+            })
+            .setNegativeButton(R.string.exit, (dialog, which) -> finish())
+            .show();
+    }
+
+    private boolean isPermissionPermanentlyDenied(String permission) {
+        return !shouldShowRequestPermissionRationale(permission) &&
+               (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED);
+    }
+
+    private String getRationaleMessage() {
+        StringBuilder message = new StringBuilder(getString(R.string.permission_desc_dialog2));
+    
+        // 添加通知权限说明（如果被拒绝）
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            isPermissionPermanentlyDenied(Manifest.permission.POST_NOTIFICATIONS)) {
+            message.append("\n\n")
+                   .append(getString(R.string.notification_permission_rationale));
+        }
+    
+        return message.toString();
     }
 
     /**

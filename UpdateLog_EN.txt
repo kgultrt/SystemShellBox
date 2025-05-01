@@ -1,0 +1,79 @@
+1.0:
+The Beginning of the Dream  
+
+1.0.0-build1:
+1. Standardized version numbering  
+
+1.0.0-build6:
+1. Optimized loading speed  
+2. Improved UI  
+3. Folders and files are now sorted  
+
+1.0.0-build19:
+1. UI improvements  
+2. Text optimizations  
+
+1.0.0-build26:
+1. Audio player implementation  
+
+1.0.0-build45:
+1. Upgraded SDK to 24 (Android 7.0 Nougat) (Goodbye, Android 5)  
+2. Terminal implementation (thanks to ReTerm!!!)  
+
+1.0.0-build70:
+1. Busybox integration!!!  
+
+1.0.0-build76:
+1. UI refinements  
+
+1.0.0-build83:
+1. Synced with ReTerm 1.1.0; future syncs paused to focus on developing a custom environment  
+2. Removed Busybox  
+
+1.0.0-build94:
+1. Added top-right menu  
+2. Added menu functions: Refresh, Storage Info, Shell, Settings (placeholder), About, Exit  
+
+1.0.0-build100:
+1. Menu standardization, "About" section updates  
+2. Added debug/release flags in "About"  
+3. Configuration file testing  
+4. Moved App.kt to `com.manager.ssb` and added a static `Context`  
+5. A milestone update!  
+6. Project enters the "prototype" phase  
+
+1.0.0-build103:
+1. Added path navigation functionality  
+
+1.0.0-build120:
+1. Loading speed optimizations  
+
+1.0.0-build134:
+1. Migrated project to Git  
+2. Added debounce mechanism to file listings  
+3. Added Git-related info to the "About" dialog  
+
+Short-Term Plans:
+Overhaul the file manager
+Environment installer
+
+Next Steps:
+1. Text editor  
+2. Built-in terminal [✓]  
+3. Archive (zip/rar) support  
+4. Create folder/file functionality  
+5. Custom sorting  
+6. Search functionality  
+7. Implement MT-style dual-window mode  
+8. Draft End User License Agreement (EULA) [✓] (not yet enforced)  
+9. APK extraction  
+10. Project system  
+11. SU access for root (/)  
+12. File details viewer  
+13. Long-press file actions  
+14. Multi-language support [✓]  
+15. Audio player [✓]  
+16. Top-right menu [✓]  
+
+Open-Source Release Target:
+1.0.0-build300 (when core features stabilize; highly tentative)
