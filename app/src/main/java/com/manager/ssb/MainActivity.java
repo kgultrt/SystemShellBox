@@ -13,6 +13,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StatFs;
+import android.content.Context;
 import android.provider.Settings;
 import android.text.InputType;
 import android.view.View;
