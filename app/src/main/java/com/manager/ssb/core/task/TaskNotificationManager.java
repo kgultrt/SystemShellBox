@@ -112,9 +112,7 @@ public class TaskNotificationManager implements TaskListener {
         }
     }
 
-    private PendingIntent getDefaultPendingIntent() {
-        
-    }
+    private PendingIntent getDefaultPendingIntent() {}
 
     // 进度更新方法（可选）
     public void updateTaskProgress(String taskId, int progress) {
