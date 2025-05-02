@@ -40,6 +40,7 @@ import com.manager.ssb.core.task.TaskListener;
 import com.manager.ssb.core.task.NotifyingExecutorService;
 import com.manager.ssb.core.task.TaskNotificationManager;
 import com.manager.ssb.core.task.TaskTypes;
+import com.manager.ssb.core.term.TerminalInstaller;
 import com.manager.ssb.core.config.Config;
 import com.manager.ssb.core.dialog.SettingsDialogFragment;
 import com.manager.ssb.databinding.ActivityMainBinding;
@@ -509,13 +510,27 @@ public class MainActivity extends AppCompatActivity {
         settingsDialog.show(getSupportFragmentManager(), "SettingsDialog");
     }
 
+    // 修改启动代码为：
     private void startTerminal() {
-        try {
-            Intent intent = new Intent(this, Class.forName("com.rk.terminal.ui.activities.terminal.MainActivity"));
-            startActivity(intent);
-        } catch (ClassNotFoundException e) {
-            showToast(getString(R.string.error));
-        }
+        TerminalInstaller.installCheck(MainActivity.this, new TerminalInstaller.InstallCallback() {
+            @Override
+            public void onInstallFinished() {
+                // 启动终端逻辑
+                try {
+                    Intent intent = new Intent(MainActivity.this, Class.forName("com.rk.terminal.ui.activities.terminal.MainActivity"));
+                    startActivity(intent);
+                } catch (ClassNotFoundException e) {
+                    showToast(getString(R.string.error));
+                }
+            }
+
+            @Override
+            public void onInstallFailed(String reason) {
+                runOnUiThread(() -> 
+                    Toast.makeText(MainActivity.this, "安装失败: " + reason, Toast.LENGTH_LONG).show()
+                );
+            }
+        });
     }
 
     private void showStorageDetails() {

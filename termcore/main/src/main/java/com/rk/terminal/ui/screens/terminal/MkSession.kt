@@ -34,33 +34,20 @@ object MkSession {
                 "EXTERNAL_STORAGE" to System.getenv("EXTERNAL_STORAGE")
             )
 
-            val workingDir = pendingCommand?.workingDir ?: "/sdcard"
-
-            val initFile: File = localBinDir().child("init")
-            val rish: File = localBinDir().child("rish")
-
-            if (initFile.exists().not()){
-                initFile.createFileIfNot()
-                initFile.writeText(assets.open("init.sh").bufferedReader().use { it.readText() })
-            }
-
-            if (rish.exists().not()){
-                rish.createFileIfNot()
-                rish.writeText(assets.open("rish.sh").bufferedReader().use { it.readText() })
-            }
+            val workingDir = pendingCommand?.workingDir ?: "/data/user/0/com.manager.ssb/files/usr/home"
 
             val env = mutableListOf(
-                "PATH=${System.getenv("PATH")}:/sbin:${localBinDir().absolutePath}",
-                "HOME=/sdcard",
+                "PATH=/data/user/0/com.manager.ssb/files/usr/bin:${System.getenv("PATH")}:/sbin:${localBinDir().absolutePath}",
+                "HOME=/data/user/0/com.manager.ssb/files/usr/home",
                 "PUBLIC_HOME=${getExternalFilesDir(null)?.absolutePath}",
                 "COLORTERM=truecolor",
                 "TERM=xterm-256color",
-                "LANG=C.UTF-8",
-                "BIN=${localBinDir()}",
-                "EXEC=sh ${localBinDir().child("exec")}",
+                "LANG=en_US.UTF-8",
+                "BIN=/data/user/0/com.manager.ssb/files/usr/bin",
+                "EXEC=sh /data/user/0/com.manager.ssb/files/usr/home/.term/exec.sh",
                 "DEBUG=${BuildConfig.DEBUG}",
-                "PREFIX=${filesDir.parentFile!!.path}",
-                "LD_LIBRARY_PATH=${localLibDir().absolutePath}",
+                "PREFIX=${filesDir.parentFile!!.path}/files/usr",
+                "LD_LIBRARY_PATH=/data/user/0/com.manager.ssb/files/usr/lib",
                 "LINKER=${if(File("/system/bin/linker64").exists()){"/system/bin/linker64"}else{"/system/bin/linker"}}",
                 "PKG=${packageName}",
                 "RISH_APPLICATION_ID=${packageName}",
@@ -77,7 +64,7 @@ object MkSession {
             val args: Array<String>
 
             val shell = if (pendingCommand == null) {
-                args = arrayOf("-c",initFile.absolutePath, Settings.workingMode.toString(),session_id)
+                args = arrayOf("-c", "/data/user/0/com.manager.ssb/files/usr/home/.term/init.sh", Settings.workingMode.toString(),session_id)
                 "/system/bin/sh"
             } else{
                 args = pendingCommand!!.args
