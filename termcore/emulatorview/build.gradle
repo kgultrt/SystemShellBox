@@ -1,0 +1,33 @@
+plugins {
+    id 'com.android.library'
+}
+
+
+android {
+    namespace "jackpal.androidterm.emulatorview"
+
+    compileSdk 34
+    defaultConfig {
+        minSdkVersion 24
+        targetSdkVersion 28
+
+        //Major.Minor.Patch
+        versionCode 10800
+        versionName '1.8.0'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    productFlavors {
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+}
+
+dependencies {
+    implementation libs.annotation
+}
