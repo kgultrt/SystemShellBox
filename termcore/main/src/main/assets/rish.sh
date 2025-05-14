@@ -1,1 +1,0 @@
-/system/bin/app_process -Djava.class.path="$PKG_PATH" /system/bin --nice-name=rish rikka.shizuku.shell.ShizukuShellLoader "$@"

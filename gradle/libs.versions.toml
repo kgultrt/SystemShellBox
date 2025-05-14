@@ -30,7 +30,7 @@ asynclayoutinflater = "1.0.0"
 navigationFragmentKtx = "2.8.7"
 navigationUiKtx = "2.8.5"
 coreKtx = "1.13.1"
-activity = "1.6.1"
+activity = "1.0.0"
 nbJavacAndroid = "17.0.0.3"
 okhttp = "4.12.0"
 orgEclipseJgit = "6.2.0.202206071550-r"
@@ -48,19 +48,21 @@ coordinatorlayout = "1.2.0"
 lifecycleLivedataKtx = "2.8.7"
 lifecycleViewmodelKtx = "2.8.7"
 lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.6.1"
+activityCompose = "1.0.0"
 composeBom = "2025.02.00"
 coilCompose = "2.7.0"
 navigationCompose = "2.8.7"
 lifecycleViewmodelAndroid = "2.8.7"
 wordWrap = "0.1.13"
 coreAnimation = "1.0.0"
+preference = "1.0.0"
 runtimeAndroid = "1.7.8"
 
 [libraries]
-androidx-palette = { module = "androidx.palette:palette", version.ref = "palette" }
+preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
 accompanist-swiperefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanistSwiperefresh" }
 androidx-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+androidx-palette = { module = "androidx.palette:palette", version.ref = "palette" }
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
 anrwatchdog = { module = "com.github.anrwatchdog:anrwatchdog", version.ref = "anrwatchdog" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }

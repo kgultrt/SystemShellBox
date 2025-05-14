@@ -45,7 +45,6 @@ rootProject.name = "System Shell Forge"
 
 include ":app"
 
-include ":termcore:main" 
-include ":termcore:components"
-include ":termcore:resources"
-include ":termcore:rish"
+include ":termcore:term" 
+include ":termcore:libtermexec"
+include ":termcore:emulatorview"

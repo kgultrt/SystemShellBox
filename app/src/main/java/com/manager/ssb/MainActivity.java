@@ -512,25 +512,8 @@ public class MainActivity extends AppCompatActivity {
 
     // 修改启动代码为：
     private void startTerminal() {
-        TerminalInstaller.installCheck(MainActivity.this, new TerminalInstaller.InstallCallback() {
-            @Override
-            public void onInstallFinished() {
-                // 启动终端逻辑
-                try {
-                    Intent intent = new Intent(MainActivity.this, Class.forName("com.rk.terminal.ui.activities.terminal.MainActivity"));
-                    startActivity(intent);
-                } catch (ClassNotFoundException e) {
-                    showToast(getString(R.string.error));
-                }
-            }
-
-            @Override
-            public void onInstallFailed(String reason) {
-                runOnUiThread(() -> 
-                    Toast.makeText(MainActivity.this, "安装失败: " + reason, Toast.LENGTH_LONG).show()
-                );
-            }
-        });
+        // 启动终端逻辑
+        showToast(getString(R.string.wip));
     }
 
     private void showStorageDetails() {
