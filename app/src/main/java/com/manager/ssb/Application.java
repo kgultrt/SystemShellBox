@@ -117,7 +117,7 @@ public class Application extends android.app.Application {
         instance = this;  // 初始化单例实例
 
         // enable Material3 dynamic colors
-        DynamicColors.applyToActivitiesIfAvailable(this);
+        // DynamicColors.applyToActivitiesIfAvailable(this);
 
         rootdir = getFilesDir().getParentFile();
         etcdir = new File(rootdir, "etc");

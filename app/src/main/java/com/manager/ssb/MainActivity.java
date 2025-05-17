@@ -2,10 +2,12 @@
 package com.manager.ssb;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,9 +15,9 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StatFs;
-import android.content.Context;
 import android.provider.Settings;
 import android.text.InputType;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
@@ -23,8 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.DialogFragment;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,15 +37,13 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import com.manager.ssb.adapter.FileAdapter;
 import com.manager.ssb.core.FileOpener;
-import com.manager.ssb.core.task.TaskListener;
 import com.manager.ssb.core.task.NotifyingExecutorService;
 import com.manager.ssb.core.task.TaskNotificationManager;
 import com.manager.ssb.core.task.TaskTypes;
-import com.manager.ssb.core.term.TerminalInstaller;
 import com.manager.ssb.core.config.Config;
-import com.manager.ssb.core.dialog.SettingsDialogFragment;
 import com.manager.ssb.databinding.ActivityMainBinding;
 import com.manager.ssb.model.FileItem;
+import com.manager.ssb.core.dialog.SettingsDialogFragment;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -60,13 +59,18 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    private File currentDirectory;
-    private final List<FileItem> fileList = new ArrayList<>();
-    private FileAdapter adapter;
+    private enum ActivePanel { LEFT, RIGHT }
+    private ActivePanel activePanel = ActivePanel.LEFT;
+    private File currentDirectoryLeft;
+    private File currentDirectoryRight;
+    private final List<FileItem> fileListLeft = new ArrayList<>();
+    private final List<FileItem> fileListRight = new ArrayList<>();
+    private FileAdapter adapterLeft;
+    private FileAdapter adapterRight;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private NotifyingExecutorService executorService; // 使用 NotifyingExecutorService
-    private boolean storageInfoLoaded = false; // 避免重复加载存储信息
-    private TaskNotificationManager notificationManager; // 新增通知管理器
+    private NotifyingExecutorService executorService;
+    private boolean storageInfoLoaded = false;
+    private TaskNotificationManager notificationManager;
 
     private static final int PERMISSION_REQUEST_CODE = 1001;
     private static final int MANAGE_EXTERNAL_STORAGE_REQUEST_CODE = 1002;
@@ -80,11 +84,11 @@ public class MainActivity extends AppCompatActivity {
         
         notificationManager = new TaskNotificationManager(this);
         executorService = new NotifyingExecutorService(
-            Executors.newFixedThreadPool(4), 
-            notificationManager, // 直接使用通知管理器作为监听器
+            Executors.newFixedThreadPool(4),
+            notificationManager,
             TaskTypes.MONITORED_TASKS
         );
-        
+
         if (checkPermissions()) {
             initApp();
         } else {
@@ -305,69 +309,163 @@ public class MainActivity extends AppCompatActivity {
 
     private void initApp() {
         Config.refresh();
-        showToast(Config.get("appName", "No Name"));
-        currentDirectory = Environment.getExternalStorageDirectory();
-        setupRecyclerView();
-        loadFiles(currentDirectory);
+        currentDirectoryLeft = Environment.getExternalStorageDirectory();
+        currentDirectoryRight = Environment.getExternalStorageDirectory();
+        
+        setupRecyclerViews();
+        loadBothPanels();
+        
         if (!storageInfoLoaded) {
             updateStorageInfo();
             storageInfoLoaded = true;
         }
     }
 
-    private void setupRecyclerView() {
-        adapter = new FileAdapter(fileList, item -> {
-            if (item.isDirectory()) {
-                currentDirectory = item.getFile();
-                loadFiles(currentDirectory);
-            } else {
-                //  使用新的文件打开方式
-                FileOpener.openFile(this, item.getPath(), item.getName());
-            }
-        }, executorService, mainHandler); // 传递线程池和 Handler
-        binding.rvFiles.setLayoutManager(new LinearLayoutManager(this));
-        binding.rvFiles.setAdapter(adapter);
+    private void setupRecyclerViews() {
+        // 左侧适配器
+        adapterLeft = new FileAdapter(fileListLeft, item -> handleItemClick(item, ActivePanel.LEFT),
+                executorService, mainHandler);
+        binding.rvFilesLeft.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvFilesLeft.setAdapter(adapterLeft);
+
+        // 右侧适配器
+        adapterRight = new FileAdapter(fileListRight, item -> handleItemClick(item, ActivePanel.RIGHT),
+                executorService, mainHandler);
+        binding.rvFilesRight.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvFilesRight.setAdapter(adapterRight);
+
+        // 面板点击监听
+        binding.rvFilesLeft.setOnTouchListener(createPanelTouchListener(ActivePanel.LEFT));
+        binding.rvFilesRight.setOnTouchListener(createPanelTouchListener(ActivePanel.RIGHT));
 
         binding.btnMenu.setOnClickListener(v -> showPopupMenu());
-
         binding.tvCurrentPath.setOnClickListener(v -> showDirectoryInputDialog());
         binding.tvStorage.setOnClickListener(v -> showStorageDetails());
     }
+    
+    private View.OnTouchListener createPanelTouchListener(ActivePanel panel) {
+        return (v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                setActivePanel(panel);
+            }
+            return false;
+        };
+    }
+    
+    private void setActivePanel(ActivePanel panel) {
+        activePanel = panel;
+        updatePathDisplay();
+        highlightActivePanel();
+    }
+    
+    private void updatePathDisplay() {
+        binding.tvCurrentPath.setText(getCurrentDirectory().getAbsolutePath());
+    }
 
-    private void loadFiles(File directory) {
-        showLoading(true);
+    private File getCurrentDirectory() {
+        return activePanel == ActivePanel.LEFT ? currentDirectoryLeft : currentDirectoryRight;
+    }
+
+    private void highlightActivePanel() {
+        int highlightColor = ContextCompat.getColor(this, R.color.panel_highlight);
+        int defaultColor = Color.TRANSPARENT;
+
+        binding.rvFilesLeft.setBackgroundColor(
+                activePanel == ActivePanel.LEFT ? highlightColor : defaultColor
+        );
+        binding.rvFilesRight.setBackgroundColor(
+                activePanel == ActivePanel.RIGHT ? highlightColor : defaultColor
+        );
+    }
+
+    private void loadBothPanels() {
+        loadDirectory(currentDirectoryLeft, ActivePanel.LEFT);
+        loadDirectory(currentDirectoryRight, ActivePanel.RIGHT);
+    }
+
+
+    private void loadDirectory(File directory, ActivePanel panel) {
+        showLoading(true, panel);
         executorService.submit(() -> {
             List<FileItem> newItems = new ArrayList<>();
 
-            // 添加父目录项
             if (!isRootDirectory(directory)) {
                 newItems.add(createParentDirectoryItem(directory));
             }
 
-            // 获取并处理文件列表
             File[] files = directory.listFiles();
             if (files != null) {
                 for (File file : files) {
-                    FileItem item = new FileItem(file);
-                    newItems.add(item);
+                    newItems.add(new FileItem(file));
                 }
             }
 
-            // 排序（目录优先）
             Collections.sort(newItems, (a, b) -> {
                 if (a.isDirectory() && !b.isDirectory()) return -1;
                 if (!a.isDirectory() && b.isDirectory()) return 1;
                 return a.getName().compareToIgnoreCase(b.getName());
             });
 
-            // 更新UI
             mainHandler.post(() -> {
-                showLoading(false);
-                updateFileList(newItems);
-                binding.tvCurrentPath.setText(directory.getAbsolutePath());
+                showLoading(false, panel);
+                updateFileList(newItems, panel);
+                updatePanelDirectory(directory, panel);
             });
         }, TaskTypes.LOAD_FILES);
     }
+
+    private void updatePanelDirectory(File directory, ActivePanel panel) {
+        switch (panel) {
+            case LEFT:
+                currentDirectoryLeft = directory;
+                break;
+            case RIGHT:
+                currentDirectoryRight = directory;
+                break;
+        }
+        if (panel == activePanel) updatePathDisplay();
+    }
+
+    private void updateFileList(List<FileItem> newItems, ActivePanel panel) {
+        switch (panel) {
+            case LEFT:
+                updateSingleList(fileListLeft, newItems, adapterLeft);
+                break;
+            case RIGHT:
+                updateSingleList(fileListRight, newItems, adapterRight);
+                break;
+        }
+    }
+    
+    private void updateSingleList(List<FileItem> targetList, List<FileItem> newItems, FileAdapter adapter) {
+        DiffUtil.DiffResult result = DiffUtil.calculateDiff(new FileDiffCallback(targetList, newItems));
+        targetList.clear();
+        targetList.addAll(newItems);
+        result.dispatchUpdatesTo(adapter);
+    }
+
+    private void showLoading(boolean show, ActivePanel panel) {
+        mainHandler.post(() -> {
+            switch (panel) {
+                case LEFT:
+                    binding.progressBarLeft.setVisibility(show ? View.VISIBLE : View.GONE);
+                    break;
+                case RIGHT:
+                    binding.progressBarRight.setVisibility(show ? View.VISIBLE : View.GONE);
+                    break;
+            }
+        });
+    }
+    
+    private void handleItemClick(FileItem item, ActivePanel panel) {
+        if (item.isDirectory()) {
+            File newDir = item.getFile();
+            loadDirectory(newDir, panel);
+        } else {
+            FileOpener.openFile(this, item.getPath(), item.getName());
+        }
+    }
+
 
     private FileItem createParentDirectoryItem(File currentDir) {
         return new FileItem(currentDir.getParentFile()) {
@@ -383,43 +481,30 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    private void updateFileList(List<FileItem> newItems) {
-        DiffUtil.DiffResult result = DiffUtil.calculateDiff(new FileDiffCallback(fileList, newItems));
-        fileList.clear();
-        fileList.addAll(newItems);
-        result.dispatchUpdatesTo(adapter);
-    }
-
-    private void showLoading(boolean show) {
-        binding.progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
-        binding.progressBar.setIndeterminate(show);
-    }
-
     // 兼容低版本的存储信息获取
     private void updateStorageInfo() {
         executorService.submit(() -> {
             try {
-                File path = Environment.getExternalStorageDirectory();
-                StatFs stat = new StatFs(path.getPath());
+                StatFs stat = new StatFs(Environment.getExternalStorageDirectory().getPath());
                 long total = stat.getTotalBytes();
                 long free = stat.getFreeBytes();
                 long used = total - free;
 
-                String info = String.format(getString(R.string.disk_info_used) + ": %s / " + getString(R.string.disk_info_all) + ": %s",
+                String info = String.format(getString(R.string.disk_info_used) + ": %s / " + 
+                        getString(R.string.disk_info_all) + ": %s",
                         FileAdapter.formatSize(this, used),
                         FileAdapter.formatSize(this, total));
 
                 mainHandler.post(() -> {
                     binding.tvStorage.setText(info);
-                    binding.progressBar.setMax((int) (total / 1024));
-                    binding.progressBar.setProgress((int) (used / 1024));
+                    binding.progressBarStorage.setMax((int) (total / 1024));
+                    binding.progressBarStorage.setProgress((int) (used / 1024));
                 });
-            } catch (IllegalArgumentException e) {
+            } catch (Exception e) {
                 mainHandler.post(() -> binding.tvStorage.setText(R.string.disk_info_unavailable));
             }
         }, TaskTypes.UP_STOR_INF);
     }
-
 
     private boolean isRootDirectory(File directory) {
         return directory.getParent() == null || directory.getPath().equals("/");
@@ -501,7 +586,7 @@ public class MainActivity extends AppCompatActivity {
     
     // 相关功能方法
     private void refreshCurrentDirectory() {
-        loadFiles(currentDirectory);
+        loadBothPanels();
         showToast(getString(R.string.refresh));
     }
 
@@ -510,7 +595,6 @@ public class MainActivity extends AppCompatActivity {
         settingsDialog.show(getSupportFragmentManager(), "SettingsDialog");
     }
 
-    // 修改启动代码为：
     private void startTerminal() {
         try {
             Intent intent = new Intent(MainActivity.this, Class.forName("com.termoneplus.TermActivity"));
@@ -535,7 +619,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String getStorageDetailsMessage() {
         try {
-            StatFs stat = new StatFs(currentDirectory.getPath());
+            StatFs stat = new StatFs(currentDirectoryLeft.getPath());
             long total = stat.getTotalBytes();
             long free = stat.getFreeBytes();
             long used = total - free;
@@ -555,63 +639,51 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showDirectoryInputDialog() {
-        // 使用 Material 设计的 TextInputLayout 包裹 TextInputEditText
         TextInputLayout textInputLayout = new TextInputLayout(this);
         TextInputEditText editText = new TextInputEditText(textInputLayout.getContext());
-
-        // 设置 MD3 样式属性
-        textInputLayout.setBoxBackgroundMode(TextInputLayout.BOX_BACKGROUND_OUTLINE); // 边框样式
-        textInputLayout.setHint(getString(R.string.input_directory_hint));            // 输入提示
-        textInputLayout.setPadding(
-                getResources().getDimensionPixelSize(R.dimen.dialog_padding),  // 左边距
-                0,  // 上边距
-                getResources().getDimensionPixelSize(R.dimen.dialog_padding),  // 右边距
-                0   // 下边距
-        );
-
-        // 设置输入框参数
-        editText.setSingleLine(true);
-        editText.setText(currentDirectory.getAbsolutePath());
-        editText.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS); // 关闭自动建议
-
-        // 将 EditText 添加到 TextInputLayout
+        textInputLayout.setBoxBackgroundMode(TextInputLayout.BOX_BACKGROUND_OUTLINE);
+        textInputLayout.setHint(getString(R.string.input_directory_hint));
         textInputLayout.addView(editText);
 
-        // 构建对话框
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this)
+        editText.setText(getCurrentDirectory().getAbsolutePath());
+        editText.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.jump_to_directory)
                 .setView(textInputLayout)
-                .setPositiveButton(R.string.confirm, null) // 先设置为空
-                .setNegativeButton(R.string.cancel, null); // 先设置为空
-
-        AlertDialog dialog = builder.create();
+                .setPositiveButton(R.string.confirm, null)
+                .setNegativeButton(R.string.cancel, null)
+                .create();
 
         dialog.setOnShowListener(dialogInterface -> {
             MaterialButton positiveButton = (MaterialButton) dialog.getButton(DialogInterface.BUTTON_POSITIVE);
             positiveButton.setOnClickListener(view -> {
                 String newPath = editText.getText().toString().trim();
-                executorService.execute(() -> { // 后台线程验证
+                executorService.execute(() -> {
                     File targetDir = new File(newPath);
-                    final boolean isValid = targetDir.isDirectory() && targetDir.canRead();
+                    boolean isValid = targetDir.isDirectory() && targetDir.canRead();
                     mainHandler.post(() -> {
                         if (isValid) {
-                            currentDirectory = targetDir;
-                            loadFiles(targetDir);
-                            dialog.dismiss(); // 验证通过后关闭对话框
+                            switch (activePanel) {
+                                case LEFT:
+                                    currentDirectoryLeft = targetDir;
+                                    loadDirectory(targetDir, ActivePanel.LEFT);
+                                    break;
+                                case RIGHT:
+                                    currentDirectoryRight = targetDir;
+                                    loadDirectory(targetDir, ActivePanel.RIGHT);
+                                    break;
+                            }
+                            dialog.dismiss();
                         } else {
                             showToast(getString(R.string.invalid_directory));
                         }
                     });
                 });
             });
-
-            MaterialButton negativeButton = (MaterialButton) dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-            negativeButton.setOnClickListener(v -> dialog.dismiss());
         });
-
         dialog.show();
     }
-    
     
     
     
