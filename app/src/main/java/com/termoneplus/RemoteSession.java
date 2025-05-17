@@ -24,6 +24,8 @@ import jackpal.androidterm.RemoteInterface;
 import jackpal.androidterm.TermService;
 import jackpal.androidterm.emulatorview.TermSession;
 
+import com.manager.ssb.Application;
+
 
 public class RemoteSession extends RemoteInterface {
     protected void processAction(@NonNull Intent intent, @NonNull String action) {

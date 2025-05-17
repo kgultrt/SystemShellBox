@@ -9,11 +9,25 @@
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_SUPERUSER" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
+    <permission
+        android:name="${applicationId}.permission.RUN_SCRIPT"
+        android:description="@string/permdesc_run_script"
+        android:label="@string/perm_run_script"
+        android:permissionGroup="${applicationId}.permission-group.TERMINAL"
+        android:protectionLevel="dangerous" />
+
+    <permission-group
+        android:name="${applicationId}.permission-group.TERMINAL"
+        android:description="@string/permdesc_grp_term"
+        android:label="@string/perm_grp_term" />
+
+
     <application
-        android:name="com.manager.ssb.App"
+        android:name="com.manager.ssb.Application"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
@@ -31,5 +45,170 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.termoneplus.TermActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|layoutDirection|navigation|uiMode|density"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateAlwaysVisible">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="jackpal.androidterm.RemoteInterface"
+            android:excludeFromRecents="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="${applicationId}.OPEN_NEW_WINDOW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity-alias
+            android:name="com.termoneplus.TermHere"
+            android:exported="true"
+            android:label="@string/activity_term_here_title"
+            android:targetActivity="jackpal.androidterm.RemoteInterface">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <data android:mimeType="*/*" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity
+            android:name="jackpal.androidterm.RunScript"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:permission="${applicationId}.permission.RUN_SCRIPT">
+            <intent-filter>
+                <action android:name="${applicationId}.RUN_SCRIPT" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="jackpal.androidterm.RunShortcut"
+            android:excludeFromRecents="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="${applicationId}.RUN_SHORTCUT" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.termoneplus.RemoteSession"
+            android:excludeFromRecents="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="${applicationId}.OPEN_NEW_WINDOW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name="jackpal.androidterm.TermService"
+            android:foregroundServiceType="dataSync"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="jackpal.androidterm.action.START_TERM.v1" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name="com.termoneplus.WindowListActivity"
+            android:label="@string/window_list"
+            android:parentActivityName="com.termoneplus.TermActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.termoneplus.TermActivity" />
+        </activity>
+        <activity
+            android:name="com.termoneplus.TermPreferencesActivity"
+            android:label="@string/preferences"
+            android:parentActivityName="com.termoneplus.TermActivity"
+            android:theme="@style/AppTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.termoneplus.TermActivity" />
+        </activity>
+        <activity
+            android:name="com.termoneplus.shortcuts.AddShortcut"
+            android:configChanges="orientation|keyboard|keyboardHidden"
+            android:exported="true"
+            android:label="@string/activity_shortcut_create"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.NoActionBar.Translucent">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.CREATE_SHORTCUT" />
+            </intent-filter>
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="text/*" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.termoneplus.shortcuts.FileSelection"
+            android:configChanges="orientation|keyboardHidden"
+            android:exported="true"
+            android:label="@string/fsnavigator_title"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.PICK" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <!--
+            Do not activate pick action with mime-type!
+            Left action only for applications that specify precise mime-type.
+            <intent-filter>
+                <action android:name="android.intent.action.PICK"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
+
+                <data android:mimeType="*/*"/>
+            </intent-filter>
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.GET_CONTENT" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.OPENABLE" />
+
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity>
     </application>
+
+    <!-- Android 11, API Level 30 -->
+    <queries>
+        <intent>
+            <!-- used to open URLs from terminal screen -->
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+        <intent>
+            <!-- used to open URLs from terminal screen or menus(to application site), etc -->
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <!-- used to send email to maintainer  -->
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="mailto" />
+        </intent>
+    </queries>
+
 </manifest>

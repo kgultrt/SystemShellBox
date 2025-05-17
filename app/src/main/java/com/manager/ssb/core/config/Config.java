@@ -7,7 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-import com.manager.ssb.App;
+import com.manager.ssb.Application;
 
 import java.io.*;
 import java.util.concurrent.CompletableFuture;
@@ -30,7 +30,7 @@ public class Config {
     }
 
     private static void initialize() {
-        Context context = App.getAppContext();
+        Context context = Application.getAppContext();
         File configDir = new File(context.getFilesDir(), "config");
         if (!configDir.exists()) {
             configDir.mkdirs();

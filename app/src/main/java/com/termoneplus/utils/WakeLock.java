@@ -25,7 +25,7 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.provider.Settings;
 
-import com.termoneplus.Application;
+import com.manager.ssb.Application;
 import com.termoneplus.R;
 
 import androidx.annotation.RequiresApi;

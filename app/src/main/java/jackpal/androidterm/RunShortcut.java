@@ -20,7 +20,7 @@ package jackpal.androidterm;
 import android.content.Intent;
 import android.util.Log;
 
-import com.termoneplus.Application;
+import com.manager.ssb.Application;
 
 import java.security.GeneralSecurityException;
 

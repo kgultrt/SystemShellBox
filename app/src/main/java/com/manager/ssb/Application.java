@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.termoneplus;
+package com.manager.ssb;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.text.TextUtils;
@@ -24,6 +25,9 @@ import androidx.preference.PreferenceManager;
 
 import com.google.android.material.color.DynamicColors;
 import com.termoneplus.utils.ThemeManager;
+import com.termoneplus.Settings;
+import com.termoneplus.Installer;
+import com.termoneplus.TypefaceSetting;
 
 import java.io.File;
 
@@ -36,7 +40,7 @@ public class Application extends android.app.Application {
      * from other messages in the log. Public because it's used by several
      * classes.
      */
-    public static final String APP_TAG = "TermOnePlus";
+    public static final String APP_TAG = "SSB";
 
     public static final String NOTIFICATION_CHANNEL_SESSIONS = BuildConfig.APPLICATION_ID + ".sessions";
 
@@ -51,6 +55,8 @@ public class Application extends android.app.Application {
     public static final String ARGUMENT_WINDOW_HANDLE = "com.termoneplus.WindowHandle";
 
     public static Settings settings;
+
+    private static Application instance;  // 新增单例实例
 
     private static File xbindir;
 
@@ -100,9 +106,15 @@ public class Application extends android.app.Application {
         return path;
     }
 
+    // 新增获取全局上下文方法
+    public static Context getAppContext() {
+        return instance;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;  // 初始化单例实例
 
         // enable Material3 dynamic colors
         DynamicColors.applyToActivitiesIfAvailable(this);

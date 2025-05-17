@@ -50,6 +50,7 @@ android {
         buildConfigField "String", "GIT_COMMIT_TIME", "\"${gitCommitTime}\""
         
         buildConfigField "String", "BUILD_TIME", "\"${System.currentTimeMillis()}\""
+        buildConfigField("String", "APPLICATION_ID_SUFFIX", "\"\"")
     }
 
     buildTypes {
@@ -130,12 +131,16 @@ android {
 dependencies {
     implementation 'androidx.activity:activity:1.6.1' // 或更高版本
     implementation 'androidx.appcompat:appcompat:1.6.1' //注意appcompat版本也要对应
+    implementation libs.preference
+    implementation libs.annotation
     
     implementation("com.google.android.material:material:1.9.0")
     implementation("com.google.code.gson:gson:2.8.8")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     
     implementation project(":termcore:term")
+    implementation project(':termcore:emulatorview')
+    implementation project(':termcore:libtermexec')
 }
 
 

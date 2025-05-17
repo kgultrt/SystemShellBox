@@ -55,7 +55,7 @@ import androidx.preference.PreferenceManager;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.termoneplus.AppCompatActivity;
-import com.termoneplus.Application;
+import com.manager.ssb.Application;
 import com.termoneplus.Permissions;
 import com.termoneplus.R;
 import com.termoneplus.Settings;

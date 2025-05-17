@@ -19,7 +19,7 @@ package com.termoneplus.services;
 import android.os.Process;
 import android.text.TextUtils;
 
-import com.termoneplus.BuildConfig;
+import com.manager.ssb.BuildConfig;
 import com.termoneplus.Installer;
 import com.termoneplus.remote.CommandCollector;
 

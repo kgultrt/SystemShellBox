@@ -23,7 +23,7 @@ import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import com.termoneplus.Application;
+import com.manager.ssb.Application;
 import com.termoneplus.Process;
 
 import java.io.File;

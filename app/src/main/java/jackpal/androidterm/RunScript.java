@@ -22,7 +22,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.termoneplus.Application;
+import com.manager.ssb.Application;
 
 import androidx.annotation.NonNull;
 

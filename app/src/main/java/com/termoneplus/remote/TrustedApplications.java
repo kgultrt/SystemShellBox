@@ -22,7 +22,8 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
-import com.termoneplus.BuildConfig;
+import com.manager.ssb.BuildConfig;
+import com.manager.ssb.Application;
 import com.termoneplus.v1.ICommand;
 
 import java.util.HashMap;

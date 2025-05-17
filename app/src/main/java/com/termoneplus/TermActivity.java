@@ -36,6 +36,8 @@ import com.termoneplus.widget.ScreenMessage;
 
 import jackpal.androidterm.emulatorview.TermSession;
 
+import com.manager.ssb.Application;
+
 
 public class TermActivity extends jackpal.androidterm.Term {
 

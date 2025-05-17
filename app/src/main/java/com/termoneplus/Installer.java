@@ -28,6 +28,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
+import com.manager.ssb.Application;
+
 
 public class Installer {
 

@@ -24,7 +24,7 @@ import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
 
-import com.termoneplus.Application;
+import com.manager.ssb.Application;
 import com.termoneplus.utils.Stream;
 import com.termoneplus.v1.ICommand;
 

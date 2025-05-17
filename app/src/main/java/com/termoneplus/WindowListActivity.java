@@ -32,6 +32,8 @@ import androidx.fragment.app.FragmentManager;
 import jackpal.androidterm.TermService;
 import jackpal.androidterm.util.SessionList;
 
+import com.manager.ssb.Application;
+
 
 public class WindowListActivity extends AppCompatActivity
         implements WindowListFragment.OnItemSelectedListener {

@@ -43,7 +43,7 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
-import com.termoneplus.Application;
+import com.manager.ssb.Application;
 import com.termoneplus.BuildConfig;
 import com.termoneplus.R;
 import com.termoneplus.RemoteSession;
@@ -278,8 +278,7 @@ public class TermService extends SessionsService {
             for (String packageName : pkgs) {
                 try {
                     final PackageInfo pkgInfo = PackageManagerCompat.getPackageInfo(pm, packageName);
-                    if (BuildConfig.APPLICATION_ID.equals(pkgInfo.packageName))
-                        continue;
+                    
 
                     final ApplicationInfo appInfo = pkgInfo.applicationInfo;
                     if (appInfo == null)

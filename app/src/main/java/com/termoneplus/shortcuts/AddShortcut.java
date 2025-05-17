@@ -30,7 +30,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.termoneplus.Application;
+import com.manager.ssb.Application;
 import com.termoneplus.R;
 import com.termoneplus.utils.TextIcon;
 import com.termoneplus.widget.ScreenMessage;

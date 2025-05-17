@@ -21,7 +21,7 @@ import android.net.LocalServerSocket;
 import android.net.LocalSocket;
 import android.net.LocalSocketAddress;
 
-import com.termoneplus.BuildConfig;
+import com.manager.ssb.BuildConfig;
 
 import java.io.IOException;
 import java.io.InputStream;

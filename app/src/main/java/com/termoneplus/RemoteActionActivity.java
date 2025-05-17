@@ -30,6 +30,7 @@ import com.termoneplus.services.ServiceManager;
 import com.termoneplus.utils.ThemeManager;
 
 import jackpal.androidterm.TermService;
+import com.manager.ssb.Application;
 
 
 public class RemoteActionActivity extends AppCompatActivity {

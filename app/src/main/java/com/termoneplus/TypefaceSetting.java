@@ -33,6 +33,8 @@ import java.io.InputStreamReader;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.PreferenceManager;
 
+import com.manager.ssb.Application;
+
 
 public class TypefaceSetting {
     private static Typeface typeface = Typeface.MONOSPACE;

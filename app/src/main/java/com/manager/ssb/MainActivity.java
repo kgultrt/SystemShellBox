@@ -512,8 +512,12 @@ public class MainActivity extends AppCompatActivity {
 
     // 修改启动代码为：
     private void startTerminal() {
-        // 启动终端逻辑
-        showToast(getString(R.string.wip));
+        try {
+            Intent intent = new Intent(MainActivity.this, Class.forName("com.termoneplus.TermActivity"));
+            startActivity(intent);
+        } catch (ClassNotFoundException e) {
+            showToast(getString(R.string.error));
+        }
     }
 
     private void showStorageDetails() {

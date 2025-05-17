@@ -23,7 +23,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import com.termoneplus.Application;
+import com.manager.ssb.Application;
 import com.termoneplus.RemoteActionActivity;
 import com.termoneplus.TermActivity;
 
