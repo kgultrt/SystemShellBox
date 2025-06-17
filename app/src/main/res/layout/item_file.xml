@@ -1,73 +1,51 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="56dp"
+    android:layout_height="48dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
     android:paddingStart="16dp"
-    android:paddingEnd="16dp">
+    android:paddingEnd="12dp"
+    android:paddingVertical="8dp"
+    android:background="?attr/selectableItemBackground">
 
-    <ImageView
+    <!-- 图标使用 Material 风格 -->
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/iv_icon"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="16dp" />
 
+    <!-- 主文本使用 MD3 文本样式 -->
     <TextView
         android:id="@+id/tv_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
+        style="@style/TextAppearance.Material3.BodyMedium"
         android:maxLines="1"
-        android:ellipsize="end"
-        app:layout_constraintStart_toEndOf="@id/iv_icon"
-        app:layout_constraintEnd_toStartOf="@id/tv_info"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/tv_details"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
+        android:ellipsize="end" />
 
-    <TextView
-        android:id="@+id/tv_details"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:ellipsize="end"
-        app:layout_constraintStart_toEndOf="@id/iv_icon"
-        app:layout_constraintEnd_toStartOf="@id/tv_info"
-        app:layout_constraintTop_toBottomOf="@id/tv_name"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"/>
-
-    <TextView
-        android:id="@+id/tv_info"
+    <!-- 辅助信息使用紧凑布局 -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"/>
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:spacing="8dp">
 
-    <!-- 添加 tv_size -->
-    <TextView
-        android:id="@+id/tv_size"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toEndOf="@id/tv_name"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        android:textSize="12sp"/>
+        <TextView
+            android:id="@+id/tv_size"
+            style="@style/TextAppearance.Material3.BodySmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurfaceVariant" />
 
-    <!-- 添加 tv_time -->
-    <TextView
-        android:id="@+id/tv_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toStartOf="@id/tv_info"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        android:textSize="12sp"/>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/tv_time"
+            style="@style/TextAppearance.Material3.BodySmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+</LinearLayout>

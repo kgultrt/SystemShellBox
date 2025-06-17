@@ -17,7 +17,7 @@ android {
     defaultConfig {
         applicationId "com.manager.ssb"
         minSdk 24
-        targetSdk 28
+        targetSdk 34
         versionCode 1
         versionName "1.0.0"
         
