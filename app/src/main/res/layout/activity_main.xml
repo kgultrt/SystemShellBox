@@ -72,7 +72,6 @@
         android:layout_weight="1"
         android:baselineAligned="false"
         android:orientation="horizontal"
-        android:divider="@drawable/divider_vertical"
         android:showDividers="middle">
 
         <!-- 左窗口 -->
@@ -94,14 +93,15 @@
             android:visibility="gone"
             android:progressTint="#4CAF50" />
 
-<androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_files_right"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:scrollbars="vertical"
-        android:paddingVertical="8dp"
-        android:requiresFadingEdge="vertical"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_files_right"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:scrollbars="vertical"
+            android:paddingVertical="8dp"
+            android:requiresFadingEdge="vertical" />
 
         <!-- 右窗口加载进度 -->
         <ProgressBar
@@ -111,12 +111,5 @@
             android:layout_height="4dp"
             android:visibility="gone"
             android:progressTint="#FF9800" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_files_right"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical"
-            android:paddingVertical="8dp" />
-    </androidx.recyclerview.widget.RecyclerView>
+    </LinearLayout>
 </LinearLayout>
