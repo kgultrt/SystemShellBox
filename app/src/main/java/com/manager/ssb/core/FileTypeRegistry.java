@@ -18,7 +18,22 @@ public class FileTypeRegistry {
 
         registerTextExtension(".txt");
         registerTextExtension(".java");
-        // ... 其他文本文件扩展名
+        registerTextExtension(".c");
+        registerTextExtension(".cpp");
+        registerTextExtension(".cs");
+        registerTextExtension(".py");
+        registerTextExtension(".cxx");
+        registerTextExtension(".js");
+        registerTextExtension(".css");
+        registerTextExtension(".md");
+        registerTextExtension(".go");
+        registerTextExtension(".log");
+        registerTextExtension(".sh");
+        registerTextExtension(".rs");
+        registerTextExtension(".bat");
+        registerTextExtension(".kt");
+        registerTextExtension(".h");
+        registerTextExtension(".lua");
     }
 
     public static void registerAudioExtension(String extension) {

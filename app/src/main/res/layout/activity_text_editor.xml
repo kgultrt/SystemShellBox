@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- 头部：文件名 + 菜单 -->
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tv_file_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="16sp"
+            android:maxLines="1"
+            android:ellipsize="start" />
+
+        <!-- 右侧保存按钮（也可以放菜单） -->
+        <ImageButton
+            android:id="@+id/btn_save"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_save"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/save"/>
+    </LinearLayout>
+
+    <!-- 正文：可滚动编辑区 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="12dp">
+
+        <EditText
+            android:id="@+id/editText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textColor="#222222"
+            android:textSize="14sp"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="4dp"
+            android:inputType="textMultiLine|textNoSuggestions"
+            android:gravity="top|start"
+            android:scrollHorizontally="true" />
+    </ScrollView>
+</LinearLayout>

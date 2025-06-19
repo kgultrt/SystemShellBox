@@ -55,6 +55,8 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -75,6 +77,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CODE = 1001;
     private static final int MANAGE_EXTERNAL_STORAGE_REQUEST_CODE = 1002;
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1003;
+    
+    // 声明菜单操作映射表
+    private final Map<Integer, Runnable> menuActionMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -319,6 +324,17 @@ public class MainActivity extends AppCompatActivity {
             updateStorageInfo();
             storageInfoLoaded = true;
         }
+        
+        initMenuActions();
+    }
+    
+    private void initMenuActions() {
+        menuActionMap.put(R.id.action_refresh, this::refreshCurrentDirectory);
+        menuActionMap.put(R.id.action_settings, this::openSettings);
+        menuActionMap.put(R.id.action_storage_info, this::showStorageDetails);
+        menuActionMap.put(R.id.action_about, this::showAboutDialog);
+        menuActionMap.put(R.id.action_terminal, this::startTerminal);
+        menuActionMap.put(R.id.action_exit, this::finish);
     }
 
     private void setupRecyclerViews() {
@@ -335,27 +351,34 @@ public class MainActivity extends AppCompatActivity {
         binding.rvFilesRight.setAdapter(adapterRight);
 
         // 面板点击监听
-        binding.rvFilesLeft.setOnTouchListener(createPanelTouchListener(ActivePanel.LEFT));
-        binding.rvFilesRight.setOnTouchListener(createPanelTouchListener(ActivePanel.RIGHT));
+        binding.rvFilesLeft.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
+            @Override
+            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                if (e.getAction() == MotionEvent.ACTION_DOWN) {
+                    setActivePanel(ActivePanel.LEFT);
+                }
+                return false; // 不拦截事件，事件继续往下传递
+            }
+        });
 
+        binding.rvFilesRight.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
+            @Override
+            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                if (e.getAction() == MotionEvent.ACTION_DOWN) {
+                    setActivePanel(ActivePanel.RIGHT);
+                }
+                return false; // 不拦截事件，事件继续往下传递
+            }
+        });
+        
         binding.btnMenu.setOnClickListener(v -> showPopupMenu());
         binding.tvCurrentPath.setOnClickListener(v -> showDirectoryInputDialog());
         binding.tvStorage.setOnClickListener(v -> showStorageDetails());
     }
     
-    private View.OnTouchListener createPanelTouchListener(ActivePanel panel) {
-        return (v, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                setActivePanel(panel);
-            }
-            return false;
-        };
-    }
-    
     private void setActivePanel(ActivePanel panel) {
         activePanel = panel;
         updatePathDisplay();
-        highlightActivePanel();
     }
     
     private void updatePathDisplay() {
@@ -364,18 +387,6 @@ public class MainActivity extends AppCompatActivity {
 
     private File getCurrentDirectory() {
         return activePanel == ActivePanel.LEFT ? currentDirectoryLeft : currentDirectoryRight;
-    }
-
-    private void highlightActivePanel() {
-        int highlightColor = ContextCompat.getColor(this, R.color.panel_highlight);
-        int defaultColor = Color.TRANSPARENT;
-
-        binding.rvFilesLeft.setBackgroundColor(
-                activePanel == ActivePanel.LEFT ? highlightColor : defaultColor
-        );
-        binding.rvFilesRight.setBackgroundColor(
-                activePanel == ActivePanel.RIGHT ? highlightColor : defaultColor
-        );
     }
 
     private void loadBothPanels() {
@@ -554,33 +565,15 @@ public class MainActivity extends AppCompatActivity {
         PopupMenu popupMenu = new PopupMenu(this, binding.btnMenu);
         popupMenu.inflate(R.menu.main_menu);
 
-        // 添加菜单项点击监听
         popupMenu.setOnMenuItemClickListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.action_refresh) {
-                refreshCurrentDirectory();
-                return true;
-            } else if (id == R.id.action_settings) {
-                openSettings();
-                return true;
-            } else if (id == R.id.action_storage_info) {
-                showStorageDetails();
-                return true;
-            } else if (id == R.id.action_about) {
-                showAboutDialog();
-                return true;
-            } else if (id == R.id.action_terminal) {
-                startTerminal();
-                return true;
-            } else if (id == R.id.action_exit) {
-                finish();
-                return true;
+            Runnable action = menuActionMap.get(item.getItemId());
+            if (action != null) {
+                action.run(); // 执行对应的操作
+                return true;  // 事件已处理
             }
-
-            return false;
+            return false; // 未处理的事件
         });
 
-        // 显示菜单
         popupMenu.show();
     }
     
@@ -596,12 +589,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startTerminal() {
-        try {
-            Intent intent = new Intent(MainActivity.this, Class.forName("com.termoneplus.TermActivity"));
-            startActivity(intent);
-        } catch (ClassNotFoundException e) {
-            showToast(getString(R.string.error));
-        }
+        showToast(getString(R.string.wip_back));
+        
+        // try {
+            // Intent intent = new Intent(MainActivity.this, Class.forName("com.termoneplus.TermActivity"));
+            // startActivity(intent);
+        // } catch (ClassNotFoundException e) {
+            // showToast(getString(R.string.error));
+        // }
     }
 
     private void showStorageDetails() {
@@ -688,93 +683,48 @@ public class MainActivity extends AppCompatActivity {
     
     
     private void showAboutDialog() {
-        String aboutMessage = String.format(
-                "System Shell Box (C) 2025 by kgultrt\n\n%s\n%s\n%s\n%s\n%s\n%s",
-                getAppVersion(),
-                getBuildTime(),
-                getBuildType(),
-                getGitCommitShortHash(),
-                getGitCommitAuthor(),
-                getGitBranchName()
-        );
-
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.about)
-                .setMessage(aboutMessage)
-                .setPositiveButton(android.R.string.ok, null)
-                .show();
-    }
-
-    private String getGitCommitShortHash() {
+        StringBuilder sb = new StringBuilder("System Shell Box (C) 2025 by kgultrt\n\n");
+    
+        // 应用信息
         try {
-            String commitHash = BuildConfig.GIT_COMMIT_SHORT_HASH;
-            String commitText = getString(R.string.git_commit_short_hash);
-            return commitText + ": " + commitHash;
-        } catch (Exception e) {
-            return "(Unknown Commit Hash)";
-        }
-    }
+            PackageInfo pkg = getPackageManager().getPackageInfo(getPackageName(), 0);
+            sb.append(getString(R.string.ver)).append(": ").append(pkg.versionName)
+            .append(" (").append(pkg.versionCode).append(")\n");
+        } catch (Exception e) { sb.append("(Unknown Version)\n"); }
 
-
-    private String getGitCommitAuthor() {
-        try {
-            String commitAuthor = BuildConfig.GIT_COMMIT_AUTHOR;
-            String authorText = getString(R.string.git_commit_author);
-            return authorText + ": " + commitAuthor;
-        } catch (Exception e) {
-            return "(Unknown Commit Author)";
-        }
-    }
-
-
-    private String getGitBranchName() {
-        try {
-            String branchName = BuildConfig.GIT_BRANCH_NAME;
-            String branchText = getString(R.string.git_branch_name);
-            return branchText + ": " + branchName;
-        } catch (Exception e) {
-            return "(Unknown Branch Name)";
-        }
-    }
-
-    private String getAppVersion() {
-        try {
-            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-            String versionText = getString(R.string.ver);
-            return versionText + ": " + pInfo.versionName + " (Version Code " + pInfo.versionCode + ")";
-        } catch (PackageManager.NameNotFoundException e) {
-            return "(Unknow Version)";
-        }
-    }
-
-    private String getBuildTime() {
+        // 构建信息
         try {
             long timestamp = Long.parseLong(BuildConfig.BUILD_TIME);
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-            sdf.setTimeZone(TimeZone.getDefault());
-            String timeText = getString(R.string.compilation_time);
-            return timeText + ": " + sdf.format(new Date(timestamp));
-        } catch (Exception e) {
-            return "(Unknow Time)";
-        }
-    }
+            sb.append(getString(R.string.compilation_time)).append(": ")
+            .append(sdf.format(new Date(timestamp))).append("\n");
+        } catch (Exception e) { sb.append("(Unknown Time)\n"); }
 
-    private String getBuildType() {
         try {
-            String typeText = getString(R.string.build_type); // 例如："构建类型"
             String buildType = BuildConfig.BUILD_TYPE.toLowerCase(Locale.US);
-            String type;
-            if (buildType.contains("debug")) {
-                type = getString(R.string.build_debug);
-            } else if (buildType.contains("release")) {
-                type = getString(R.string.build_release);
-            } else {
-                type = getString(R.string.build_unknown); // 其他类型
-            }
-            return typeText + ": " + type;
-        } catch (Exception e) {
-            return "(Unknow Build Type)";
-        }
+            String type = buildType.contains("debug") ? "Debug" : 
+                         buildType.contains("release") ? "Release" : "Unknown";
+            sb.append(getString(R.string.build_type)).append(": ").append(type).append("\n");
+        } catch (Exception e) { sb.append("(Unknown Build Type)\n"); }
+
+        // Git信息
+        try { sb.append(getString(R.string.git_commit_short_hash)).append(": ")
+                .append(BuildConfig.GIT_COMMIT_SHORT_HASH).append("\n"); } 
+        catch (Exception e) { /* 忽略 */ }
+    
+        try { sb.append(getString(R.string.git_commit_author)).append(": ")
+                .append(BuildConfig.GIT_COMMIT_AUTHOR).append("\n"); } 
+        catch (Exception e) { /* 忽略 */ }
+    
+        try { sb.append(getString(R.string.git_branch_name)).append(": ")
+                .append(BuildConfig.GIT_BRANCH_NAME); } 
+        catch (Exception e) { /* 忽略 */ }
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.about)
+                .setMessage(sb.toString())
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
     }
 
     @Override

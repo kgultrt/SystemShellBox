@@ -1,79 +1,102 @@
+Version History
 1.0:
-The Beginning of the Dream  
+* The place where the dream begins
 
 1.0.0-build1:
-1. Standardized version numbering  
+* Standardized version numbering
 
 1.0.0-build6:
-1. Optimized loading speed  
-2. Improved UI  
-3. Folders and files are now sorted  
+* Improved loading speed
+* UI optimizations
+* Folders and files are now sorted
 
 1.0.0-build19:
-1. UI improvements  
-2. Text optimizations  
+* UI improvements
+* Text optimizations
 
 1.0.0-build26:
-1. Audio player implementation  
+* Added audio player
 
 1.0.0-build45:
-1. Upgraded SDK to 24 (Android 7.0 Nougat) (Goodbye, Android 5)  
-2. Terminal implementation (thanks to ReTerm!!!)  
+* Upgraded SDK to 24 (Android 7.0 Nougat) — farewell Android 5!
+* Implemented terminal feature (Thanks to ReTerm!!!)
 
 1.0.0-build70:
-1. Busybox integration!!!  
+* BusyBox integration!!!
 
 1.0.0-build76:
-1. UI refinements  
+* UI optimizations
 
 1.0.0-build83:
-1. Synced with ReTerm 1.1.0; future syncs paused to focus on developing a custom environment  
-2. Removed Busybox  
+* Synced with ReTerm 1.1.0 version; will stop syncing afterward to focus on own environment
+* Removed BusyBox
 
 1.0.0-build94:
-1. Added top-right menu  
-2. Added menu functions: Refresh, Storage Info, Shell, Settings (placeholder), About, Exit  
+* Added top-right menu
+* Added menu functions: Refresh, Storage Info, Shell, Settings (entry only for now), About, Exit
 
 1.0.0-build100:
-1. Menu standardization, "About" section updates  
-2. Added debug/release flags in "About"  
-3. Configuration file testing  
-4. Moved App.kt to `com.manager.ssb` and added a static `Context`  
-5. A milestone update!  
-6. Project enters the "prototype" phase  
+* Menu refinement and About page improvements
+* Added debug/release flags in About
+* Configuration file testing
+* Moved App.kt to com.manager.ssb and added a static Context
+* Marked as a milestone update — project takes shape
 
 1.0.0-build103:
-1. Added path navigation functionality  
+* Added directory jump feature
 
 1.0.0-build120:
-1. Loading speed optimizations  
+* Loading speed improvements
 
 1.0.0-build134:
-1. Migrated project to Git  
-2. Added debounce mechanism to file listings  
-3. Added Git-related info to the "About" dialog  
 
-Short-Term Plans:
-Overhaul the file manager
-Environment installer
+* Started using Git for version control
+* Added debounce mechanism to file list
+* Added Git info to About dialog
 
-Next Steps:
-1. Text editor  
-2. Built-in terminal [✓]  
-3. Archive (zip/rar) support  
-4. Create folder/file functionality  
-5. Custom sorting  
-6. Search functionality  
-7. Implement MT-style dual-window mode  
-8. Draft End User License Agreement (EULA) [✓] (not yet enforced)  
-9. APK extraction  
-10. Project system  
-11. SU access for root (/)  
-12. File details viewer  
-13. Long-press file actions  
-14. Multi-language support [✓]  
-15. Audio player [✓]  
-16. Top-right menu [✓]  
+1.0.0-build136:
 
-Open-Source Release Target:
-1.0.0-build300 (when core features stabilize; highly tentative)
+* New task notifications
+* Permissions request improvements
+
+1.0.0-build152:
+
+* Switched terminal emulator to TermOnePlus; modified source code for compatibility (details unknown)
+* TermOnePlus: [https://gitlab.com/termapps/termoneplus](https://gitlab.com/termapps/termoneplus)
+
+1.0.0-build178:
+
+* Removed terminal emulator and redesigned it
+* Added text editor
+
+1.0.0-build186:
+
+* About dialog logic optimization
+* Locked screen rotation to avoid handling orientation changes (lazy approach)
+* Fixed setActivePanel listener for left/right panels
+* Optimized menu item logic
+* UI improvements
+
+Short-Term Plan
+Major file manager overhaul
+
+Next Steps
+1. Text editor [1% done]
+2. Built-in terminal [X, searching for new implementation...]
+3. Unzip/extract functionality
+4. Create folder/file functions
+5. Custom sorting
+6. Search
+7. Switch to MT-like dual-pane mode
+8. Draft end-user license agreement [√] (not enabled yet)
+9. APK extraction
+10. Project system
+11. Obtain root (su) for accessing /
+12. File details view
+13. Long press file options
+14. Multi-language support [√]
+15. Audio player [√]
+16. Top-right menu [√]
+
+Open Source Release
+Planned for version 1.0.0-build300 (when basically complete; might vary)

@@ -23,88 +23,12 @@ import android.text.TextUtils;
 
 import androidx.preference.PreferenceManager;
 
-import com.google.android.material.color.DynamicColors;
-import com.termoneplus.utils.ThemeManager;
-import com.termoneplus.Settings;
-import com.termoneplus.Installer;
-import com.termoneplus.TypefaceSetting;
-
 import java.io.File;
 
 
 public class Application extends android.app.Application {
-    public static final String ID = BuildConfig.APPLICATION_ID;
-
-    /**
-     * The tag we use when logging, so that our messages can be distinguished
-     * from other messages in the log. Public because it's used by several
-     * classes.
-     */
-    public static final String APP_TAG = "SSB";
-
-    public static final String NOTIFICATION_CHANNEL_SESSIONS = BuildConfig.APPLICATION_ID + ".sessions";
-
-    public static final String ACTION_OPEN_NEW_WINDOW = BuildConfig.APPLICATION_ID + ".OPEN_NEW_WINDOW";
-    public static final String ACTION_RUN_SHORTCUT = BuildConfig.APPLICATION_ID + ".RUN_SHORTCUT";
-    public static final String ACTION_RUN_SCRIPT = BuildConfig.APPLICATION_ID + ".RUN_SCRIPT";
-
-    public static final String ARGUMENT_TARGET_WINDOW = "target_window";
-    public static final String ARGUMENT_WINDOW_ID = "window_id";
-    /* arguments for use by external applications */
-    public static final String ARGUMENT_SHELL_COMMAND = "com.termoneplus.Command";
-    public static final String ARGUMENT_WINDOW_HANDLE = "com.termoneplus.WindowHandle";
-
-    public static Settings settings;
 
     private static Application instance;  // 新增单例实例
-
-    private static File xbindir;
-
-    private static File rootdir;
-    private static File etcdir;
-    private static File libdir;
-    private static File cachedir;
-
-
-    public static File getTmpDir() {
-        return cachedir;
-    }
-
-    public static String getTmpPath() {
-        return getTmpDir().getAbsolutePath();
-    }
-
-    public static File getScriptFile() {
-        return new File(etcdir, "mkshrc");
-    }
-
-    public static String getScriptFilePath() {
-        return getScriptFile().getPath();
-    }
-
-    public static String buildPATH() {
-        String s;
-        String path = Application.xbindir.getPath();
-
-        s = System.getenv("PATH");
-        if (!TextUtils.isEmpty(s))
-            path += File.pathSeparator + s;
-
-        return path;
-    }
-
-    public static String buildLoaderLibraryPath(String extra) {
-        String path = Application.libdir.getPath();
-
-        if (!TextUtils.isEmpty(extra))
-            path += File.pathSeparator + extra;
-
-        String orig = System.getenv("LD_LIBRARY_PATH");
-        if (!TextUtils.isEmpty(orig))
-            path += File.pathSeparator + orig;
-
-        return path;
-    }
 
     // 新增获取全局上下文方法
     public static Context getAppContext() {
@@ -115,91 +39,5 @@ public class Application extends android.app.Application {
     public void onCreate() {
         super.onCreate();
         instance = this;  // 初始化单例实例
-
-        // enable Material3 dynamic colors
-        // DynamicColors.applyToActivitiesIfAvailable(this);
-
-        rootdir = getFilesDir().getParentFile();
-        etcdir = new File(rootdir, "etc");
-        libdir = new File(getApplicationInfo().nativeLibraryDir);
-        xbindir = libdir;
-        cachedir = getCacheDir();
-
-        setupPreferences();
-        ThemeManager.migrateFileSelectionThemeMode(this);
-
-        TypefaceSetting.create(getAssets());
-
-        Installer.install_directory(etcdir, false);
-        install_skeleton();
-
-        // Note at this point xbindir == libdir
-        File exe = new File(xbindir, Installer.APPINFO_COMMAND);
-        if (!exe.canExecute()) {
-            // Old Android (API Level < 17) - libraries are without executable bit set
-            xbindir = new File(rootdir, ".x");
-            Installer.install_directory(xbindir, false);
-
-            Installer.copy_executable(exe, xbindir);
-        }
-
-        Installer.installAppScriptFile();
-    }
-
-    private void setupPreferences() {
-        boolean updated = false;
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        SharedPreferences.Editor editor = prefs.edit();
-
-        String pref_home_path = getString(R.string.key_home_path_preference);
-        if (!prefs.contains(pref_home_path)) {
-            String path = getDir("HOME", MODE_PRIVATE).getAbsolutePath();
-            editor.putString(pref_home_path, path);
-            updated = true;
-        }
-
-        // clean-up obsolete preferences:
-        // "allow_prepend_path" was removed in 3.1.0
-        if (prefs.contains("allow_prepend_path")) {
-            // Note depends from do_path_extensions
-            editor.remove("allow_prepend_path");
-            updated = true;
-        }
-        // "do_path_extensions" was removed in 3.1.0
-        if (prefs.contains("do_path_extensions")) {
-            editor.remove("do_path_extensions");
-            updated = true;
-        }
-
-        if (updated) editor.apply();
-
-        settings = new Settings(this, prefs);
-    }
-
-    private boolean install_skeleton() {
-        String asset_path = "skel";
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String homedir = prefs.getString(getString(R.string.key_home_path_preference), "");
-
-        AssetManager am = getAssets();
-        try {
-            String[] list = am.list(asset_path);
-            if (list == null) return true;
-            for (String item : list)
-                if (!install_skeleton(homedir, am, asset_path, item))
-                    return false;
-        } catch (Exception ignore) {
-        }
-        return true;
-    }
-
-    protected final boolean install_skeleton(String homedir, AssetManager am, String asset_path, String item) {
-        File target = new File(homedir, "." + item);
-
-        if (target.exists()) return true;
-
-        return Installer.install_asset(am, asset_path + "/" + item, target);
     }
 }

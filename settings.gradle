@@ -44,7 +44,3 @@ dependencyResolutionManagement {
 rootProject.name = "System Shell Forge"
 
 include ":app"
-
-include ":termcore:term" 
-include ":termcore:libtermexec"
-include ":termcore:emulatorview"

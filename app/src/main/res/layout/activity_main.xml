@@ -1,115 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <!-- 统一头部区域 -->
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="8dp">
-
+        android:padding="8.0dip"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <!-- 动态路径显示 -->
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
             <TextView
-                android:id="@+id/tv_current_path"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="16sp"
-                android:maxLines="1"
+                android:textSize="16.0sp"
                 android:ellipsize="start"
-                android:paddingVertical="2dp" />
-
-            <!-- 统一菜单按钮 -->
+                android:id="@+id/tv_current_path"
+                android:paddingTop="2.0dip"
+                android:paddingBottom="2.0dip"
+                android:layout_width="0.0dip"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:layout_weight="1.0"
+                android:paddingVertical="2.0dip" />
             <ImageButton
                 android:id="@+id/btn_menu"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:contentDescription="@string/menu"
-                android:padding="6dp"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_menu" />
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:padding="6.0dip"
+                android:layout_width="36.0dip"
+                android:layout_height="36.0dip"
+                android:src="@drawable/ic_menu"
+                android:contentDescription="@string/menu" />
         </LinearLayout>
-
-        <!-- 统一存储信息 -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginTop="2dp">
-
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2.0dip">
             <TextView
+                android:textSize="10.0sp"
                 android:id="@+id/tv_storage"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="10sp" />
-
-            <!-- 全局存储进度条 -->
+                android:layout_height="wrap_content" />
             <ProgressBar
                 android:id="@+id/progressBar_storage"
-                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                android:layout_width="0dp"
-                android:layout_height="2dp"
-                android:layout_weight="1"
-                android:progressTint="#2196F3"
-                android:progressBackgroundTint="#D3D3D3" />
+                android:layout_width="0.0dip"
+                android:layout_height="2.0dip"
+                android:layout_weight="1.0"
+                android:progressTint="#ff2196f3"
+                android:progressBackgroundTint="#ffd3d3d3"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal" />
         </LinearLayout>
     </LinearLayout>
-
-    <!-- 双窗口主体 -->
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:baselineAligned="false"
         android:orientation="horizontal"
-        android:showDividers="middle">
-
-        <!-- 左窗口 -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_files_left"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:scrollbars="vertical"
-            android:paddingVertical="8dp"
-            android:requiresFadingEdge="vertical" />
-
-        <!-- 左窗口加载进度 -->
-        <ProgressBar
-            android:id="@+id/progressBar_left"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:visibility="gone"
-            android:progressTint="#4CAF50" />
-
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_files_right"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:scrollbars="vertical"
-            android:paddingVertical="8dp"
-            android:requiresFadingEdge="vertical" />
-
-        <!-- 右窗口加载进度 -->
-        <ProgressBar
-            android:id="@+id/progressBar_right"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:visibility="gone"
-            android:progressTint="#FF9800" />
+        android:layout_width="fill_parent"
+        android:layout_height="0.0dip"
+        android:baselineAligned="false"
+        android:layout_weight="1.0">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0.0dip"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0">
+            <ProgressBar
+                android:id="@+id/progressBar_left"
+                android:visibility="gone"
+                android:layout_width="fill_parent"
+                android:layout_height="4.0dip"
+                android:progressTint="#ff4caf50"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_files_left"
+                android:paddingTop="8.0dip"
+                android:paddingBottom="8.0dip"
+                android:scrollbars="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:paddingVertical="8.0dip" />
+        </LinearLayout>
+        <View
+            android:background="#ffe0e0e0"
+            android:layout_width="1.0dip"
+            android:layout_height="fill_parent" />
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0.0dip"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0">
+            <ProgressBar
+                android:id="@+id/progressBar_right"
+                android:visibility="gone"
+                android:layout_width="fill_parent"
+                android:layout_height="4.0dip"
+                android:progressTint="#ffff9800"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_files_right"
+                android:paddingTop="8.0dip"
+                android:paddingBottom="8.0dip"
+                android:scrollbars="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:paddingVertical="8.0dip" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>
