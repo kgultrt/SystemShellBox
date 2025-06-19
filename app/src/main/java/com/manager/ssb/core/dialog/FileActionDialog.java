@@ -44,9 +44,12 @@ public class FileActionDialog {
     public void show() {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context)
                 .setTitle(fileItem.getName())
-                .setItems(new String[]{context.getString(R.string.rename)}, (dialog, which) -> {
+                .setItems(new String[]{context.getString(R.string.rename), context.getString(R.string.file_properties)}, (dialog, which) -> {
                     if (which == 0) {
                         showRenameDialog();
+                    }
+                    if (which == 1) {
+                        FilePropertiesDialog.show(context, fileItem);
                     }
                 });
 

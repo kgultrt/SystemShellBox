@@ -110,6 +110,8 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         
         // 监听器
         holder.itemView.setOnLongClickListener(v -> {
+            if ("..".equals(item.getName())) return false; // 屏蔽返回项
+            
             if (longClickListener != null) {
                 longClickListener.onItemLongClick(item, v);
             }

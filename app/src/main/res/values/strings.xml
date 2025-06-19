@@ -13,7 +13,7 @@
     <string name="git_commit_short_hash">Git Commit Short Hash</string>
     <string name="git_commit_author">Git Commit Author</string>
     <string name="git_branch_name">Git Branch Name</string>
-    
+
     <string name="wip">Coming Soon...</string>
     <string name="wip_back">In the process of remaking...</string>
 
@@ -35,6 +35,15 @@
 
     <string name="notification_channel_name">Background task</string>
     <string name="notification_channel_description">Display background task execution status</string>
+    <string name="notification_channel_start">Task start execution</string>
+    <string name="notification_channel_comp">Task Completed</string>
+    <string name="notification_channel_fail">Task failed: </string>
+    <string name="notification_channel_nuke">Unknown error</string>
+    <string name="notification_channel_canc">Task Cancelled</string>
+    <string name="notification_channel_unkn">Task status unknown</string>
+    <string name="notification_channel_proc">Task in progress</string>
+    <string name="notification_channel_now">Current Progress: </string>
+    <string name="notification_channel_title">Background task notification</string>
 
     <string name="refresh">Refresh</string>
     <string name="settings">Settings</string>
@@ -56,25 +65,42 @@
 
     <string name="dialog_play">Play</string>
     <string name="dialog_pause">Pause</string>
-    
+
     <string name="cannot_open">Unable to open file</string>
     <string name="cannot_reading">Reading failed: </string>
     <string name="save">Save</string>
     <string name="save_success">Saved</string>
     <string name="save_failed">Save Failed</string>
-    
+
     <string name="rename">Rename</string>
     <string name="rename_hint">New File Name</string>
     <string name="rename_success">Rename Success</string>
     <string name="rename_failed">Rename Failed</string>
     <string name="file_name_exists">Name Exists</string>
     <string name="invalid_name">Please enter a valid name</string>
-    
+
+    <string name="file_properties">Properties</string>
+    <string name="file_properties_name">Name: </string>
+    <string name="file_properties_path">Path: </string>
+    <string name="file_properties_size">Size: </string>
+    <string name="file_properties_mod_time">Modified on: </string>
+    <string name="file_properties_is_dir">Directory: </string>
+    <string name="file_properties_yes">Yes</string>
+    <string name="file_properties_no">No</string>
+    <string name="file_properties_read">Readable: </string>
+    <string name="file_properties_write">Writable: </string>
+    <string name="file_properties_panel">Current panel: </string>
+    <string name="file_properties_panel_left">Left panel</string>
+    <string name="file_properties_panel_right">Right panel</string>
+    <string name="file_properties_panel_another">Alternate Panel Path: </string>
+    <string name="file_properties_title">File Properties</string>
+
+
     <string-array name="size_units">
         <item>B</item>
         <item>KB</item>
         <item>MB</item>
         <item>GB</item>
     </string-array>
-    
+
 </resources>

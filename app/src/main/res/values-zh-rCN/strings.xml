@@ -37,6 +37,15 @@
 
     <string name="notification_channel_name">后台任务</string>
     <string name="notification_channel_description">显示后台任务执行状态</string>
+    <string name="notification_channel_start">任务开始执行</string>
+    <string name="notification_channel_comp">任务已完成</string>
+    <string name="notification_channel_fail">任务失败: </string>
+    <string name="notification_channel_nuke">未知错误</string>
+    <string name="notification_channel_canc">任务已取消</string>
+    <string name="notification_channel_unkn">任务状态未知</string>
+    <string name="notification_channel_proc">任务进行中</string>
+    <string name="notification_channel_now">当前进度: </string>
+    <string name="notification_channel_title">后台任务通知</string>
 
     <string name="refresh">刷新</string>
     <string name="settings">设置</string>
@@ -69,5 +78,20 @@
     <string name="file_name_exists">该名称已存在</string>
     <string name="invalid_name">请输入有效的名称</string>
 
+    <string name="file_properties">属性</string>
+    <string name="file_properties_name">名称: </string>
+    <string name="file_properties_path">路径: </string>
+    <string name="file_properties_size">大小: </string>
+    <string name="file_properties_mod_time">修改时间: </string>
+    <string name="file_properties_is_dir">是否目录: </string>
+    <string name="file_properties_yes">是</string>
+    <string name="file_properties_no">否</string>
+    <string name="file_properties_read">可读: </string>
+    <string name="file_properties_write">可写: </string>
+    <string name="file_properties_panel">当前面板: </string>
+    <string name="file_properties_panel_left">左面板</string>
+    <string name="file_properties_panel_right">右面板</string>
+    <string name="file_properties_panel_another">另一面板路径: </string>
+    <string name="file_properties_title">文件属性</string>
 
 </resources>

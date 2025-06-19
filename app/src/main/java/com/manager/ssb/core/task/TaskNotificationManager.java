@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.manager.ssb.R;
 import com.manager.ssb.MainActivity;
+import com.manager.ssb.Application;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,10 +36,10 @@ public class TaskNotificationManager implements TaskListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
-                "后台任务通知",
+                Application.getAppContext().getString(R.string.notification_channel_title),
                 NotificationManager.IMPORTANCE_LOW
             );
-            channel.setDescription("显示后台任务执行状态");
+            channel.setDescription(Application.getAppContext().getString(R.string.notification_channel_description));
             notificationManager.createNotificationChannel(channel);
         }
     }
@@ -48,7 +49,7 @@ public class TaskNotificationManager implements TaskListener {
         int notificationId = notificationCounter.incrementAndGet();
         taskNotificationIds.put(taskId, notificationId);
 
-        Notification notification = buildProgressNotification(taskName, "任务开始执行", 0)
+        Notification notification = buildProgressNotification(taskName, Application.getAppContext().getString(R.string.notification_channel_start), 0)
             .setOngoing(true)
             .build();
 
@@ -103,13 +104,13 @@ public class TaskNotificationManager implements TaskListener {
     private String getStatusText(TaskStatus status, Throwable exception) {
         switch (status) {
             case COMPLETED:
-                return "任务已完成";
+                return Application.getAppContext().getString(R.string.notification_channel_comp);
             case FAILED:
-                return "任务失败: " + (exception != null ? exception.getMessage() : "未知错误");
+                return Application.getAppContext().getString(R.string.notification_channel_fail) + (exception != null ? exception.getMessage() : Application.getAppContext().getString(R.string.notification_channel_nuke));
             case CANCELLED:
-                return "任务已取消";
+                return Application.getAppContext().getString(R.string.notification_channel_canc);
             default:
-                return "任务状态未知";
+                return Application.getAppContext().getString(R.string.notification_channel_unkn);
         }
     }
 
@@ -129,8 +130,8 @@ public class TaskNotificationManager implements TaskListener {
         Integer notificationId = taskNotificationIds.get(taskId);
         if (notificationId != null) {
             Notification notification = buildProgressNotification(
-                "任务进行中", 
-                "当前进度: " + progress + "%",
+                Application.getAppContext().getString(R.string.notification_channel_proc), 
+                Application.getAppContext().getString(R.string.notification_channel_now) + progress + "%",
                 progress
             ).build();
             

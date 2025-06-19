@@ -339,6 +339,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerViews() {
+        
         FileLongClickHandler longClickHandler = new FileLongClickHandler(this, executorService);
 
         // 左侧适配器
@@ -597,10 +598,6 @@ public class MainActivity extends AppCompatActivity {
         showToast(getString(R.string.refresh));
     }
     
-    public void refreshAllPanels() {
-        loadBothPanels();
-    }
-
     private void openSettings() {
         SettingsDialogFragment settingsDialog = new SettingsDialogFragment();
         settingsDialog.show(getSupportFragmentManager(), "SettingsDialog");
@@ -743,6 +740,35 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage(sb.toString())
                 .setPositiveButton(android.R.string.ok, null)
                 .show();
+    }
+    
+    // 一些公共方法
+    public void refreshAllPanels() {
+        loadBothPanels();
+    }
+
+    public boolean getActivePanel() {
+        if (activePanel == ActivePanel.LEFT) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public File getLeftDir() {
+        return currentDirectoryLeft;
+    }
+    
+    public File getRightDir() {
+        return currentDirectoryRight;
+    }
+    
+    public File getCurrentDir() {
+        if (activePanel == ActivePanel.LEFT) {
+            return currentDirectoryLeft;
+        } else {
+            return currentDirectoryRight;
+        }
     }
 
     @Override
