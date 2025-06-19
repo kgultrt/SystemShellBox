@@ -13,7 +13,7 @@
     <string name="git_commit_short_hash">Git提交短哈希</string>
     <string name="git_commit_author">Git提交作者</string>
     <string name="git_branch_name">Git分支名称</string>
-    
+
     <string name="wip">即将推出...</string>
     <string name="wip_back">回炉重造中...</string>
 
@@ -33,6 +33,7 @@
     <string name="go_to_settings">前往设置</string>
     <string name="permission_required">必要权限要求</string>
     <string name="cancel">取消</string>
+    <string name="processing">正在处理中...</string>
 
     <string name="notification_channel_name">后台任务</string>
     <string name="notification_channel_description">显示后台任务执行状态</string>
@@ -54,11 +55,19 @@
 
     <string name="dialog_play">播放</string>
     <string name="dialog_pause">暂停</string>
-    
+
     <string name="cannot_open">无法打开文件</string>
     <string name="cannot_reading">读取失败：</string>
     <string name="save">保存</string>
     <string name="save_success">保存成功</string>
     <string name="save_failed">保存失败</string>
+
+    <string name="rename">重命名</string>
+    <string name="rename_hint">新文件名</string>
+    <string name="rename_success">重命名成功</string>
+    <string name="rename_failed">重命名失败</string>
+    <string name="file_name_exists">该名称已存在</string>
+    <string name="invalid_name">请输入有效的名称</string>
+
 
 </resources>

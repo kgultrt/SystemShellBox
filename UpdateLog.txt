@@ -75,6 +75,12 @@ TermOnePlus: https://gitlab.com/termapps/termoneplus
 4.优化菜单项逻辑
 5.优化ui
 
+1.0.0-build193:
+1.修改每个文件项目布局
+2.添加长按功能
+3.添加长按功能中的“重命名”
+4.添加一个进度条对话框基类
+
 短期计划:
 大改文件管理器
 

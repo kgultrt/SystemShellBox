@@ -25,6 +25,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
     private final List<FileItem> fileList;
     private final OnItemClickListener listener;
+    private final OnItemLongClickListener longClickListener;
     private final ExecutorService executorService;
     private final Handler mainHandler;
     private static final ThreadLocal<SimpleDateFormat> dateFormat =
@@ -37,11 +38,21 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     public interface OnItemClickListener {
         void onItemClick(FileItem item);
     }
+    
+    // 长按功能
+    public interface OnItemLongClickListener {
+        void onItemLongClick(FileItem item, View view);
+    }
 
-    public FileAdapter(List<FileItem> fileList, OnItemClickListener listener, 
-                      ExecutorService executorService, Handler mainHandler) {
+
+    public FileAdapter(List<FileItem> fileList, 
+                       OnItemClickListener listener,
+                       OnItemLongClickListener longClickListener,
+                       ExecutorService executorService, 
+                       Handler mainHandler) {
         this.fileList = fileList;
         this.listener = listener;
+        this.longClickListener = longClickListener;
         this.executorService = executorService;
         this.mainHandler = mainHandler;
     }
@@ -95,6 +106,14 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             if (listener != null) {
                 listener.onItemClick(item);
             }
+        });
+        
+        // 监听器
+        holder.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) {
+                longClickListener.onItemLongClick(item, v);
+            }
+            return true;
         });
     }
 

@@ -8,12 +8,14 @@ public final class TaskTypes {
     public static final String LOAD_FILES = "task_LoadFiles";
     public static final String UP_STOR_INF = "task_UpdateStorageInfo";
     public static final String STOR_DIALOG = "task_ShowStorageDetails";
+    public static final String RENAME_FILE = "task_RenameFile";
 
     // 监控任务白名单
     public static final Set<String> MONITORED_TASKS = Set.of(
         LOAD_FILES,
         UP_STOR_INF,
-        STOR_DIALOG
+        STOR_DIALOG,
+        RENAME_FILE
     );
 
     private TaskTypes() {

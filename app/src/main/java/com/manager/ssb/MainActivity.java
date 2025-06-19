@@ -41,6 +41,7 @@ import com.manager.ssb.core.task.NotifyingExecutorService;
 import com.manager.ssb.core.task.TaskNotificationManager;
 import com.manager.ssb.core.task.TaskTypes;
 import com.manager.ssb.core.config.Config;
+import com.manager.ssb.core.function.FileLongClickHandler;
 import com.manager.ssb.databinding.ActivityMainBinding;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.dialog.SettingsDialogFragment;
@@ -338,15 +339,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerViews() {
+        FileLongClickHandler longClickHandler = new FileLongClickHandler(this, executorService);
+
         // 左侧适配器
-        adapterLeft = new FileAdapter(fileListLeft, item -> handleItemClick(item, ActivePanel.LEFT),
-                executorService, mainHandler);
+        adapterLeft = new FileAdapter(
+            fileListLeft,
+            item -> handleItemClick(item, ActivePanel.LEFT),
+            (item, view) -> longClickHandler.handle(item, view),
+            executorService,
+            mainHandler
+        );
+
         binding.rvFilesLeft.setLayoutManager(new LinearLayoutManager(this));
         binding.rvFilesLeft.setAdapter(adapterLeft);
 
         // 右侧适配器
-        adapterRight = new FileAdapter(fileListRight, item -> handleItemClick(item, ActivePanel.RIGHT),
-                executorService, mainHandler);
+        adapterRight = new FileAdapter(
+            fileListRight,
+            item -> handleItemClick(item, ActivePanel.RIGHT),
+            (item, view) -> longClickHandler.handle(item, view),
+            executorService,
+            mainHandler
+        );
         binding.rvFilesRight.setLayoutManager(new LinearLayoutManager(this));
         binding.rvFilesRight.setAdapter(adapterRight);
 
@@ -581,6 +595,10 @@ public class MainActivity extends AppCompatActivity {
     private void refreshCurrentDirectory() {
         loadBothPanels();
         showToast(getString(R.string.refresh));
+    }
+    
+    public void refreshAllPanels() {
+        loadBothPanels();
     }
 
     private void openSettings() {
