@@ -38,9 +38,26 @@
 ☕ Buy me a coffee: Not required, but greatly appreciated if you'd like to support the project. (Donation methods not yet available)
 
 ## License
-This project is licensed under the **[MIT License](LICENSE.txt)**. You are free to use, modify, and distribute the code.
 
-The `terminal-view` and `terminal-emulator` components are sourced from [Termux](https://github.com/termux/termux-app) and are distributed under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0), which is compatible with MIT.
+This project is licensed under the [GNU General Public License v3.0](LICENSE.txt) (GPLv3).
+
+You are free to use, modify, and distribute this software, provided that:
+- You must make the source code of any distributed version (original or modified) available under the same GPLv3 license;
+- You must retain proper attribution to the original author;
+- You may not impose additional restrictions, nor use the code in any proprietary or closed-source form;
+- Any derivative work must also be licensed under GPLv3.
+
+Important context:  
+This project was originally developed under the MIT License during its private development stage, but it was never publicly released under that license. As the project has not been previously published, the current and all future public releases are fully licensed under GPLv3. All previous commits are retroactively re-licensed under GPLv3.
+
+I take this licensing choice seriously to protect the project’s integrity and to prevent abuse through repackaging, commercialization, or the addition of advertisements behind paywalls.
+
+Please respect this license when using or distributing this project. Forks, modified versions, or redistributed binaries must also comply with GPLv3 and be released with full source code.
+
+Note on third-party code:  
+This project includes components such as `terminal-view` and `terminal-emulator`, derived from the [Termux project](https://github.com/termux/termux-app), which are distributed under the Apache License 2.0. This license is GPLv3-compatible, and their inclusion complies with the terms of both licenses.
+
+I appreciate contributions from the open-source community and welcome any questions or discussions regarding licensing via GitHub Issues.
 
 ## Used Projects
 [ReTerminal by RohitKushvaha01 - MIT License](https://github.com/RohitKushvaha01/ReTerminal)

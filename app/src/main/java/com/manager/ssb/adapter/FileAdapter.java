@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.manager.ssb.R;
 import com.manager.ssb.model.FileItem;
+import com.manager.ssb.MainActivity;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -26,6 +27,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     private final List<FileItem> fileList;
     private final OnItemClickListener listener;
     private final OnItemLongClickListener longClickListener;
+    private final String panel;
     private final ExecutorService executorService;
     private final Handler mainHandler;
     private static final ThreadLocal<SimpleDateFormat> dateFormat =
@@ -48,11 +50,13 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     public FileAdapter(List<FileItem> fileList, 
                        OnItemClickListener listener,
                        OnItemLongClickListener longClickListener,
+                       String panel,
                        ExecutorService executorService, 
                        Handler mainHandler) {
         this.fileList = fileList;
         this.listener = listener;
         this.longClickListener = longClickListener;
+        this.panel = panel;
         this.executorService = executorService;
         this.mainHandler = mainHandler;
     }

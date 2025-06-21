@@ -36,6 +36,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import com.manager.ssb.adapter.FileAdapter;
+import com.manager.ssb.enums.ActivePanel;
 import com.manager.ssb.core.FileOpener;
 import com.manager.ssb.core.task.NotifyingExecutorService;
 import com.manager.ssb.core.task.TaskNotificationManager;
@@ -62,7 +63,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    private enum ActivePanel { LEFT, RIGHT }
+    //private ActivePanel panelLockedForAction = null; // null 表示无锁
     private ActivePanel activePanel = ActivePanel.LEFT;
     private File currentDirectoryLeft;
     private File currentDirectoryRight;
@@ -347,6 +348,7 @@ public class MainActivity extends AppCompatActivity {
             fileListLeft,
             item -> handleItemClick(item, ActivePanel.LEFT),
             (item, view) -> longClickHandler.handle(item, view),
+            "left",
             executorService,
             mainHandler
         );
@@ -359,6 +361,7 @@ public class MainActivity extends AppCompatActivity {
             fileListRight,
             item -> handleItemClick(item, ActivePanel.RIGHT),
             (item, view) -> longClickHandler.handle(item, view),
+            "right",
             executorService,
             mainHandler
         );
@@ -604,14 +607,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startTerminal() {
-        showToast(getString(R.string.wip_back));
-        
-        // try {
-            // Intent intent = new Intent(MainActivity.this, Class.forName("com.termoneplus.TermActivity"));
-            // startActivity(intent);
-        // } catch (ClassNotFoundException e) {
-            // showToast(getString(R.string.error));
-        // }
+        try {
+            Intent intent = new Intent(MainActivity.this, Class.forName("com.manager.ssb.core.term.TermActivity"));
+            startActivity(intent);
+        } catch (ClassNotFoundException e) {
+            showToast(getString(R.string.error));
+        }
     }
 
     private void showStorageDetails() {
@@ -698,7 +699,8 @@ public class MainActivity extends AppCompatActivity {
     
     
     private void showAboutDialog() {
-        StringBuilder sb = new StringBuilder("System Shell Box (C) 2025 by kgultrt\n\n");
+        StringBuilder sb = new StringBuilder("System Shell Box (C) 2025 by kgultrt\n");
+        sb.append("-- Ten times better than the MT manager!!!\n\n");
     
         // 应用信息
         try {

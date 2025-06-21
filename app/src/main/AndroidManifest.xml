@@ -37,6 +37,11 @@
             android:name="com.manager.ssb.core.editor.TextEditorActivity"
             android:exported="false"
             android:screenOrientation="locked" />
+        
+        <activity
+            android:name="com.manager.ssb.core.term.TermActivity"
+            android:exported="true"
+            android:screenOrientation="locked" />
 
     </application>
 
