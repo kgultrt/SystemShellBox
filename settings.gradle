@@ -44,3 +44,5 @@ dependencyResolutionManagement {
 rootProject.name = "System Shell Forge"
 
 include ":app"
+include ":terminal-emulator"
+include ":terminal-view"

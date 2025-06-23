@@ -8,21 +8,46 @@ import com.manager.ssb.MainActivity;
 import com.manager.ssb.dialog.FileActionDialog;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.task.NotifyingExecutorService;
+import com.manager.ssb.enums.ActivePanel;
 
 public class FileLongClickHandler {
     private final Context context;
     private final NotifyingExecutorService executorService;
+    private final ActivePanel activePanel;
 
-    public FileLongClickHandler(Context context, NotifyingExecutorService executorService) {
+    public FileLongClickHandler(Context context, NotifyingExecutorService executorService, ActivePanel activePanel) {
         this.context = context;
         this.executorService = executorService;
+        this.activePanel = activePanel;
     }
 
-    public void handle(FileItem item, View view) {
-        new FileActionDialog(context, item, executorService, newFile -> {
+    public void handle(FileItem item, View view, ActivePanel activePanel) {
+        if (!(context instanceof MainActivity)) return;
+        
+        MainActivity activity = (MainActivity) context;
+        
+        // 禁用切换
+        activity.canSwichActivePanel = false;
+        
+        // 禁用非活动面板
+        if (activePanel == ActivePanel.LEFT) {
+            activity.adapterRight.setClickEnabled(false);
+            activity.adapterRight.setLongClickEnabled(false);
+        } else {
+            activity.adapterLeft.setClickEnabled(false);
+            activity.adapterLeft.setLongClickEnabled(false);
+        }
+        
+        // 取消之前的恢复任务
+        activity.disableHandler.removeCallbacks(((MainActivity) context).enableClicksRunnable);
+        // 800ms后恢复所有面板
+        activity.disableHandler.postDelayed(((MainActivity) context).enableClicksRunnable, 800);
+        
+        
+        new FileActionDialog(context, item, executorService, activePanel, callBack -> {
             // 通知MainActivity刷新
             if (context instanceof MainActivity) {
-                ((MainActivity) context).refreshAllPanels();
+                activity.refreshAllPanels();
             }
         }).show();
     }

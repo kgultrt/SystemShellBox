@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.manager.ssb.R;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.MainActivity;
+import com.manager.ssb.enums.ActivePanel;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -35,8 +36,18 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     
     // 新增防抖控制
     private long lastClickTime = 0;
-    private static final long CLICK_DEBOUNCE_INTERVAL = 600; // 600毫秒防抖间隔
+    private static final long CLICK_DEBOUNCE_INTERVAL = 800; // 800毫秒防抖间隔
 
+    private boolean clickEnabled = true;
+    private boolean longClickEnabled = true;
+
+    public void setClickEnabled(boolean enabled) {
+        this.clickEnabled = enabled;
+    }
+
+    public void setLongClickEnabled(boolean enabled) {
+        this.longClickEnabled = enabled;
+    }
     public interface OnItemClickListener {
         void onItemClick(FileItem item);
     }
@@ -100,9 +111,15 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
         // 修改后的点击监听器
         holder.itemView.setOnClickListener(v -> {
+            // 禁用切换
+            ((MainActivity) context).canSwichActivePanel = false;
+            
+            if (!clickEnabled) return;
+            
             // 防抖检查
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastClickTime < CLICK_DEBOUNCE_INTERVAL) {
+                ((MainActivity) context).canSwichActivePanel = false;
                 return;
             }
             lastClickTime = currentTime;
@@ -110,10 +127,15 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             if (listener != null) {
                 listener.onItemClick(item);
             }
+            
+            // 启用切换
+            ((MainActivity) context).canSwichActivePanel = true;
         });
         
         // 监听器
         holder.itemView.setOnLongClickListener(v -> {
+            if (!longClickEnabled) return false;
+            
             if ("..".equals(item.getName())) return false; // 屏蔽返回项
             
             if (longClickListener != null) {

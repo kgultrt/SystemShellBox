@@ -80,20 +80,26 @@
     <string name="invalid_name">Please enter a valid name</string>
 
     <string name="file_properties">Properties</string>
-    <string name="file_properties_name">Name: </string>
-    <string name="file_properties_path">Path: </string>
-    <string name="file_properties_size">Size: </string>
-    <string name="file_properties_mod_time">Modified on: </string>
-    <string name="file_properties_is_dir">Directory: </string>
+    <string name="file_properties_name">Name: %s</string>
+    <string name="file_properties_path">Path: %s</string>
+    <string name="file_properties_size">Size: %s</string>
+    <string name="file_properties_mod_time">Modified on: %s</string>
+    <string name="file_properties_is_dir">Directory: %s</string>
     <string name="file_properties_yes">Yes</string>
     <string name="file_properties_no">No</string>
-    <string name="file_properties_read">Readable: </string>
-    <string name="file_properties_write">Writable: </string>
-    <string name="file_properties_panel">Current panel: </string>
+    <string name="file_properties_read">Readable: %s</string>
+    <string name="file_properties_write">Writable: %s</string>
+    <string name="file_properties_panel">Current panel: %s</string>
     <string name="file_properties_panel_left">Left panel</string>
     <string name="file_properties_panel_right">Right panel</string>
-    <string name="file_properties_panel_another">Alternate Panel Path: </string>
+    <string name="file_properties_panel_another">Alternate Panel Path: %s</string>
     <string name="file_properties_title">File Properties</string>
+
+    <string name="confirm_delete">Confirm Deletion</string>
+    <string name="delete_confirmation">Are you sure you want to permanently delete \'%s\' ?</string>
+    <string name="delete">delete</string>
+    <string name="delete_success">Deleted successfully</string>
+    <string name="delete_failed">Delete failed</string>
 
 
     <string-array name="size_units">

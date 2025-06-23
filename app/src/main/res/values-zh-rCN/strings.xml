@@ -79,19 +79,26 @@
     <string name="invalid_name">请输入有效的名称</string>
 
     <string name="file_properties">属性</string>
-    <string name="file_properties_name">名称: </string>
-    <string name="file_properties_path">路径: </string>
-    <string name="file_properties_size">大小: </string>
-    <string name="file_properties_mod_time">修改时间: </string>
-    <string name="file_properties_is_dir">是否目录: </string>
+    <!-- 修改后的字符串资源 -->
+    <string name="file_properties_name">名称: %s</string>
+    <string name="file_properties_path">路径: %s</string>
+    <string name="file_properties_size">大小: %s</string>
+    <string name="file_properties_mod_time">修改时间: %s</string>
+    <string name="file_properties_is_dir">是目录: %s</string>
+    <string name="file_properties_read">可读: %s</string>
+    <string name="file_properties_write">可写: %s</string>
+    <string name="file_properties_panel">当前面板: %s</string>
+    <string name="file_properties_panel_another">另一面板路径: %s</string>
     <string name="file_properties_yes">是</string>
     <string name="file_properties_no">否</string>
-    <string name="file_properties_read">可读: </string>
-    <string name="file_properties_write">可写: </string>
-    <string name="file_properties_panel">当前面板: </string>
     <string name="file_properties_panel_left">左面板</string>
     <string name="file_properties_panel_right">右面板</string>
-    <string name="file_properties_panel_another">另一面板路径: </string>
     <string name="file_properties_title">文件属性</string>
+
+    <string name="confirm_delete">确认删除</string>
+    <string name="delete_confirmation">确定要永久删除 \'%s\' 吗？</string>
+    <string name="delete">删除</string>
+    <string name="delete_success">删除成功</string>
+    <string name="delete_failed">删除失败</string>
 
 </resources>

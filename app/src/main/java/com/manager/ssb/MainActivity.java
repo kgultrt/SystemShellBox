@@ -35,6 +35,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import com.manager.ssb.Application;
 import com.manager.ssb.adapter.FileAdapter;
 import com.manager.ssb.enums.ActivePanel;
 import com.manager.ssb.core.FileOpener;
@@ -69,12 +70,23 @@ public class MainActivity extends AppCompatActivity {
     private File currentDirectoryRight;
     private final List<FileItem> fileListLeft = new ArrayList<>();
     private final List<FileItem> fileListRight = new ArrayList<>();
-    private FileAdapter adapterLeft;
-    private FileAdapter adapterRight;
+    public FileAdapter adapterLeft;
+    public FileAdapter adapterRight;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private NotifyingExecutorService executorService;
     private boolean storageInfoLoaded = false;
+    public boolean canSwichActivePanel = true;
     private TaskNotificationManager notificationManager;
+    
+    public final Handler disableHandler = new Handler();
+    public final Runnable enableClicksRunnable = () -> {
+        adapterLeft.setClickEnabled(true);
+        adapterLeft.setLongClickEnabled(true);
+        adapterRight.setClickEnabled(true);
+        adapterRight.setLongClickEnabled(true);
+        
+        canSwichActivePanel = true;
+    };
 
     private static final int PERMISSION_REQUEST_CODE = 1001;
     private static final int MANAGE_EXTERNAL_STORAGE_REQUEST_CODE = 1002;
@@ -85,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        
+        Config.refresh();
+        
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -315,7 +330,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initApp() {
-        Config.refresh();
         currentDirectoryLeft = Environment.getExternalStorageDirectory();
         currentDirectoryRight = Environment.getExternalStorageDirectory();
         
@@ -341,13 +355,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupRecyclerViews() {
         
-        FileLongClickHandler longClickHandler = new FileLongClickHandler(this, executorService);
+        FileLongClickHandler longClickHandler = new FileLongClickHandler(this, executorService, activePanel);
 
         // 左侧适配器
         adapterLeft = new FileAdapter(
             fileListLeft,
             item -> handleItemClick(item, ActivePanel.LEFT),
-            (item, view) -> longClickHandler.handle(item, view),
+            (item, view) -> longClickHandler.handle(item, view, ActivePanel.LEFT),
             "left",
             executorService,
             mainHandler
@@ -360,7 +374,7 @@ public class MainActivity extends AppCompatActivity {
         adapterRight = new FileAdapter(
             fileListRight,
             item -> handleItemClick(item, ActivePanel.RIGHT),
-            (item, view) -> longClickHandler.handle(item, view),
+            (item, view) -> longClickHandler.handle(item, view, ActivePanel.RIGHT),
             "right",
             executorService,
             mainHandler
@@ -395,8 +409,10 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void setActivePanel(ActivePanel panel) {
-        activePanel = panel;
-        updatePathDisplay();
+        if (canSwichActivePanel) {
+            activePanel = panel;
+            updatePathDisplay();
+        }
     }
     
     private void updatePathDisplay() {
@@ -700,7 +716,7 @@ public class MainActivity extends AppCompatActivity {
     
     private void showAboutDialog() {
         StringBuilder sb = new StringBuilder("System Shell Box (C) 2025 by kgultrt\n");
-        sb.append("-- Ten times better than the MT manager!!!\n\n");
+        sb.append("Handle all documents.\n\n");
     
         // 应用信息
         try {

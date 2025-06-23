@@ -1,9 +1,7 @@
 
 plugins {
     id 'com.android.application'
-    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
-    
 }
 
 android {
@@ -16,8 +14,8 @@ android {
     
     defaultConfig {
         applicationId "com.manager.ssb"
-        minSdk 24
-        targetSdk 34
+        minSdk 21
+        targetSdk 30
         versionCode 1
         versionName "1.0.0"
         
@@ -113,17 +111,9 @@ android {
         compose true
     }
     
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
-
     packagingOptions {
         jniLibs {
-            useLegacyPackaging true
+            useLegacyPackaging false
         }
     }
 }
@@ -137,6 +127,8 @@ dependencies {
     implementation("com.google.android.material:material:1.9.0")
     implementation("com.google.code.gson:gson:2.8.8")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    
+    api project(":terminal-view")
 }
 
 
