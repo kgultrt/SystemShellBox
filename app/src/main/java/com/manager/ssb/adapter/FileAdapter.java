@@ -1,3 +1,21 @@
+/*
+ * System Shell Box
+ * Copyright (C) 2025 kgultrt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 package com.manager.ssb.adapter;
 
 import android.content.Context;
@@ -98,7 +116,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
                 iconResId = item.isDirectory() ? R.drawable.ic_folder : R.drawable.ic_file;
             }
 
-            final String sizeText = formatSize(context, item.getSize());
+            final String sizeText = item.isDirectory() ? "" : formatSize(context, item.getSize());
             final String timeText = formatDate(item.getLastModified());
 
             mainHandler.post(() -> {

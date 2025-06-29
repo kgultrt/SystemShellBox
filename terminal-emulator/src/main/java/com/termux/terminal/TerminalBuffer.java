@@ -45,19 +45,11 @@ public final class TerminalBuffer {
         return getSelectedText(0, -getActiveTranscriptRows(), mColumns, mScreenRows, false).trim();
     }
 
-    public String getTranscriptTextWithFullLinesJoined() {
-        return getSelectedText(0, -getActiveTranscriptRows(), mColumns, mScreenRows, true, true).trim();
-    }
-
     public String getSelectedText(int selX1, int selY1, int selX2, int selY2) {
         return getSelectedText(selX1, selY1, selX2, selY2, true);
     }
 
     public String getSelectedText(int selX1, int selY1, int selX2, int selY2, boolean joinBackLines) {
-        return getSelectedText(selX1, selY1, selX2, selY2, joinBackLines, false);
-    }
-
-    public String getSelectedText(int selX1, int selY1, int selX2, int selY2, boolean joinBackLines, boolean joinFullLines) {
         final StringBuilder builder = new StringBuilder();
         final int columns = mColumns;
 
@@ -93,55 +85,12 @@ public final class TerminalBuffer {
                     if (c != ' ') lastPrintingCharIndex = i;
                 }
             }
-
-            int len = lastPrintingCharIndex - x1Index + 1;
-            if (lastPrintingCharIndex != -1 && len > 0)
-                builder.append(line, x1Index, len);
-
-            boolean lineFillsWidth = lastPrintingCharIndex == x2Index - 1;
-            if ((!joinBackLines || !rowLineWrap) && (!joinFullLines || !lineFillsWidth)
+            if (lastPrintingCharIndex != -1)
+                builder.append(line, x1Index, lastPrintingCharIndex - x1Index + 1);
+            if ((!joinBackLines || !rowLineWrap)
                 && row < selY2 && row < mScreenRows - 1) builder.append('\n');
         }
         return builder.toString();
-    }
-
-    public String getWordAtLocation(int x, int y) {
-        // Set y1 and y2 to the lines where the wrapped line starts and ends.
-        // I.e. if a line that is wrapped to 3 lines starts at line 4, and this
-        // is called with y=5, then y1 would be set to 4 and y2 would be set to 6.
-        int y1 = y;
-        int y2 = y;
-        while (y1 > 0 && !getSelectedText(0, y1 - 1, mColumns, y, true, true).contains("\n")) {
-            y1--;
-        }
-        while (y2 < mScreenRows && !getSelectedText(0, y, mColumns, y2 + 1, true, true).contains("\n")) {
-            y2++;
-        }
-
-        // Get the text for the whole wrapped line
-        String text = getSelectedText(0, y1, mColumns, y2, true, true);
-        // The index of x in text
-        int textOffset = (y - y1) * mColumns + x;
-
-        if (textOffset >= text.length()) {
-          // The click was to the right of the last word on the line, so
-          // there's no word to return
-          return "";
-        }
-
-        // Set x1 and x2 to the indices of the last space before x and the
-        // first space after x in text respectively
-        int x1 = text.lastIndexOf(' ', textOffset);
-        int x2 = text.indexOf(' ', textOffset);
-        if (x2 == -1) {
-            x2 = text.length();
-        }
-
-        if (x1 == x2) {
-          // The click was on a space, so there's no word to return
-          return "";
-        }
-        return text.substring(x1 + 1, x2);
     }
 
     public int getActiveTranscriptRows() {
@@ -449,8 +398,8 @@ public final class TerminalBuffer {
     }
 
     public void setChar(int column, int row, int codePoint, long style) {
-        if (row  < 0 || row >= mScreenRows || column < 0 || column >= mColumns)
-            throw new IllegalArgumentException("TerminalBuffer.setChar(): row=" + row + ", column=" + column + ", mScreenRows=" + mScreenRows + ", mColumns=" + mColumns);
+        if (row >= mScreenRows || column >= mColumns)
+            throw new IllegalArgumentException("row=" + row + ", column=" + column + ", mScreenRows=" + mScreenRows + ", mColumns=" + mColumns);
         row = externalToInternalRow(row);
         allocateFullLineIfNecessary(row).setChar(column, codePoint, style);
     }

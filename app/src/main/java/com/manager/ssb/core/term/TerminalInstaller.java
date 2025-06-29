@@ -1,3 +1,21 @@
+/*
+ * System Shell Box
+ * Copyright (C) 2025 kgultrt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 package com.manager.ssb.core.term;
 
 import android.Manifest;
@@ -35,7 +53,7 @@ import java.util.zip.ZipInputStream;
 
 public class TerminalInstaller {
     private static final String TAG = "TerminalInstaller";
-    private static final String POSIX_FILES_DIR = "POSIXFiles";
+    private static final String POSIX_FILES_DIR = "Env";
     private static ProgressDialog progressDialog;
     private static InstallCallback currentInstallCallback;
 
@@ -179,7 +197,7 @@ public class TerminalInstaller {
 
         private String getZipFileName() {
             String arch = System.getProperty("os.arch");
-            return arch.contains("aarch64") ? "env_aarch64.zip" : "env_arm.zip";
+            return arch.contains("arm") ? "env_arm.zip" : "env_aarch64.zip";
         }
 
         @Override

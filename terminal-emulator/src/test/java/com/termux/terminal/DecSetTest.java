@@ -16,23 +16,23 @@ package com.termux.terminal;
 public class DecSetTest extends TerminalTestCase {
 
 	/** DECSET 25, DECTCEM, controls visibility of the cursor. */
-	public void testEnableDisableCursor() {
+	public void testShowHideCursor() {
 		withTerminalSized(3, 3);
-		assertTrue("Initially the cursor should be enabled", mTerminal.isCursorEnabled());
-		enterString("\033[?25l"); // Disable Cursor (DECTCEM).
-		assertFalse(mTerminal.isCursorEnabled());
-		enterString("\033[?25h"); // Enable Cursor (DECTCEM).
-		assertTrue(mTerminal.isCursorEnabled());
+		assertTrue("Initially the cursor should be visible", mTerminal.isShowingCursor());
+		enterString("\033[?25l"); // Hide Cursor (DECTCEM).
+		assertFalse(mTerminal.isShowingCursor());
+		enterString("\033[?25h"); // Show Cursor (DECTCEM).
+		assertTrue(mTerminal.isShowingCursor());
 
-		enterString("\033[?25l"); // Disable Cursor (DECTCEM), again.
-		assertFalse(mTerminal.isCursorEnabled());
+		enterString("\033[?25l"); // Hide Cursor (DECTCEM), again.
+		assertFalse(mTerminal.isShowingCursor());
 		mTerminal.reset();
-		assertTrue("Resetting the terminal should enable the cursor", mTerminal.isCursorEnabled());
+		assertTrue("Resetting the terminal should show the cursor", mTerminal.isShowingCursor());
 
 		enterString("\033[?25l");
-		assertFalse(mTerminal.isCursorEnabled());
-		enterString("\033c"); // RIS resetting should enabled cursor.
-		assertTrue(mTerminal.isCursorEnabled());
+		assertFalse(mTerminal.isShowingCursor());
+		enterString("\033c"); // RIS resetting should reveal cursor.
+		assertTrue(mTerminal.isShowingCursor());
 	}
 
 	/** DECSET 2004, controls bracketed paste mode. */

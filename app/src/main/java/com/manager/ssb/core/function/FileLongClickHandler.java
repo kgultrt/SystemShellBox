@@ -1,3 +1,21 @@
+/*
+ * System Shell Box
+ * Copyright (C) 2025 kgultrt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 // FileLongClickHandler.java
 package com.manager.ssb.core.function;
 
@@ -9,6 +27,8 @@ import com.manager.ssb.dialog.FileActionDialog;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.task.NotifyingExecutorService;
 import com.manager.ssb.enums.ActivePanel;
+
+import java.io.File;
 
 public class FileLongClickHandler {
     private final Context context;
@@ -39,16 +59,23 @@ public class FileLongClickHandler {
         }
         
         // 取消之前的恢复任务
-        activity.disableHandler.removeCallbacks(((MainActivity) context).enableClicksRunnable);
+        activity.disableHandler.removeCallbacks(activity.enableClicksRunnable);
         // 800ms后恢复所有面板
-        activity.disableHandler.postDelayed(((MainActivity) context).enableClicksRunnable, 800);
+        activity.disableHandler.postDelayed(activity.enableClicksRunnable, 800);
         
-        
-        new FileActionDialog(context, item, executorService, activePanel, callBack -> {
-            // 通知MainActivity刷新
-            if (context instanceof MainActivity) {
+        // 创建回调处理
+        FileActionDialog.OnActionCallback callback = new FileActionDialog.OnActionCallback() {
+            @Override
+            public void onRenameSuccess(File newFile) {
                 activity.refreshAllPanels();
             }
-        }).show();
+
+            @Override
+            public void onDeleteSuccess(File deletedFile) {
+                activity.refreshAllPanels();
+            }
+        };
+        
+        new FileActionDialog(context, item, executorService, activePanel, callback).show();
     }
 }

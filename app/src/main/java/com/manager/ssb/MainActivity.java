@@ -1,3 +1,21 @@
+/*
+ * System Shell Box
+ * Copyright (C) 2025 kgultrt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 // MainActivity.java
 package com.manager.ssb;
 
@@ -47,6 +65,7 @@ import com.manager.ssb.core.function.FileLongClickHandler;
 import com.manager.ssb.databinding.ActivityMainBinding;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.dialog.SettingsDialogFragment;
+import com.manager.ssb.core.term.TerminalInstaller;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -60,11 +79,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    //private ActivePanel panelLockedForAction = null; // null 表示无锁
     private ActivePanel activePanel = ActivePanel.LEFT;
     private File currentDirectoryLeft;
     private File currentDirectoryRight;
@@ -98,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         
-        Config.refresh();
+        Config.initialize();
         
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -330,6 +350,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initApp() {
+        Config.initialize();
+        
         currentDirectoryLeft = Environment.getExternalStorageDirectory();
         currentDirectoryRight = Environment.getExternalStorageDirectory();
         
@@ -342,6 +364,62 @@ public class MainActivity extends AppCompatActivity {
         }
         
         initMenuActions();
+        
+        boolean isFirst = Config.get("isFirst", true);
+        int lastBuildNumber = Config.get("lastBuildNumber", 0);
+        int currentBuildNumber = extractBuildNumber(getCurrentVersion());
+
+        if (isFirst) {
+            // 首次启动显示欢迎对话框
+            showWelcomeDialog();
+            Config.set("isFirst", false);
+            Config.set("lastBuildNumber", currentBuildNumber);
+        } else if (currentBuildNumber > lastBuildNumber) {
+            // 检测到新版本显示更新日志
+            showUpdateDialog(currentBuildNumber);
+            Config.set("lastBuildNumber", currentBuildNumber);
+        }
+    }
+    
+    // 提取构建号的核心方法
+    private int extractBuildNumber(String version) {
+        // 使用正则提取末尾的数字
+        Pattern pattern = Pattern.compile("(\\d+)$");
+        Matcher matcher = pattern.matcher(version);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        return 0; // 默认值
+    }
+
+    // 获取当前版本号
+    private String getCurrentVersion() {
+        try {
+            return getPackageManager()
+                    .getPackageInfo(getPackageName(), 0)
+                    .versionName;
+        } catch (Exception e) {
+            return "0.0.0-build0";
+        }
+    }
+
+    // 显示欢迎对话框
+    private void showWelcomeDialog() {
+        new MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.welcome_title)
+            .setMessage(R.string.welcome_content)
+            .setPositiveButton(android.R.string.ok, null)
+            .setCancelable(false)
+            .show();
+    }
+    
+    // 显示更新日志对话框
+    private void showUpdateDialog(int buildNumber) {
+        new MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.update_title, buildNumber))
+            .setMessage(R.string.update_log_content) // 使用单一更新日志资源
+            .setPositiveButton(android.R.string.ok, null)
+            .show();
     }
     
     private void initMenuActions() {
@@ -623,12 +701,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startTerminal() {
-        try {
-            Intent intent = new Intent(MainActivity.this, Class.forName("com.manager.ssb.core.term.TermActivity"));
-            startActivity(intent);
-        } catch (ClassNotFoundException e) {
-            showToast(getString(R.string.error));
-        }
+        TerminalInstaller.installCheck(MainActivity.this, new TerminalInstaller.InstallCallback() {
+            @Override
+            public void onInstallFinished() {
+                // 启动终端逻辑
+                try {
+                    Intent intent = new Intent(MainActivity.this, Class.forName("com.termux.app.TermuxActivity"));
+                    startActivity(intent);
+                } catch (ClassNotFoundException e) {
+                    showToast(getString(R.string.error));
+                }
+            }
+
+            @Override
+            public void onInstallFailed(String reason) {
+                runOnUiThread(() -> 
+                    Toast.makeText(MainActivity.this, "安装失败: " + reason, Toast.LENGTH_LONG).show()
+                );
+            }
+        });
     }
 
     private void showStorageDetails() {
@@ -716,7 +807,7 @@ public class MainActivity extends AppCompatActivity {
     
     private void showAboutDialog() {
         StringBuilder sb = new StringBuilder("System Shell Box (C) 2025 by kgultrt\n");
-        sb.append("Handle all documents.\n\n");
+        sb.append("Handle all documents.\nDevelop on MT manager Text Editor and Termux.\nmade by android\n\n");
     
         // 应用信息
         try {

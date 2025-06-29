@@ -23,10 +23,10 @@ final class JNI {
      * @return the file descriptor resulting from opening /dev/ptmx master device. The sub process will have opened the
      * slave device counterpart (/dev/pts/$N) and have it as stdint, stdout and stderr.
      */
-    public static native int createSubprocess(String cmd, String cwd, String[] args, String[] envVars, int[] processId, int rows, int columns, int cellWidth, int cellHeight);
+    public static native int createSubprocess(String cmd, String cwd, String[] args, String[] envVars, int[] processId, int rows, int columns);
 
     /** Set the window size for a given pty, which allows connected programs to learn how large their screen is. */
-    public static native void setPtyWindowSize(int fd, int rows, int cols, int cellWidth, int cellHeight);
+    public static native void setPtyWindowSize(int fd, int rows, int cols);
 
     /**
      * Causes the calling thread to wait for the process associated with the receiver to finish executing.

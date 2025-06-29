@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="welcome_title">欢迎使用System Shell Box！</string>
+    <string name="welcome_content">感谢您安装本应用！</string>
+    <string name="update_title">已更新到 Build %d！</string>
+    <string name="update_log_content">本次更新内容：\n1.新增这个对话框和欢迎对话框！\n2.优化文本编辑器！\n\n有关详细更改，请参阅更新日志</string>
+
     <string name="app_name">系统终端盒</string>
     <string name="term_name">Shell</string>
     <string name="menu">菜单</string>
@@ -100,5 +105,108 @@
     <string name="delete">删除</string>
     <string name="delete_success">删除成功</string>
     <string name="delete_failed">删除失败</string>
+
+    <string name="open_with_title">选择打开 %s 的方式</string>
+    <string name="option_text_editor">文本编辑器</string>
+    <string name="option_audio_player">音频播放器</string>
+    <string name="option_system_default">系统默认</string>
+    <string name="no_app_found">未找到打开此文件的应用</string>
+
+    <string name="file_too_large">文件过大，无法打开</string>
+    <string name="load_success">文件加载成功</string>
+    <string name="load_error">加载内容时出错</string>
+    <string name="partial_load">已加载部分内容，滚动可加载更多</string>
+    <string name="loaded_more">已加载更多内容</string>
+    <string name="load_complete">文件加载完成</string>
+    <string name="long_line_warning">检测到超长行，可能导致性能下降</string>
+
+
+
+
+    <string name="shared_user_label">Termux 用户</string>
+    <!-- Termux 用户 -->
+    <string name="new_session">新建会话</string>
+    <!-- 新建会话 -->
+    <string name="new_session_failsafe">安全模式</string>
+    <!-- 安全模式 -->
+    <string name="toggle_soft_keyboard">键盘</string>
+    <!-- 键盘 -->
+    <string name="reset_terminal">重置</string>
+    <!-- 重置 -->
+    <string name="style_terminal">样式</string>
+    <!-- 样式 -->
+    <string name="share_transcript_title">终端记录</string>
+    <!-- 终端记录 -->
+    <string name="help">帮助</string>
+    <!-- 帮助 -->
+    <string name="toggle_keep_screen_on">保持屏幕常亮</string>
+    <!-- 保持屏幕常亮 -->
+
+    <string name="bootstrap_installer_body">正在安装…</string>
+    <!-- 正在安装… -->
+    <string name="bootstrap_error_title">无法安装</string>
+    <!-- 无法安装 -->
+    <string name="bootstrap_error_body">Termux 无法安装引导程序包。\n\n请检查您的网络连接并重试。</string>
+    <!-- Termux 无法安装引导程序包。\n\n请检查您的网络连接并重试。 -->
+    <string name="bootstrap_error_abort">中止</string>
+    <!-- 中止 -->
+    <string name="bootstrap_error_try_again">重试</string>
+    <!-- 重试 -->
+    <string name="bootstrap_error_not_primary_user_message">Termux 只能安装在主用户帐户上。</string>
+    <!-- Termux 只能安装在主用户帐户上。 -->
+
+    <string name="max_terminals_reached_title">已达到最大终端数</string>
+    <!-- 已达到最大终端数 -->
+    <string name="max_terminals_reached_message">请关闭现有终端后再创建新的终端。</string>
+    <!-- 请关闭现有终端后再创建新的终端。 -->
+
+    <string name="reset_toast_notification">终端已重置。</string>
+    <!-- 终端已重置。 -->
+
+    <string name="select_url">选择 URL</string>
+    <!-- 选择 URL -->
+    <string name="select_url_dialog_title">点击 URL 复制，长按打开</string>
+    <!-- 点击 URL 复制，长按打开 -->
+    <string name="select_all_and_share">分享记录</string>
+    <!-- 分享记录 -->
+    <string name="select_url_no_found">终端中未找到 URL。</string>
+    <!-- 终端中未找到 URL。 -->
+    <string name="select_url_copied_to_clipboard">URL 已复制到剪贴板</string>
+    <!-- URL 已复制到剪贴板 -->
+    <string name="share_transcript_chooser_title">发送文本到：</string>
+    <!-- 发送文本到： -->
+
+    <string name="kill_process">结束进程 (%d)</string>
+    <!-- 结束进程 (%d) -->
+    <string name="confirm_kill_process">确定要结束此会话吗？</string>
+    <!-- 确定要结束此会话吗？ -->
+
+    <string name="session_rename_title">设置会话名称</string>
+    <!-- 设置会话名称 -->
+    <string name="session_rename_positive_button">设置</string>
+    <!-- 设置 -->
+    <string name="session_new_named_title">新建命名会话</string>
+    <!-- 新建命名会话 -->
+    <string name="session_new_named_positive_button">创建</string>
+    <!-- 创建 -->
+
+    <string name="styling_not_installed">Termux:Style 附加组件未安装。</string>
+    <!-- Termux:Style 附加组件未安装。 -->
+    <string name="styling_install">安装</string>
+    <!-- 安装 -->
+
+    <string name="notification_action_exit">退出</string>
+    <!-- 退出 -->
+    <string name="notification_action_wake_lock">获取唤醒锁</string>
+    <!-- 获取唤醒锁 -->
+    <string name="notification_action_wake_unlock">释放唤醒锁</string>
+    <!-- 释放唤醒锁 -->
+
+    <string name="file_received_title">将文件保存到 ~/downloads/</string>
+    <!-- 将文件保存到 ~/downloads/ -->
+    <string name="file_received_edit_button">编辑</string>
+    <!-- 编辑 -->
+    <string name="file_received_open_folder_button">打开文件夹</string>
+    <!-- 打开文件夹 -->
 
 </resources>

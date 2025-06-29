@@ -13,15 +13,12 @@ import java.util.Set;
 
 public abstract class TerminalTestCase extends TestCase {
 
-    public static final int INITIAL_CELL_WIDTH_PIXELS = 13;
-    public static final int INITIAL_CELL_HEIGHT_PIXELS = 15;
-
-    public static class MockTerminalOutput extends TerminalOutput {
+	public static class MockTerminalOutput extends TerminalOutput {
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		public final List<ChangedTitle> titleChanges = new ArrayList<>();
 		public final List<String> clipboardPuts = new ArrayList<>();
 		public int bellsRung = 0;
-		public int colorsChanged = 0;
+        public int colorsChanged = 0;
 
 		@Override
 		public void write(byte[] data, int offset, int count) {
@@ -29,10 +26,10 @@ public abstract class TerminalTestCase extends TestCase {
 		}
 
 		public String getOutputAndClear() {
-			String result = new String(baos.toByteArray(), StandardCharsets.UTF_8);
-			baos.reset();
-			return result;
-		}
+            String result = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+            baos.reset();
+            return result;
+        }
 
 		@Override
 		public void titleChanged(String oldTitle, String newTitle) {
@@ -40,24 +37,20 @@ public abstract class TerminalTestCase extends TestCase {
 		}
 
 		@Override
-		public void onCopyTextToClipboard(String text) {
+		public void clipboardText(String text) {
 			clipboardPuts.add(text);
 		}
-
-        @Override
-        public void onPasteTextFromClipboard() {
-        }
 
 		@Override
 		public void onBell() {
 			bellsRung++;
 		}
 
-		@Override
-		public void onColorsChanged() {
-			colorsChanged++;
-		}
-	}
+        @Override
+        public void onColorsChanged() {
+            colorsChanged++;
+        }
+    }
 
 	public TerminalEmulator mTerminal;
 	public MockTerminalOutput mOutput;
@@ -110,8 +103,7 @@ public abstract class TerminalTestCase extends TestCase {
 	}
 
 	protected TerminalTestCase withTerminalSized(int columns, int rows) {
-	    // The tests aren't currently using the client, so a null client will suffice, a dummy client should be implemented if needed
-		mTerminal = new TerminalEmulator(mOutput, columns, rows, INITIAL_CELL_WIDTH_PIXELS, INITIAL_CELL_HEIGHT_PIXELS, rows * 2, null);
+		mTerminal = new TerminalEmulator(mOutput, columns, rows, rows * 2);
 		return this;
 	}
 
@@ -204,7 +196,7 @@ public abstract class TerminalTestCase extends TestCase {
 	}
 
 	public TerminalTestCase resize(int cols, int rows) {
-		mTerminal.resize(cols, rows, INITIAL_CELL_WIDTH_PIXELS, INITIAL_CELL_HEIGHT_PIXELS);
+		mTerminal.resize(cols, rows);
 		assertInvariants();
 		return this;
 	}
@@ -302,11 +294,6 @@ public abstract class TerminalTestCase extends TestCase {
 	public void assertForegroundColorAt(int externalRow, int column, int color) {
 		long style = mTerminal.getScreen().mLines[mTerminal.getScreen().externalToInternalRow(externalRow)].getStyle(column);
 		assertEquals(color, TextStyle.decodeForeColor(style));
-	}
-
-	public void assertBackgroundColorAt(int externalRow, int column, int color) {
-		long style = mTerminal.getScreen().mLines[mTerminal.getScreen().externalToInternalRow(externalRow)].getStyle(column);
-		assertEquals(color, TextStyle.decodeBackColor(style));
 	}
 
 	public TerminalTestCase assertColor(int colorIndex, int expected) {

@@ -1,22 +1,46 @@
+/*
+ * System Shell Box
+ * Copyright (C) 2025 kgultrt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 package com.manager.ssb.core.dialog;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
+import androidx.appcompat.app.AlertDialog;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.manager.ssb.R;
 
 import java.util.Locale;
 
-public class AudioPlayerDialog extends BottomSheetDialog {
+public class AudioPlayerDialog {
+    private final AlertDialog dialog;
     private MediaPlayer mediaPlayer;
     private final Handler progressHandler = new Handler();
     private boolean isPlaying = true;
@@ -29,16 +53,36 @@ public class AudioPlayerDialog extends BottomSheetDialog {
     private SeekBar seekBar;
 
     public AudioPlayerDialog(@NonNull Context context, String filePath, String fileName) {
-        super(context);
-        initView(context, fileName);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_audio_player, null);
+        builder.setView(view);
+        dialog = builder.create();
+
+        dialog.setOnDismissListener(dialogInterface -> releaseMediaPlayer());
+        dialog.setOnCancelListener(dialogInterface -> releaseMediaPlayer());
+
+        initView(view, fileName);
         initMediaPlayer(context, Uri.parse(filePath));
         startAudio();
+
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.WRAP_CONTENT
+            );
+        }
     }
 
-    private void initView(Context context, String fileName) {
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_audio_player, null);
-        setContentView(view);
+    public void show() {
+        dialog.show();
+    }
 
+    public void dismiss() {
+        dialog.dismiss();
+    }
+
+    private void initView(View view, String fileName) {
         tvFileName = view.findViewById(R.id.tv_file_name);
         tvCurrentTime = view.findViewById(R.id.tv_current_time);
         tvTotalTime = view.findViewById(R.id.tv_total_time);
@@ -46,10 +90,7 @@ public class AudioPlayerDialog extends BottomSheetDialog {
         seekBar = view.findViewById(R.id.seek_bar);
 
         tvFileName.setText(fileName);
-        
-        btnPlayPause = view.findViewById(R.id.btn_play_pause);
         btnPlayPause.setOnClickListener(v -> togglePlayPause());
-        
         btnPlayPause.setText(isPlaying ? R.string.dialog_pause : R.string.dialog_play);
     }
 
@@ -57,7 +98,6 @@ public class AudioPlayerDialog extends BottomSheetDialog {
         mediaPlayer = MediaPlayer.create(context, audioUri);
         
         if (mediaPlayer != null) {
-            // 设置播放完成监听器
             mediaPlayer.setOnCompletionListener(mp -> {
                 isPlaying = false;
                 btnPlayPause.setText(R.string.dialog_play);
@@ -66,7 +106,6 @@ public class AudioPlayerDialog extends BottomSheetDialog {
                 progressHandler.removeCallbacksAndMessages(null);
             });
 
-            
             int duration = mediaPlayer.getDuration();
             tvTotalTime.setText(formatTime(duration));
             seekBar.setMax(duration);
@@ -74,9 +113,7 @@ public class AudioPlayerDialog extends BottomSheetDialog {
             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    if (fromUser) {
-                        mediaPlayer.seekTo(progress);
-                    }
+                    if (fromUser) mediaPlayer.seekTo(progress);
                 }
 
                 @Override public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -86,16 +123,12 @@ public class AudioPlayerDialog extends BottomSheetDialog {
     }
     
     private void togglePlayPause() {
-        if (isPlaying) {
-            pauseAudio();
-        } else {
-            startAudio();
-        }
+        if (isPlaying) pauseAudio();
+        else startAudio();
     }
 
     private void startAudio() {
         if (mediaPlayer != null) {
-            // 如果已播放完毕，重置到开头
             if (mediaPlayer.getCurrentPosition() >= mediaPlayer.getDuration()) {
                 mediaPlayer.seekTo(0);
                 seekBar.setProgress(0);
@@ -104,7 +137,7 @@ public class AudioPlayerDialog extends BottomSheetDialog {
             
             mediaPlayer.start();
             isPlaying = true;
-            btnPlayPause.setText(R.string.dialog_pause); // 文本切换
+            btnPlayPause.setText(R.string.dialog_pause);
             updateProgress();
         }
     }
@@ -113,20 +146,17 @@ public class AudioPlayerDialog extends BottomSheetDialog {
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
             isPlaying = false;
-            btnPlayPause.setText(R.string.dialog_play); // 文本切换
+            btnPlayPause.setText(R.string.dialog_play);
         }
     }
 
     private void updateProgress() {
-        progressHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (mediaPlayer != null && isPlaying) {
-                    int currentPosition = mediaPlayer.getCurrentPosition();
-                    seekBar.setProgress(currentPosition);
-                    tvCurrentTime.setText(formatTime(currentPosition));
-                    updateProgress();
-                }
+        progressHandler.postDelayed(() -> {
+            if (mediaPlayer != null && isPlaying) {
+                int currentPosition = mediaPlayer.getCurrentPosition();
+                seekBar.setProgress(currentPosition);
+                tvCurrentTime.setText(formatTime(currentPosition));
+                updateProgress();
             }
         }, 10);
     }
@@ -137,14 +167,14 @@ public class AudioPlayerDialog extends BottomSheetDialog {
         return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
     }
 
-    @Override
-    public void dismiss() {
-        super.dismiss();
+    private void releaseMediaPlayer() {
         if (mediaPlayer != null) {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+            }
             mediaPlayer.release();
             mediaPlayer = null;
         }
         progressHandler.removeCallbacksAndMessages(null);
     }
 }
-

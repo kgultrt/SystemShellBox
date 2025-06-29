@@ -12,6 +12,8 @@
     <uses-permission android:name="android.permission.ACCESS_SUPERUSER" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name="com.manager.ssb.Application"
@@ -37,11 +39,34 @@
             android:name="com.manager.ssb.core.editor.TextEditorActivity"
             android:exported="false"
             android:screenOrientation="locked" />
-        
+
+        <!-- termux -->
         <activity
-            android:name="com.manager.ssb.core.term.TermActivity"
-            android:exported="true"
-            android:screenOrientation="locked" />
+            android:name="com.termux.app.TermuxActivity"
+            android:label="@string/application_name"
+            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:screenOrientation="locked"
+            android:windowSoftInputMode="adjustResize|stateAlwaysVisible">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name="com.termux.app.TermuxService"
+            android:exported="false" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 

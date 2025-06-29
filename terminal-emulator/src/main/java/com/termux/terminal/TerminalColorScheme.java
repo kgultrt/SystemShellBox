@@ -57,7 +57,7 @@ public final class TerminalColorScheme {
         0xff808080, 0xff8a8a8a, 0xff949494, 0xff9e9e9e, 0xffa8a8a8, 0xffb2b2b2, 0xffbcbcbc, 0xffc6c6c6, 0xffd0d0d0, 0xffdadada, 0xffe4e4e4, 0xffeeeeee,
 
         // COLOR_INDEX_DEFAULT_FOREGROUND, COLOR_INDEX_DEFAULT_BACKGROUND and COLOR_INDEX_DEFAULT_CURSOR:
-        0xffffffff, 0xff000000, 0xffffffff};
+        0xffffffff, 0xff000000, 0xffA9AAA9};
 
     public final int[] mDefaultColors = new int[TextStyle.NUM_INDEXED_COLORS];
 
@@ -71,7 +71,6 @@ public final class TerminalColorScheme {
 
     public void updateWith(Properties props) {
         reset();
-        boolean cursorPropExists = false;
         for (Map.Entry<Object, Object> entries : props.entrySet()) {
             String key = (String) entries.getKey();
             String value = (String) entries.getValue();
@@ -83,7 +82,6 @@ public final class TerminalColorScheme {
                 colorIndex = TextStyle.COLOR_INDEX_BACKGROUND;
             } else if (key.equals("cursor")) {
                 colorIndex = TextStyle.COLOR_INDEX_CURSOR;
-                cursorPropExists = true;
             } else if (key.startsWith("color")) {
                 try {
                     colorIndex = Integer.parseInt(key.substring(5));
@@ -99,27 +97,6 @@ public final class TerminalColorScheme {
                 throw new IllegalArgumentException("Property '" + key + "' has invalid color: '" + value + "'");
 
             mDefaultColors[colorIndex] = colorValue;
-        }
-
-        if (!cursorPropExists)
-            setCursorColorForBackground();
-    }
-
-    /**
-     * If the "cursor" color is not set by user, we need to decide on the appropriate color that will
-     * be visible on the current terminal background. White will not be visible on light backgrounds
-     * and black won't be visible on dark backgrounds. So we find the perceived brightness of the
-     * background color and if its below the threshold (too dark), we use white cursor and if its
-     * above (too bright), we use black cursor.
-     */
-    public void setCursorColorForBackground() {
-        int backgroundColor = mDefaultColors[TextStyle.COLOR_INDEX_BACKGROUND];
-        int brightness = TerminalColors.getPerceivedBrightnessOfColor(backgroundColor);
-        if (brightness > 0) {
-            if (brightness < 130)
-                mDefaultColors[TextStyle.COLOR_INDEX_CURSOR] = 0xffffffff;
-            else
-                mDefaultColors[TextStyle.COLOR_INDEX_CURSOR] = 0xff000000;
         }
     }
 

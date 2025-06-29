@@ -21,8 +21,19 @@
             android:textSize="16sp"
             android:maxLines="1"
             android:ellipsize="start" />
+            
+        <!-- 编码显示 -->
+        <TextView
+            android:id="@+id/tv_encoding"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textColor="#666666"
+            android:text="UTF-8" />
 
-        <!-- 右侧保存按钮（也可以放菜单） -->
+        <!-- 右侧保存按钮 -->
         <ImageButton
             android:id="@+id/btn_save"
             android:layout_width="36dp"
@@ -32,23 +43,32 @@
             android:contentDescription="@string/save"/>
     </LinearLayout>
 
-    <!-- 正文：可滚动编辑区 -->
-    <ScrollView
+    <!-- 加载进度条 -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:visibility="gone"
+        android:max="100"
+        android:progress="0" />
+
+    <!-- 行号+文本编辑器容器 -->
+    <com.manager.ssb.core.editor.LineNumberRecyclerView
+        android:id="@+id/editor_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="12dp">
-
-        <EditText
-            android:id="@+id/editText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:textColor="#222222"
-            android:textSize="14sp"
-            android:fontFamily="monospace"
-            android:lineSpacingExtra="4dp"
-            android:inputType="textMultiLine|textNoSuggestions"
-            android:gravity="top|start"
-            android:scrollHorizontally="true" />
-    </ScrollView>
+        android:padding="12dp" />
+    
+    <!-- 长行提示 -->
+    <TextView
+        android:id="@+id/tv_long_line_warning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:background="#FFF9C4"
+        android:textColor="#B71C1C"
+        android:textSize="12sp"
+        android:visibility="gone"
+        android:text="@string/long_line_warning" />
 </LinearLayout>

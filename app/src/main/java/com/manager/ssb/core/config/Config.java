@@ -1,3 +1,21 @@
+/*
+ * System Shell Box
+ * Copyright (C) 2025 kgultrt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 package com.manager.ssb.core.config;
 
 import android.content.Context;
@@ -29,7 +47,7 @@ public class Config {
         initialize();
     }
 
-    private static void initialize() {
+    public static void initialize() {
         Context context = Application.getAppContext();
         File configDir = new File(context.getFilesDir(), "config");
         if (!configDir.exists()) {
@@ -64,13 +82,7 @@ public class Config {
     private static void createDefaultConfig() throws Exception {
         JsonObject defaultConfig = new JsonObject();
         defaultConfig.addProperty("appName", "System Shell Box");
-        defaultConfig.addProperty("maxUsers", 10);
-        defaultConfig.addProperty("darkMode", false);
-
-        JsonObject nestedObject = new JsonObject();
-        nestedObject.addProperty("key1", "value1");
-        nestedObject.addProperty("key2", 123);
-        defaultConfig.add("nested", nestedObject);
+        defaultConfig.addProperty("isFirst", true);
 
         saveConfig(gson.toJson(defaultConfig));
     }
