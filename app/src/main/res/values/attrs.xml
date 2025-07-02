@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 声明自定义属性 -->
+    <attr name="colorAccent" format="color" />
+</resources>

@@ -3,7 +3,7 @@
     <string name="welcome_title">Welcome to System Shell Box!</string>
     <string name="welcome_content">Thank you for installing this app!</string>
     <string name="update_title">Updated to Build %d!</string>
-    <string name="update_log_content">Content of this update:\n1.Add content to this dialog! \n2.Optimize the text editor!</string>
+    <string name="update_log_content">Content of this update:\n1.The text editor is more complete (but autocompletion is problematic, causing crashes)\n2.Crash screen added!\n3.Added a little accent theme color to the app\n4.Add Text Editor Top Bar\n\nSee the update log for detailed changes</string>
 
 
     <string name="app_name">System Shell Box</string>
@@ -103,7 +103,6 @@
 
     <string name="confirm_delete">Confirm Deletion</string>
     <string name="delete_confirmation">Are you sure you want to permanently delete \'%s\' ?</string>
-    <string name="delete">delete</string>
     <string name="delete_success">Deleted successfully</string>
     <string name="delete_failed">Delete failed</string>
 
@@ -178,5 +177,53 @@
     <string name="file_received_title">Save file in ~/downloads/</string>
     <string name="file_received_edit_button">Edit</string>
     <string name="file_received_open_folder_button">Open folder</string>
+
+    <string name="delete">Delete</string>
+    <string name="format">Format</string>
+    <string name="empty">
+    </string>
+    <string name="icon_text">
+        <font color="#808080">\uea93</font>
+    </string>
+    <string name="icon_method">
+        <font color="#883dc2">\uea8c</font>
+    </string>
+    <string name="icon_field">
+        <font color="#0098ff">\ueb5f</font>
+    </string>
+    <string name="icon_variable">
+        <font color="#0098ff">\uea88</font>
+    </string>
+    <string name="icon_class">
+        <font color="#ff9702">\ueb5b</font>
+    </string>
+    <string name="icon_interface">
+        <font color="#0098ff">\ueb61</font>
+    </string>
+    <string name="icon_module">
+        <font color="#808080">\uea8b</font>
+    </string>
+    <string name="icon_enum">
+        <font color="#ec9313">\uea95</font>
+    </string>
+    <string name="icon_keyword">
+        <font color="#808080">\ueb62</font>
+    </string>
+    <string name="icon_snippet">
+        <font color="#808080">\ueb66</font>
+    </string>
+    <string name="icon_file">
+        <font color="#808080">\ueb60</font>
+    </string>
+    <string name="icon_constant">
+        <font color="#808080">\ueb5d</font>
+    </string>
+    <string name="icon_struct">
+        <font color="#808080">\uea91</font>
+    </string>
+    <string name="icon_parameter">
+        <font color="#808080">\uea92</font>
+    </string>
+
 
 </resources>

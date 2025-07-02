@@ -3,7 +3,7 @@
     <string name="welcome_title">欢迎使用System Shell Box！</string>
     <string name="welcome_content">感谢您安装本应用！</string>
     <string name="update_title">已更新到 Build %d！</string>
-    <string name="update_log_content">本次更新内容：\n1.新增这个对话框和欢迎对话框！\n2.优化文本编辑器！\n\n有关详细更改，请参阅更新日志</string>
+    <string name="update_log_content">本次更新内容：\n1.文本编辑器更加完善 (但自动补全有问题，会引起崩溃)\n2.添加了崩溃屏幕！\n3.为应用加了点强调主题色\n4.文本编辑器顶栏\n\n有关详细更改，请参阅更新日志</string>
 
     <string name="app_name">系统终端盒</string>
     <string name="term_name">Shell</string>
@@ -208,5 +208,7 @@
     <!-- 编辑 -->
     <string name="file_received_open_folder_button">打开文件夹</string>
     <!-- 打开文件夹 -->
+
+    <string name="format">格式化</string>
 
 </resources>

@@ -91,8 +91,6 @@ fi
 
 # 安装到设备
 echo "部署到设备..."
-sudo cp "$APK_PATH" /data/local/tmp/ && \
-sudo pm install -r "/data/local/tmp/${APK_PREFIX}.apk" && \
-sudo rm "/data/local/tmp/${APK_PREFIX}.apk"
+cp "$APK_PATH" /sdcard
 
-echo "构建并安装成功!"
+echo "构建成功!"

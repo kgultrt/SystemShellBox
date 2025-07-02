@@ -24,14 +24,12 @@ import android.content.Intent;
 import android.widget.Toast;
 
 import com.manager.ssb.core.FileHandler;
-import com.manager.ssb.core.editor.TextEditorActivity;
+import com.manager.ssb.core.editor.MainActivity;
 
 public class TextFileHandler implements FileHandler {
     @Override
     public void handle(Context context, String filePath, String fileName) {
-        //Toast.makeText(context, "Opening text file: " + fileName, Toast.LENGTH_SHORT).show();
-
-        Intent intent = new Intent(context, TextEditorActivity.class);
+        Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra("file_path", filePath);
         intent.putExtra("file_name", fileName);
         context.startActivity(intent);
