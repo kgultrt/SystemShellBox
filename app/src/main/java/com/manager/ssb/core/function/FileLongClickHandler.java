@@ -60,8 +60,8 @@ public class FileLongClickHandler {
         
         // 取消之前的恢复任务
         activity.disableHandler.removeCallbacks(activity.enableClicksRunnable);
-        // 800ms后恢复所有面板
-        activity.disableHandler.postDelayed(activity.enableClicksRunnable, 800);
+        // 100ms后恢复所有面板
+        activity.disableHandler.postDelayed(activity.enableClicksRunnable, 100);
         
         // 创建回调处理
         FileActionDialog.OnActionCallback callback = new FileActionDialog.OnActionCallback() {

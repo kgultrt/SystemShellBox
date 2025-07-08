@@ -111,6 +111,42 @@
     <string name="option_audio_player">Audio Player</string>
     <string name="option_system_default">System Default</string>
     <string name="no_app_found">No application found to open this file</string>
+    
+    <string name="create_dialog">Create</string>
+    <string name="create_dir">New Folder</string>
+    <string name="create_file">New File</string>
+    <string name="input_dir">Enter folder name</string>
+    <string name="input_file">Enter file name</string>
+    <string name="name_is_empty">Name cannot be empty</string>
+    <string name="direx">Folder already exists</string>
+    <string name="fileex">File already exists</string>
+    <string name="create_fail">Failed to create</string>
+    <string name="create_dialog_ok">Create</string>
+    
+    <string name="sync">Sync</string>
+    <string name="bookmark">Bookmark/History</string>
+    <string name="back_lastdir">Return previous</string>
+    
+    <string name="his_dialog">History Record</string>
+    <string name="his_dialog_fail">The record is invalid and cannot be loaded</string>
+    
+    <string name="move">Move</string>
+    <string name="enter_new_path">Please enter the destination directory path</string>
+    <string name="enter_target_directory">Target location:</string>
+    <string name="invalid_path">Invalid path</string>
+    <string name="move_file">Move File</string>
+    <string name="move_success">File moved successfully</string>
+    <string name="move_failed">File move failed</string>
+    <string name="move_into_self_error">Cannot move a folder to itself or a subfolder</string>
+    
+    <string name="copy">Copy</string>
+    <string name="copy_file">Copy File</string>
+    <string name="copy_success">File copy succeeded</string>
+    <string name="copy_failed">File copy failed</string>
+    <string name="copy_into_self_error">Cannot copy a folder to itself or a subfolder</string>
+
+    <string name="bookmark_dialog">Bookmark</string>
+    <string name="add_bookmark">Add Bookmark</string>
 
     <string name="file_too_large">The file is too large to open</string>
     <string name="load_success">File loaded successfully</string>

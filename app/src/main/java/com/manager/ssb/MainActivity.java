@@ -62,6 +62,7 @@ import com.manager.ssb.core.task.TaskNotificationManager;
 import com.manager.ssb.core.task.TaskTypes;
 import com.manager.ssb.core.config.Config;
 import com.manager.ssb.core.function.FileLongClickHandler;
+import com.manager.ssb.core.function.BottomMenuClickListener;
 import com.manager.ssb.databinding.ActivityMainBinding;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.dialog.SettingsDialogFragment;
@@ -85,7 +86,7 @@ import java.util.regex.Matcher;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    private ActivePanel activePanel = ActivePanel.LEFT;
+    public ActivePanel activePanel = ActivePanel.LEFT;
     private File currentDirectoryLeft;
     private File currentDirectoryRight;
     private final List<FileItem> fileListLeft = new ArrayList<>();
@@ -484,6 +485,15 @@ public class MainActivity extends AppCompatActivity {
         binding.btnMenu.setOnClickListener(v -> showPopupMenu());
         binding.tvCurrentPath.setOnClickListener(v -> showDirectoryInputDialog());
         binding.tvStorage.setOnClickListener(v -> showStorageDetails());
+        
+        // 创建 BottomMenuClickListener 的实例
+        BottomMenuClickListener bottomMenuClickListener = new BottomMenuClickListener(this);
+
+        // 为按钮设置监听器
+        binding.btnSync.setOnClickListener(bottomMenuClickListener);
+        binding.btnCreate.setOnClickListener(bottomMenuClickListener);
+        binding.btnBookmarkHistory.setOnClickListener(bottomMenuClickListener);
+        binding.btnBack.setOnClickListener(bottomMenuClickListener);
     }
     
     private void setActivePanel(ActivePanel panel) {
@@ -504,37 +514,6 @@ public class MainActivity extends AppCompatActivity {
     private void loadBothPanels() {
         loadDirectory(currentDirectoryLeft, ActivePanel.LEFT);
         loadDirectory(currentDirectoryRight, ActivePanel.RIGHT);
-    }
-
-
-    private void loadDirectory(File directory, ActivePanel panel) {
-        showLoading(true, panel);
-        executorService.submit(() -> {
-            List<FileItem> newItems = new ArrayList<>();
-
-            if (!isRootDirectory(directory)) {
-                newItems.add(createParentDirectoryItem(directory));
-            }
-
-            File[] files = directory.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    newItems.add(new FileItem(file));
-                }
-            }
-
-            Collections.sort(newItems, (a, b) -> {
-                if (a.isDirectory() && !b.isDirectory()) return -1;
-                if (!a.isDirectory() && b.isDirectory()) return 1;
-                return a.getName().compareToIgnoreCase(b.getName());
-            });
-
-            mainHandler.post(() -> {
-                showLoading(false, panel);
-                updateFileList(newItems, panel);
-                updatePanelDirectory(directory, panel);
-            });
-        }, TaskTypes.LOAD_FILES);
     }
 
     private void updatePanelDirectory(File directory, ActivePanel panel) {
@@ -584,6 +563,8 @@ public class MainActivity extends AppCompatActivity {
         if (item.isDirectory()) {
             File newDir = item.getFile();
             loadDirectory(newDir, panel);
+            BottomMenuClickListener hs = new BottomMenuClickListener(this);
+            hs.addToHistory(newDir.getAbsolutePath());
         } else {
             FileOpener.openFile(this, item.getPath(), item.getName());
         }
@@ -781,15 +762,19 @@ public class MainActivity extends AppCompatActivity {
                     File targetDir = new File(newPath);
                     boolean isValid = targetDir.isDirectory() && targetDir.canRead();
                     mainHandler.post(() -> {
+                        BottomMenuClickListener hs = new BottomMenuClickListener(this);
+                        
                         if (isValid) {
                             switch (activePanel) {
                                 case LEFT:
                                     currentDirectoryLeft = targetDir;
                                     loadDirectory(targetDir, ActivePanel.LEFT);
+                                    hs.addToHistory(targetDir.getAbsolutePath());
                                     break;
                                 case RIGHT:
                                     currentDirectoryRight = targetDir;
                                     loadDirectory(targetDir, ActivePanel.RIGHT);
+                                    hs.addToHistory(targetDir.getAbsolutePath());
                                     break;
                             }
                             dialog.dismiss();
@@ -807,7 +792,7 @@ public class MainActivity extends AppCompatActivity {
     
     private void showAboutDialog() {
         StringBuilder sb = new StringBuilder("System Shell Box (C) 2025 by kgultrt\n");
-        sb.append("Handle all documents.\nDevelop on MT manager Text Editor and Termux.\nmade by android\n\n");
+        sb.append("Handle all documents.\nDevelop on MT manager Text Editor and Termux.\nmade on android\n\n");
     
         // 应用信息
         try {
@@ -878,6 +863,36 @@ public class MainActivity extends AppCompatActivity {
         } else {
             return currentDirectoryRight;
         }
+    }
+    
+    public void loadDirectory(File directory, ActivePanel panel) {
+        showLoading(true, panel);
+        executorService.submit(() -> {
+            List<FileItem> newItems = new ArrayList<>();
+
+            if (!isRootDirectory(directory)) {
+                newItems.add(createParentDirectoryItem(directory));
+            }
+
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    newItems.add(new FileItem(file));
+                }
+            }
+
+            Collections.sort(newItems, (a, b) -> {
+                if (a.isDirectory() && !b.isDirectory()) return -1;
+                if (!a.isDirectory() && b.isDirectory()) return 1;
+                return a.getName().compareToIgnoreCase(b.getName());
+            });
+
+            mainHandler.post(() -> {
+                showLoading(false, panel);
+                updateFileList(newItems, panel);
+                updatePanelDirectory(directory, panel);
+            });
+        }, TaskTypes.LOAD_FILES);
     }
 
     @Override

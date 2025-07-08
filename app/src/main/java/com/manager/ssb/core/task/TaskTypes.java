@@ -28,6 +28,8 @@ public final class TaskTypes {
     public static final String STOR_DIALOG = "task_ShowStorageDetails";
     public static final String RENAME_FILE = "task_RenameFile";
     public static final String DELETE_FILE = "task_DeleteFile";
+    public static final String MOVE_FILE = "task_MoveFile";
+    public static final String COPY_FILE = "task_CopyFile";
 
     // 监控任务白名单
     public static final Set<String> MONITORED_TASKS = Set.of(
@@ -35,7 +37,9 @@ public final class TaskTypes {
         UP_STOR_INF,
         STOR_DIALOG,
         RENAME_FILE,
-        DELETE_FILE
+        DELETE_FILE,
+        MOVE_FILE,
+        COPY_FILE
     );
 
     private TaskTypes() {

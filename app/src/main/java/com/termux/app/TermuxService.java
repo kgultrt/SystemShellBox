@@ -284,25 +284,44 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
         if (cwd == null) cwd = HOME_PATH;
 
-        String[] env = BackgroundJob.buildEnvironment(failSafe, cwd);
         boolean isLoginShell = false;
+        boolean needInitialization = false;
 
         if (executablePath == null) {
             if (!failSafe) {
+                File initFile = new File(HOME_PATH + "/.term/install.sh");
+                initFile.setExecutable(true);
+                
                 for (String shellBinary : new String[]{"login", "bash", "zsh"}) {
                     File shellFile = new File(PREFIX_PATH + "/bin/" + shellBinary);
+                    
                     if (shellFile.canExecute()) {
                         executablePath = shellFile.getAbsolutePath();
                         break;
                     }
+                    
+                }
+                
+                if (executablePath == null) {
+                    // Fall back to system shell as last resort:
+                    executablePath = initFile.getAbsolutePath();
+                    needInitialization = true;
                 }
             }
-
-            if (executablePath == null) {
-                // Fall back to system shell as last resort:
-                executablePath = "/system/bin/sh";
+            isLoginShell = false;
+        }
+        
+        
+        String[] env = BackgroundJob.buildEnvironment(failSafe, cwd);
+        if (needInitialization) {
+            // 遍历并修改 PATH
+            for (int i = 0; i < env.length; i++) {
+                if (env[i].startsWith("PATH=")) {  // 检查以 PATH= 开头的元素
+                    // 替换为新的 PATH 值
+                    env[i] = "PATH=" + System.getenv("PATH");
+                    break; // 跳出循环
+                }
             }
-            isLoginShell = true;
         }
 
         String[] processArgs = BackgroundJob.setupProcessArgs(executablePath, arguments);

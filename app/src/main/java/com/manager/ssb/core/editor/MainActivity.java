@@ -2,24 +2,31 @@ package com.manager.ssb.core.editor;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
+import android.graphics.Color;
 import android.widget.Toast;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.manager.ssb.R;
+import com.manager.ssb.core.config.Config;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,6 +36,16 @@ public class MainActivity extends AppCompatActivity {
     private String fileName;
     private TextView tvTitle;
     private boolean hasEdited = false;
+
+    // 配置键名
+    private static final String KEY_THEME = "editor.theme";
+    private static final String KEY_FONT_SIZE = "editor.font_size";
+    private static final String KEY_KEY_BINDINGS = "editor.key_bindings";
+    
+    // 默认值
+    private static final String DEFAULT_THEME = "light";
+    private static final int DEFAULT_FONT_SIZE = 14; // sp
+    private static final String DEFAULT_KEY_BINDINGS = "default";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +119,67 @@ public class MainActivity extends AppCompatActivity {
                 // 不需要实现
             }
         });
+        
+        // 应用保存的设置
+        applySavedSettings();
+    }
+
+    private void applySavedSettings() {
+        // 应用主题设置
+        applyTheme();
+        
+        // 应用字体大小设置
+        applyFontSize();
+        
+        // 应用按键绑定设置
+        applyKeyBindings();
+    }
+    
+    private void applyTheme() {
+        String theme = Config.get(KEY_THEME, DEFAULT_THEME);
+        if ("dark".equals(theme)) {
+            setDarkTheme();
+        } else {
+            setLightTheme();
+        }
+    }
+    
+    private void setLightTheme() {
+        textEditor.setTextColor(Color.BLACK);
+        textEditor.setBackgroundColor(Color.WHITE);
+        textEditor.setCommentColor(Color.GRAY);
+        textEditor.setKeywordColor(Color.BLUE);
+        textEditor.setBaseWordColor(Color.DKGRAY);
+        textEditor.setStringColor(Color.RED);
+        textEditor.setTextHighlightColor(Color.argb(255, 0, 120, 215));
+    }
+    
+    private void setDarkTheme() {
+        textEditor.setTextColor(Color.WHITE);
+        textEditor.setBackgroundColor(Color.BLACK);
+        textEditor.setCommentColor(Color.LTGRAY);
+        textEditor.setKeywordColor(Color.CYAN);
+        textEditor.setBaseWordColor(Color.LTGRAY);
+        textEditor.setStringColor(Color.MAGENTA);
+        textEditor.setTextHighlightColor(Color.argb(255, 100, 180, 255));
+    }
+    
+    private void applyFontSize() {
+        int fontSize = Config.get(KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+        textEditor.setTextSize(fontSize);
+    }
+    
+    private void applyKeyBindings() {
+        String keyBindings = Config.get(KEY_KEY_BINDINGS, DEFAULT_KEY_BINDINGS);
+        // 这里根据不同的按键绑定方案设置编辑器
+        // 实际实现需要TextEditor支持不同的按键绑定方案
+        if ("vim".equals(keyBindings)) {
+            // 设置Vim风格的按键绑定
+        } else if ("emacs".equals(keyBindings)) {
+            // 设置Emacs风格的按键绑定
+        } else {
+            // 设置默认按键绑定
+        }
     }
 
     private void loadFileContent(String filePath) {
@@ -111,23 +189,56 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        // 创建进度对话框
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle("Loading File");
+        builder.setMessage("Please wait...");
+    
+        // 创建水平进度条（不确定进度）
+        ProgressBar progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        progressBar.setIndeterminate(true);
+        progressBar.setPadding(50, 50, 50, 50);
+        builder.setView(progressBar);
+    
+        // 添加取消按钮
+        builder.setNegativeButton("Cancel", (dialog, which) -> {
+            dialog.dismiss();
+            finish();
+        });
+    
+        AlertDialog progressDialog = builder.create();
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
         // 在新线程中读取文件
         new Thread(() -> {
             StringBuilder content = new StringBuilder();
+            final boolean[] isCancelled = {false};
+        
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
+                    // 检查是否取消
+                    if (progressDialog == null || !progressDialog.isShowing()) {
+                        isCancelled[0] = true;
+                        break;
+                    }
                     content.append(line).append('\n');
                 }
-                
+            
                 // 在主线程更新UI
                 runOnUiThread(() -> {
-                    textEditor.setText(content.toString());
-                    hasEdited = false;
-                    updateTitle();
+                    progressDialog.dismiss();
+                
+                    if (!isCancelled[0]) {
+                        textEditor.setText(content.toString());
+                        hasEdited = false;
+                        updateTitle();
+                    }
                 });
             } catch (IOException e) {
                 runOnUiThread(() -> {
+                    progressDialog.dismiss();
                     Toast.makeText(MainActivity.this, "Error reading file: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
                 e.printStackTrace();
@@ -174,15 +285,89 @@ public class MainActivity extends AppCompatActivity {
             .setItems(new String[]{"Theme", "Font Size", "Key Bindings"}, (dialog, which) -> {
                 switch (which) {
                     case 0:
-                        Toast.makeText(MainActivity.this, "Theme selection", Toast.LENGTH_SHORT).show();
+                        showThemeSelection();
                         break;
                     case 1:
-                        Toast.makeText(MainActivity.this, "Font size adjustment", Toast.LENGTH_SHORT).show();
+                        showFontSizeSelection();
                         break;
                     case 2:
-                        Toast.makeText(MainActivity.this, "Key bindings settings", Toast.LENGTH_SHORT).show();
+                        showKeyBindingsSelection();
                         break;
                 }
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
+    }
+    
+    private void showThemeSelection() {
+        List<String> themes = Arrays.asList("Light", "Dark");
+        String currentTheme = Config.get(KEY_THEME, DEFAULT_THEME);
+        int selectedIndex = "dark".equals(currentTheme) ? 1 : 0;
+        
+        new MaterialAlertDialogBuilder(this)
+            .setTitle("Select Theme")
+            .setSingleChoiceItems(themes.toArray(new String[0]), selectedIndex, (dialog, which) -> {
+                String theme = (which == 0) ? "light" : "dark";
+                Config.set(KEY_THEME, theme);
+                applyTheme();
+                dialog.dismiss();
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
+    }
+    
+    private void showFontSizeSelection() {
+        List<String> sizes = Arrays.asList("Small (12sp)", "Medium (14sp)", "Large (16sp)", "Extra Large (18sp)");
+        int currentSize = Config.get(KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+        int selectedIndex = 1; // 默认中等大小
+        
+        // 根据当前设置确定选中的索引
+        if (currentSize == 12) selectedIndex = 0;
+        else if (currentSize == 16) selectedIndex = 2;
+        else if (currentSize == 18) selectedIndex = 3;
+        
+        new MaterialAlertDialogBuilder(this)
+            .setTitle("Select Font Size")
+            .setSingleChoiceItems(sizes.toArray(new String[0]), selectedIndex, (dialog, which) -> {
+                int size;
+                switch (which) {
+                    case 0: size = 12; break;
+                    case 1: size = 14; break;
+                    case 2: size = 16; break;
+                    case 3: size = 18; break;
+                    default: size = DEFAULT_FONT_SIZE;
+                }
+                Config.set(KEY_FONT_SIZE, size);
+                applyFontSize();
+                dialog.dismiss();
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
+    }
+    
+    private void showKeyBindingsSelection() {
+        List<String> bindings = Arrays.asList("Default", "Vim", "Emacs");
+        String currentBindings = Config.get(KEY_KEY_BINDINGS, DEFAULT_KEY_BINDINGS);
+        int selectedIndex = 0; // 默认
+        
+        // 根据当前设置确定选中的索引
+        if ("vim".equals(currentBindings)) selectedIndex = 1;
+        else if ("emacs".equals(currentBindings)) selectedIndex = 2;
+        
+        new MaterialAlertDialogBuilder(this)
+            .setTitle("Select Key Bindings")
+            .setSingleChoiceItems(bindings.toArray(new String[0]), selectedIndex, (dialog, which) -> {
+                String bindingsType;
+                switch (which) {
+                    case 0: bindingsType = "default"; break;
+                    case 1: bindingsType = "vim"; break;
+                    case 2: bindingsType = "emacs"; break;
+                    default: bindingsType = DEFAULT_KEY_BINDINGS;
+                }
+                Config.set(KEY_KEY_BINDINGS, bindingsType);
+                applyKeyBindings();
+                Toast.makeText(this, "Key bindings changed to " + bindingsType, Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
             })
             .setNegativeButton("Cancel", null)
             .show();

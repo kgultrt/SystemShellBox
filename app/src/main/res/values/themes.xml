@@ -5,9 +5,29 @@
     <item name="colorPrimary">@color/colorPrimary</item>
     <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
     <item name="colorAccent">@color/colorAccent</item>
+    <item name="materialAlertDialogTheme">@style/Theme.TransparentDialog</item>
   </style>
 
   <style name="AppTheme" parent="Base.AppTheme" />
+  
+
+  <style name="Theme.TransparentDialog" parent="@style/ThemeOverlay.Material3.MaterialAlertDialog">
+      <!-- 设置对话框容器背景透明 -->
+      <item name="android:windowBackground">@android:color/transparent</item>
+      <item name="android:background">@android:color/transparent</item>
+    
+      <!-- 专门针对 MD3 内容卡片背景透明 -->
+      <item name="shapeAppearance">@style/TransparentShapeAppearance</item>
+    
+      <!-- 保留遮罩效果 -->
+      <item name="android:backgroundDimEnabled">true</item>
+      <item name="android:backgroundDimAmount">0.5</item>
+  </style>
+
+  <style name="TransparentShapeAppearance" parent="ShapeAppearance.Material3.MediumComponent">
+      <item name="cornerFamily">rounded</item>
+      <item name="cornerSize">16dp</item>
+  </style>
   
   <style name="Theme.Termux" parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">#000000</item>

@@ -14,7 +14,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.mrikso.codeeditor.lang.Language;
-import com.mrikso.codeeditor.lang.LanguageLua;
+import com.mrikso.codeeditor.lang.LanguageJava;
 import com.mrikso.codeeditor.util.Document;
 import com.mrikso.codeeditor.util.DocumentProvider;
 import com.mrikso.codeeditor.util.Lexer;
@@ -22,6 +22,8 @@ import com.mrikso.codeeditor.view.ColorScheme;
 import com.mrikso.codeeditor.view.FreeScrollingTextField;
 import com.mrikso.codeeditor.view.YoyoNavigationMethod;
 import com.mrikso.codeeditor.view.autocomplete.AutoCompletePanel;
+
+import com.manager.ssb.core.config.Config;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -45,6 +47,7 @@ public class TextEditor extends FreeScrollingTextField {
     private String _lastSelectFile;
     private int _index;
     private Toast toast;
+    private float textSize;
 
     public TextEditor(Context context) {
         super(context);
@@ -63,18 +66,24 @@ public class TextEditor extends FreeScrollingTextField {
         setTypeface(Typeface.MONOSPACE);
         
         DisplayMetrics dm = mContext.getResources().getDisplayMetrics();
-        float size = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14, dm);
-        setTextSize((int) size);
+        int configSize = Config.get("editor.font_size", 0);
+        if (configSize == 0) {
+            float textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14, dm);
+        } else {
+            float textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, configSize, dm);
+        }
+        setTextSize((int) textSize);
         
         setShowLineNumbers(true);
         setHighlightCurrentRow(true);
-        setWordWrap(true);
+        setWordWrap(false);
         setAutoComplete(true);
         setAutoIndent(true);
         setUseGboard(true);
         setAutoIndentWidth(2);
         
-        setLanguage(LanguageLua.getInstance());
+        
+        setLanguage(LanguageJava.getInstance());
         setNavigationMethod(new YoyoNavigationMethod(this));
         
         // MD3 颜色方案

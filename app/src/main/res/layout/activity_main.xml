@@ -3,7 +3,10 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:material="http://schemas.android.com/apk/res-auto">
+
     <LinearLayout
         android:orientation="vertical"
         android:padding="8.0dip"
@@ -50,11 +53,10 @@
                 android:layout_width="0.0dip"
                 android:layout_height="2.0dip"
                 android:layout_weight="1.0"
-                android:progressTint="#ff2196f3"
-                android:progressBackgroundTint="#ffd3d3d3"
                 style="@style/Widget.AppCompat.ProgressBar.Horizontal" />
         </LinearLayout>
     </LinearLayout>
+
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
@@ -71,7 +73,6 @@
                 android:visibility="gone"
                 android:layout_width="fill_parent"
                 android:layout_height="4.0dip"
-                android:progressTint="#ff4caf50"
                 style="@style/Widget.AppCompat.ProgressBar.Horizontal" />
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_files_left"
@@ -96,7 +97,6 @@
                 android:visibility="gone"
                 android:layout_width="fill_parent"
                 android:layout_height="4.0dip"
-                android:progressTint="#ffff9800"
                 style="@style/Widget.AppCompat.ProgressBar.Horizontal" />
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_files_right"
@@ -107,5 +107,55 @@
                 android:layout_height="fill_parent"
                 android:paddingVertical="8.0dip" />
         </LinearLayout>
+    </LinearLayout>
+
+    <!-- 这里是底部菜单 -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:padding="4dp"
+        android:gravity="center"
+        android:layout_marginTop="4dp">
+
+        <!-- 同步按钮 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_sync"
+            android:text="@string/sync"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1.0"
+            android:icon="@drawable/ic_sync"
+            android:padding="4dp" />
+
+        <!-- 新建按钮 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_create"
+            android:text="@string/create_dialog"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1.0"
+            android:icon="@drawable/ic_create"
+            android:padding="4dp" />
+
+        <!-- 书签和历史记录按钮 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_bookmark_history"
+            android:text="@string/bookmark"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1.0"
+            android:icon="@drawable/ic_bookmark"
+            android:padding="4dp" />
+
+        <!-- 返回上一级按钮 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_back"
+            android:text="@string/back_lastdir"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1.0"
+            android:icon="@drawable/ic_back"
+            android:padding="4dp" />
     </LinearLayout>
 </LinearLayout>

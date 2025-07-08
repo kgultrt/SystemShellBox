@@ -54,7 +54,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     
     // 新增防抖控制
     private long lastClickTime = 0;
-    private static final long CLICK_DEBOUNCE_INTERVAL = 800; // 800毫秒防抖间隔
+    private static final long CLICK_DEBOUNCE_INTERVAL = 200; // 500毫秒防抖间隔
 
     private boolean clickEnabled = true;
     private boolean longClickEnabled = true;

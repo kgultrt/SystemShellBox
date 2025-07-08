@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="welcome_title">欢迎使用System Shell Box！</string>
-    <string name="welcome_content">感谢您安装本应用！</string>
+    <string name="welcome_content">感谢您安装本应用！\n本项目的宗旨是在手机上打造一个很强大的的开发软件，让电子文盲也能知道终端的强大\n玩得开心!</string>
     <string name="update_title">已更新到 Build %d！</string>
-    <string name="update_log_content">本次更新内容：\n1.文本编辑器更加完善 (但自动补全有问题，会引起崩溃)\n2.添加了崩溃屏幕！\n3.为应用加了点强调主题色\n4.文本编辑器顶栏\n\n有关详细更改，请参阅更新日志</string>
+    <string name="update_log_content">本次更新内容：\n1.一目了然，还需要我说吗\n\n有关详细更改，请参阅更新日志</string>
 
     <string name="app_name">系统终端盒</string>
     <string name="term_name">Shell</string>
@@ -101,7 +101,7 @@
     <string name="file_properties_title">文件属性</string>
 
     <string name="confirm_delete">确认删除</string>
-    <string name="delete_confirmation">确定要永久删除 \'%s\' 吗？</string>
+    <string name="delete_confirmation">确定要删除 %1$s 吗？</string>
     <string name="delete">删除</string>
     <string name="delete_success">删除成功</string>
     <string name="delete_failed">删除失败</string>
@@ -111,6 +111,42 @@
     <string name="option_audio_player">音频播放器</string>
     <string name="option_system_default">系统默认</string>
     <string name="no_app_found">未找到打开此文件的应用</string>
+
+    <string name="create_dialog">新建</string>
+    <string name="create_dir">新建文件夹</string>
+    <string name="create_file">新建文件</string>
+    <string name="input_dir">输入文件夹名称</string>
+    <string name="input_file">输入文件名称</string>
+    <string name="name_is_empty">名称不能为空</string>
+    <string name="direx">文件夹已存在</string>
+    <string name="fileex">文件已存在</string>
+    <string name="create_fail">创建文件失败</string>
+    <string name="create_dialog_ok">创建</string>
+
+    <string name="sync">同步</string>
+    <string name="bookmark">书签/历史记录</string>
+    <string name="back_lastdir">返回上一级</string>
+
+    <string name="his_dialog">历史记录</string>
+    <string name="his_dialog_fail">记录无效，因此无法加载</string>
+    
+    <string name="move">移动</string>
+    <string name="enter_new_path">请输入目标目录路径</string>
+    <string name="enter_target_directory">目标：</string>
+    <string name="invalid_path">路径无效</string>
+    <string name="move_file">移动文件</string>
+    <string name="move_success">文件移动成功</string>
+    <string name="move_failed">文件移动失败</string>
+    <string name="move_into_self_error">无法将文件夹移动到它本身或子文件夹中</string>
+    
+    <string name="copy">复制</string>
+    <string name="copy_file">复制文件</string>
+    <string name="copy_success">文件复制成功</string>
+    <string name="copy_failed">文件复制失败</string>
+    <string name="copy_into_self_error">无法将文件夹复制到它本身或子文件夹中</string>
+    
+    <string name="bookmark_dialog">书签</string>
+    <string name="add_bookmark">添加书签</string>
 
     <string name="file_too_large">文件过大，无法打开</string>
     <string name="load_success">文件加载成功</string>

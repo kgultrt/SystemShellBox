@@ -1203,23 +1203,34 @@ public abstract class FreeScrollingTextField extends View implements Document.Te
     }
 
     protected int getTabAdvance() {
+        // 确保 mSpaceWidth 不为零，避免除零错误
+        if (mSpaceWidth == 0) {
+            mSpaceWidth = 1; // 设置一个默认值，避免崩溃
+        }
+
         if (isShowNonPrinting) {
-            return mTabLength * (int) mTextPaint.measureText(Language.GLYPH_SPACE,
-                    0, Language.GLYPH_SPACE.length());
+            return mTabLength * (int) mTextPaint.measureText(Language.GLYPH_SPACE, 0, Language.GLYPH_SPACE.length());
         } else {
             return mTabLength * mSpaceWidth;
         }
     }
 
+
     protected int getTabAdvance(int x) {
+        // 确保 mSpaceWidth 不为零，避免除零错误
+        if (mSpaceWidth == 0) {
+            mSpaceWidth = 1; // 设置一个默认值，避免崩溃
+        }
+
         if (isShowNonPrinting) {
-            return mTabLength * (int) mTextPaint.measureText(Language.GLYPH_SPACE,
-                    0, Language.GLYPH_SPACE.length());
+            return mTabLength * (int) mTextPaint.measureText(Language.GLYPH_SPACE, 0, Language.GLYPH_SPACE.length());
         } else {
+        // 添加边界检查
             int i = (x - mLeftOffset) / mSpaceWidth % mTabLength;
             return (mTabLength - i) * mSpaceWidth;
         }
     }
+
 
     /**
      * Invalidate rows from startRow (inclusive) to endRow (exclusive)
