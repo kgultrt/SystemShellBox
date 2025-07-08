@@ -155,6 +155,27 @@
     <string name="loaded_more">More content loaded</string>
     <string name="load_complete">File load complete</string>
     <string name="long_line_warning">An overly long row was detected, which may cause performance degradation</string>
+    
+    <string name="enter_new_name">Enter new name</string>
+    <string name="file_exists">File already exists</string>
+    <string name="rename_file_prompt">The file already exists. Do you want to rename it?</string>
+    
+    <!-- Progress dialog title and message -->
+    <string name="copy_progress_title">Copying Files</string>
+    <string name="copy_progress_message">Please wait while the files are being copied...</string>
+
+    <!-- Labels -->
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="file_item">File Item</string>
+    <string name="eta">ETA</string>
+    
+    <string name="error_title">Operation failed</string>
+    <string name="dir_not_accessible">Unable to access the destination directory</string>
+    <string name="space_insufficient">%s free space required</string>
+    <string name="dir_create_failed">Unable to create the destination directory</string>
+    <string name="dir_not_writable">The destination directory is not writable</string>
+    <string name="ok">OK</string>
 
 
     <string-array name="size_units">

@@ -129,7 +129,7 @@
 
     <string name="his_dialog">历史记录</string>
     <string name="his_dialog_fail">记录无效，因此无法加载</string>
-    
+
     <string name="move">移动</string>
     <string name="enter_new_path">请输入目标目录路径</string>
     <string name="enter_target_directory">目标：</string>
@@ -138,13 +138,13 @@
     <string name="move_success">文件移动成功</string>
     <string name="move_failed">文件移动失败</string>
     <string name="move_into_self_error">无法将文件夹移动到它本身或子文件夹中</string>
-    
+
     <string name="copy">复制</string>
     <string name="copy_file">复制文件</string>
     <string name="copy_success">文件复制成功</string>
     <string name="copy_failed">文件复制失败</string>
     <string name="copy_into_self_error">无法将文件夹复制到它本身或子文件夹中</string>
-    
+
     <string name="bookmark_dialog">书签</string>
     <string name="add_bookmark">添加书签</string>
 
@@ -155,6 +155,27 @@
     <string name="loaded_more">已加载更多内容</string>
     <string name="load_complete">文件加载完成</string>
     <string name="long_line_warning">检测到超长行，可能导致性能下降</string>
+
+    <string name="enter_new_name">输入新名称</string>
+    <string name="file_exists">文件已存在</string>
+    <string name="rename_file_prompt">文件已存在。是否要重命名它？</string>
+
+    <!-- Progress dialog title and message -->
+    <string name="copy_progress_title">正在复制文件</string>
+    <string name="copy_progress_message">正在复制文件，请稍候...</string>
+
+    <!-- Labels -->
+    <string name="from">从</string>
+    <string name="to">到</string>
+    <string name="file_item">文件项</string>
+    <string name="eta">ETA</string>
+
+    <string name="error_title">操作失败</string>
+    <string name="dir_not_accessible">无法访问目标目录</string>
+    <string name="space_insufficient">需要 %s 可用空间</string>
+    <string name="dir_create_failed">无法创建目标目录</string>
+    <string name="dir_not_writable">目标目录不可写</string>
+    <string name="ok">确定</string>
 
 
 
