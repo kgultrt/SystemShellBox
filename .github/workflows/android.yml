@@ -1,21 +1,32 @@
 name: Android CI
 
 on:
-  push:
-    branches: [ "legacy" ]
-  pull_request:
-    branches: [ "legacy" ]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
+    inputs:
+      module:
+        description: 'Module to build (e.g. app)'
+        required: true
+        default: 'app'
+      buildType:
+        description: 'Build type (debug or release)'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      NDK_VERSION: 24.0.8215888
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # 安装 JDK 11
     - name: Set up JDK 11
       uses: actions/setup-java@v4
       with:
@@ -23,7 +34,6 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    # 安装 JDK 17
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -31,27 +41,24 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    # 安装 Android SDK 基础工具
     - name: Install Android SDK & NDK
       uses: android-actions/setup-android@v2
 
-    # 安装特定版本的 NDK
-    - name: Install NDK 24.0.8215888
+    - name: Install NDK version ${{ env.NDK_VERSION }}
       run: |
-        sdkmanager --install "ndk;24.0.8215888"
-        echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/24.0.8215888" >> $GITHUB_ENV
+        sdkmanager --install "ndk;${NDK_VERSION}"
+        echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}" >> $GITHUB_ENV
 
-    # 设置 gradlew 权限
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    # 构建项目
     - name: Build with Gradle
-      run: ./gradlew build
+      run: |
+        BUILD_CMD=assemble${{ github.event.inputs.buildType == 'release' && 'Release' || 'Debug' }}
+        ./gradlew ${{ github.event.inputs.module }}:$BUILD_CMD
 
-    # 上传构建产物（修改路径为你的产物路径）
-    - name: Upload build artifacts
+    - name: Upload APKs
       uses: actions/upload-artifact@v4
       with:
-        name: build-artifacts
-        path: app/build/outputs/
+        name: ${{ github.event.inputs.module }}-${{ github.event.inputs.buildType }}-apk
+        path: ${{ github.event.inputs.module }}/build/outputs/apk/${{ github.event.inputs.buildType }}/
