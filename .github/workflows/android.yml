@@ -1,0 +1,57 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ "legacy" ]
+  pull_request:
+    branches: [ "legacy" ]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 安装 JDK 11
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: gradle
+
+    # 安装 JDK 17
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    # 安装 Android SDK 基础工具
+    - name: Install Android SDK & NDK
+      uses: android-actions/setup-android@v2
+
+    # 安装特定版本的 NDK
+    - name: Install NDK 24.0.8215888
+      run: |
+        sdkmanager --install "ndk;24.0.8215888"
+        echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/24.0.8215888" >> $GITHUB_ENV
+
+    # 设置 gradlew 权限
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    # 构建项目
+    - name: Build with Gradle
+      run: ./gradlew build
+
+    # 上传构建产物（修改路径为你的产物路径）
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: app/build/outputs/
