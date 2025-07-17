@@ -1,12 +1,14 @@
 package com.manager.ssb.dialog;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder; // 新增导入
 import com.manager.ssb.R;
 
 public class CopyProgressDialog {
@@ -35,12 +37,11 @@ public class CopyProgressDialog {
         targetText.setText(context.getString(R.string.to) + ": " + targetPath);
         fileText.setText(context.getString(R.string.file_item) + ": " + fileName);
 
-        dialog = new AlertDialog.Builder(context)
+        dialog = new MaterialAlertDialogBuilder(context) // 使用 Material 组件
                 .setTitle(R.string.copy_progress_title)
                 .setCancelable(false)
                 .setView(view)
-                .create();
-        dialog.show();
+                .show(); // 直接调用 show()
 
         startTime = System.currentTimeMillis();
     }

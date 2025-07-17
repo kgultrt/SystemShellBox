@@ -76,7 +76,7 @@ public class FileActionDialog {
                         break;
                     case 1: // Copy
                         CopyDialog.show(context, fileItem, executorService, activePanel,
-                                        callback::onRenameSuccess); // 复用
+                                        callback::onRenameSuccess);
                         break;
                     case 2: // Rename
                         RenameDialog.show(context, fileItem, executorService,

@@ -91,6 +91,6 @@ fi
 
 # 安装到设备
 echo "部署到设备..."
-cp "$APK_PATH" /sdcard
+adb -s 0.0.0.0 install "$APK_PATH"
 
 echo "构建成功!"
