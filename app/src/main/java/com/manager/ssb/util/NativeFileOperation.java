@@ -1,6 +1,6 @@
 package com.manager.ssb.util;
 
-public class NativeCopier {
+public class NativeFileOperation {
     public interface ProgressCallback {
         void onProgress(long copied, long total);
     }

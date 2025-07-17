@@ -36,7 +36,7 @@ static int mkdir_p(const char *path);
 static int delete_recursive(const char *path);
 
 JNIEXPORT jboolean JNICALL
-Java_com_manager_ssb_util_NativeCopier_kissCopy(
+Java_com_manager_ssb_util_NativeFileOperation_kissCopy(
     JNIEnv* env, 
     jobject thiz,
     jstring jSrc,
@@ -145,7 +145,7 @@ Java_com_manager_ssb_util_NativeCopier_kissCopy(
             snprintf(src_path, MAX_PATH_LEN, "%s/%s", src, entry->d_name);
             snprintf(dest_path, MAX_PATH_LEN, "%s/%s", dest, entry->d_name);
             
-            if (!Java_com_manager_ssb_util_NativeCopier_kissCopy(env, thiz,
+            if (!Java_com_manager_ssb_util_NativeFileOperation_kissCopy(env, thiz,
                  (*env)->NewStringUTF(env, src_path),
                  (*env)->NewStringUTF(env, dest_path),
                  jCallback)) {
@@ -212,7 +212,7 @@ static int mkdir_p(const char *path) {
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_manager_ssb_util_NativeCopier_kissDelete(
+Java_com_manager_ssb_util_NativeFileOperation_kissDelete(
     JNIEnv* env,
     jobject thiz,
     jstring jPath
@@ -270,7 +270,7 @@ static int delete_recursive(const char *path) {
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_manager_ssb_util_NativeCopier_kissMove(
+Java_com_manager_ssb_util_NativeFileOperation_kissMove(
     JNIEnv* env,
     jobject thiz,
     jstring jSrc,
@@ -295,15 +295,15 @@ Java_com_manager_ssb_util_NativeCopier_kissMove(
     }
     
     // 跨设备回退到复制+删除
-    if (Java_com_manager_ssb_util_NativeCopier_kissCopy(env, thiz, jSrc, jDest, NULL) &&
-        Java_com_manager_ssb_util_NativeCopier_kissDelete(env, thiz, jSrc)) {
+    if (Java_com_manager_ssb_util_NativeFileOperation_kissCopy(env, thiz, jSrc, jDest, NULL) &&
+        Java_com_manager_ssb_util_NativeFileOperation_kissDelete(env, thiz, jSrc)) {
         (*env)->ReleaseStringUTFChars(env, jSrc, src);
         (*env)->ReleaseStringUTFChars(env, jDest, dest);
         return JNI_TRUE;
     }
     
     // 清理失败的复制
-    Java_com_manager_ssb_util_NativeCopier_kissDelete(env, thiz, jDest);
+    Java_com_manager_ssb_util_NativeFileOperation_kissDelete(env, thiz, jDest);
     
     (*env)->ReleaseStringUTFChars(env, jSrc, src);
     (*env)->ReleaseStringUTFChars(env, jDest, dest);

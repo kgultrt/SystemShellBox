@@ -15,7 +15,7 @@ import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.task.TaskTypes;
 import com.manager.ssb.enums.ActivePanel;
 import com.manager.ssb.MainActivity;
-import com.manager.ssb.util.NativeCopier;
+import com.manager.ssb.util.NativeFileOperation;
 import java.io.File;
 
 public class CopyDialog {
@@ -75,7 +75,7 @@ public class CopyDialog {
                         new Handler(Looper.getMainLooper()).post(() -> {
                             progressDialog.dismiss();
                             if (!success) {
-                                NativeCopier.delete(destFile.getAbsolutePath());
+                                NativeFileOperation.delete(destFile.getAbsolutePath());
                                 showError(context, context.getString(R.string.copy_failed));
                             }
                         });
@@ -88,7 +88,7 @@ public class CopyDialog {
     private static boolean copyItem(FileItem fileItem, File destFile, 
                                    OnCopyCallback callback, CopyProgressDialog progressDialog) {
         try {
-            boolean success = NativeCopier.copy(
+            boolean success = NativeFileOperation.copy(
                 fileItem.getFile().getAbsolutePath(), 
                 destFile.getAbsolutePath(),
                 (copied, total) -> {
