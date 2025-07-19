@@ -17,7 +17,7 @@
 #define MAX_PATH_LEN 4096
 #define MAX_RECURSION_DEPTH 50
 
-// 增强错误处理宏（增加行号信息）
+// 错误处理宏
 #define KISS_FAIL(env, code, msg) do { \
     char full_msg[256]; \
     const char *err_str = strerror(errno); \
@@ -86,10 +86,74 @@ static int mkdir_p(const char *path) {
 }
 
 // 递归删除函数
-static int delete_recursive(const char *path);
+static int delete_recursive(const char *path) {
+    struct stat statbuf;
+    if (lstat(path, &statbuf) != 0) {
+        if (errno == ENOENT) {
+            __android_log_print(ANDROID_LOG_WARN, TAG, "Path does not exist: %s", path);
+            return 1;
+        }
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to lstat: %s (errno %d)", path, errno);
+        return 0;
+    }
+    
+    // 文件或链接
+    if (S_ISREG(statbuf.st_mode) || S_ISLNK(statbuf.st_mode)) {
+        __android_log_print(ANDROID_LOG_DEBUG, TAG, "Deleting file/link: %s", path);
+        if (unlink(path) != 0) {
+            __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to unlink: %s (errno %d)", path, errno);
+            return 0;
+        }
+    }
+    // 目录
+    else if (S_ISDIR(statbuf.st_mode)) {
+        DIR *dir = opendir(path);
+        if (!dir) {
+            __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to open dir: %s (errno %d)", path, errno);
+            return 0;
+        }
+        
+        int success = 1;
+        struct dirent *entry;
+        while ((entry = readdir(dir)) != NULL) {
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+                continue;
+                
+            char child_path[MAX_PATH_LEN];
+            safe_path_join(child_path, path, entry->d_name);
+            
+            if (!delete_recursive(child_path)) {
+                success = 0;
+                break;
+            }
+        }
+        closedir(dir);
+        
+        if (!success) {
+            __android_log_print(ANDROID_LOG_ERROR, TAG, "Partial delete failed: %s", path);
+            return 0;
+        }
+        
+        __android_log_print(ANDROID_LOG_DEBUG, TAG, "Deleting directory: %s", path);
+        if (rmdir(path) != 0) {
+            __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to rmdir: %s (errno %d)", path, errno);
+            return 0;
+        }
+    }
+    // 其他类型 (FIFO, socket等)
+    else {
+        __android_log_print(ANDROID_LOG_DEBUG, TAG, "Deleting special file: %s", path);
+        if (unlink(path) != 0) {
+            __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to unlink special: %s (errno %d)", path, errno);
+            return 0;
+        }
+    }
+    
+    return 1;
+}
 
 JNIEXPORT jboolean JNICALL
-Java_com_manager_ssb_util_NativeFileOperation_kissCopy(
+Java_com_manager_ssb_util_NativeFileOperation_nativeCopy(
     JNIEnv* env, 
     jobject thiz,
     jstring jSrc,
@@ -121,7 +185,7 @@ Java_com_manager_ssb_util_NativeFileOperation_kissCopy(
     jmethodID progressMethod = NULL;
     if (jCallback) {
         jclass callbackClass = (*env)->GetObjectClass(env, jCallback);
-        progressMethod = (*env)->GetMethodID(env, callbackClass, "onProgress", "(JJ)V");
+        progressMethod = (*env)->GetMethodID(env, callbackClass, "onProgress", "(Ljava/lang/String;JJ)V");
     }
     
     // 检测源类型
@@ -159,6 +223,11 @@ Java_com_manager_ssb_util_NativeFileOperation_kissCopy(
             KISS_FAIL(env, 1, "Failed to create destination file");
         }
         
+        // 获取文件名（不含路径）
+        const char* filename = strrchr(src, '/');
+        if (filename) filename++;
+        else filename = src;
+        
         // 使用sendfile进行高效复制
         off_t offset = 0;
         ssize_t result;
@@ -170,15 +239,18 @@ Java_com_manager_ssb_util_NativeFileOperation_kissCopy(
                 break;
             }
             
-            // 进度更新
+            // 进度更新（添加文件名参数）
             if (jCallback && progressMethod) {
+                jstring jFilename = (*env)->NewStringUTF(env, filename);
                 (*env)->CallVoidMethod(
                     env, 
                     jCallback, 
                     progressMethod, 
+                    jFilename,
                     (jlong)offset, 
                     (jlong)src_stat.st_size
                 );
+                (*env)->DeleteLocalRef(env, jFilename);
             }
         }
         
@@ -251,7 +323,7 @@ Java_com_manager_ssb_util_NativeFileOperation_kissCopy(
             }
             
             // 递归复制
-            jboolean result = Java_com_manager_ssb_util_NativeFileOperation_kissCopy(
+            jboolean result = Java_com_manager_ssb_util_NativeFileOperation_nativeCopy(
                 env, thiz, jSrcPath, jDestPath, jCallback);
             
             // 释放JNI引用
@@ -301,7 +373,7 @@ Java_com_manager_ssb_util_NativeFileOperation_kissCopy(
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_manager_ssb_util_NativeFileOperation_kissDelete(
+Java_com_manager_ssb_util_NativeFileOperation_nativeDelete(
     JNIEnv* env,
     jobject thiz,
     jstring jPath
@@ -319,74 +391,8 @@ Java_com_manager_ssb_util_NativeFileOperation_kissDelete(
     return result ? JNI_TRUE : JNI_FALSE;
 }
 
-static int delete_recursive(const char *path) {
-    struct stat statbuf;
-    if (lstat(path, &statbuf) != 0) {
-        if (errno == ENOENT) {
-            __android_log_print(ANDROID_LOG_WARN, TAG, "Path does not exist: %s", path);
-            return 1; // 文件不存在视为成功
-        }
-        __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to lstat: %s (errno %d)", path, errno);
-        return 0;
-    }
-    
-    // 文件或链接
-    if (S_ISREG(statbuf.st_mode) || S_ISLNK(statbuf.st_mode)) {
-        __android_log_print(ANDROID_LOG_DEBUG, TAG, "Deleting file/link: %s", path);
-        if (unlink(path) != 0) {
-            __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to unlink: %s (errno %d)", path, errno);
-            return 0;
-        }
-    }
-    // 目录
-    else if (S_ISDIR(statbuf.st_mode)) {
-        DIR *dir = opendir(path);
-        if (!dir) {
-            __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to open dir: %s (errno %d)", path, errno);
-            return 0;
-        }
-        
-        int success = 1;
-        struct dirent *entry;
-        while ((entry = readdir(dir)) != NULL) {
-            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
-                continue;
-                
-            char child_path[MAX_PATH_LEN];
-            safe_path_join(child_path, path, entry->d_name);
-            
-            if (!delete_recursive(child_path)) {
-                success = 0;
-                break;
-            }
-        }
-        closedir(dir);
-        
-        if (!success) {
-            __android_log_print(ANDROID_LOG_ERROR, TAG, "Partial delete failed: %s", path);
-            return 0;
-        }
-        
-        __android_log_print(ANDROID_LOG_DEBUG, TAG, "Deleting directory: %s", path);
-        if (rmdir(path) != 0) {
-            __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to rmdir: %s (errno %d)", path, errno);
-            return 0;
-        }
-    }
-    // 其他类型 (FIFO, socket等)
-    else {
-        __android_log_print(ANDROID_LOG_DEBUG, TAG, "Deleting special file: %s", path);
-        if (unlink(path) != 0) {
-            __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to unlink special: %s (errno %d)", path, errno);
-            return 0;
-        }
-    }
-    
-    return 1;
-}
-
 JNIEXPORT jboolean JNICALL
-Java_com_manager_ssb_util_NativeFileOperation_kissMove(
+Java_com_manager_ssb_util_NativeFileOperation_nativeMove(
     JNIEnv* env,
     jobject thiz,
     jstring jSrc,
@@ -416,8 +422,8 @@ Java_com_manager_ssb_util_NativeFileOperation_kissMove(
     __android_log_print(ANDROID_LOG_WARN, TAG, "Rename failed (errno %d), using copy-delete", errno);
     
     // 跨设备回退到复制+删除
-    if (Java_com_manager_ssb_util_NativeFileOperation_kissCopy(env, thiz, jSrc, jDest, NULL)) {
-        if (Java_com_manager_ssb_util_NativeFileOperation_kissDelete(env, thiz, jSrc)) {
+    if (Java_com_manager_ssb_util_NativeFileOperation_nativeCopy(env, thiz, jSrc, jDest, NULL)) {
+        if (Java_com_manager_ssb_util_NativeFileOperation_nativeDelete(env, thiz, jSrc)) {
             __android_log_print(ANDROID_LOG_INFO, TAG, "Move successful (copy-delete)");
             (*env)->ReleaseStringUTFChars(env, jSrc, src);
             (*env)->ReleaseStringUTFChars(env, jDest, dest);
@@ -429,7 +435,7 @@ Java_com_manager_ssb_util_NativeFileOperation_kissMove(
     
     // 清理失败的复制
     __android_log_print(ANDROID_LOG_ERROR, TAG, "Move failed, cleaning up partial destination");
-    Java_com_manager_ssb_util_NativeFileOperation_kissDelete(env, thiz, jDest);
+    Java_com_manager_ssb_util_NativeFileOperation_nativeDelete(env, thiz, jDest);
     
     (*env)->ReleaseStringUTFChars(env, jSrc, src);
     (*env)->ReleaseStringUTFChars(env, jDest, dest);

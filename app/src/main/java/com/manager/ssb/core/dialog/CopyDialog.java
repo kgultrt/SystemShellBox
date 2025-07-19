@@ -10,7 +10,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.manager.ssb.R;
-import com.manager.ssb.Application;
 import com.manager.ssb.core.task.NotifyingExecutorService;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.task.TaskTypes;
@@ -117,16 +116,15 @@ public class CopyDialog {
                                    OnCopyCallback callback, CopyProgressDialog progressDialog) 
                                    throws Exception {
         Handler mainHandler = new Handler(Looper.getMainLooper());
-        final String fileName = fileItem.getFile().getName();
         
         try {
             boolean success = NativeFileOperation.copy(
                 fileItem.getFile().getAbsolutePath(), 
                 destFile.getAbsolutePath(),
-                (copied, total) -> {
+                (currentFile, copied, total) -> {
                     // 将UI更新任务发送到主线程
                     mainHandler.post(() -> {
-                        progressDialog.updateProgress(copied, total, fileName);
+                        progressDialog.updateProgress(currentFile, copied, total);
                     });
                 }
             );

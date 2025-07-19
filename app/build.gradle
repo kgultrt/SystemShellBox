@@ -28,7 +28,7 @@ android {
         
         externalNativeBuild {
             ndkBuild {
-                cFlags "-std=c11", "-Wall", "-Wextra", "-Werror", "-Os", "-fno-stack-protector", "-Wl,--gc-sections"
+                cFlags "-std=c11", "-Os", "-fno-stack-protector", "-Wl,--gc-sections"
             }
         }
 
@@ -89,6 +89,9 @@ android {
                             }
                     }
             }
+            
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         
         release {
@@ -107,7 +110,7 @@ android {
             versionNameSuffix "-release${buildNumber + 1}"
             
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -130,7 +133,7 @@ android {
     
     packagingOptions {
         jniLibs {
-            useLegacyPackaging false
+            useLegacyPackaging true
         }
     }
 }
