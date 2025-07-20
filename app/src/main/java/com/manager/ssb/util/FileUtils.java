@@ -1,6 +1,8 @@
 package com.manager.ssb.util;
 
 import java.util.Locale;
+import com.manager.ssb.Application;
+import com.manager.ssb.R;
 
 public class FileUtils {
 
@@ -39,18 +41,18 @@ public class FileUtils {
     
     public static String formatTime(long seconds) {
         if (seconds < 60) {
-            return seconds + "秒";
+            return seconds + Application.getAppContext().getString(R.string.second);
         }
         
         long minutes = seconds / 60;
         seconds %= 60;
         
         if (minutes < 60) {
-            return String.format(Locale.US, "%d分%02d秒", minutes, seconds);
+            return String.format(Locale.US, "%d" + Application.getAppContext().getString(R.string.minute) + "%02d" + Application.getAppContext().getString(R.string.second), minutes, seconds);
         }
         
         long hours = minutes / 60;
         minutes %= 60;
-        return String.format(Locale.US, "%d时%02d分", hours, minutes);
+        return String.format(Locale.US, "%d" + Application.getAppContext().getString(R.string.hour) + "%02d" + Application.getAppContext().getString(R.string.minute), hours, minutes);
     }
 }

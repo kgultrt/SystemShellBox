@@ -161,7 +161,7 @@
     <string name="rename_file_prompt">The file already exists. Do you want to rename it?</string>
     
     <!-- Progress dialog title and message -->
-    <string name="copy_progress_title">Copying Files</string>
+    <string name="copy_progress_title">Copying Files...</string>
     <string name="copy_progress_message">Please wait while the files are being copied...</string>
 
     <!-- Labels -->
@@ -176,6 +176,10 @@
     <string name="dir_create_failed">Unable to create the destination directory</string>
     <string name="dir_not_writable">The destination directory is not writable</string>
     <string name="ok">OK</string>
+    
+    <string name="second">S</string>
+    <string name="minute">M</string>
+    <string name="hour">H</string>
 
 
     <string-array name="size_units">

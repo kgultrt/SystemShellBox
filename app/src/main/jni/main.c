@@ -12,7 +12,7 @@
 #include <utime.h>
 #include <sys/statvfs.h>
 
-#define TAG "SSB_DAEMON"
+#define TAG "SSB_UTILS"
 #define BUFFER_SIZE (256 * 1024)
 #define MAX_PATH_LEN 4096
 #define MAX_RECURSION_DEPTH 50

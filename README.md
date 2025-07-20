@@ -20,16 +20,7 @@
    git clone https://github.com/kgultrt/SystemShellBox
    ```
 
-2. 修改 Gradle 配置：  
-   打开项目根目录下的 `gradle.properties` 文件，**删除以下行**：
-   ```properties
-   # 专门环境设置，请删除这一行
-   android.aapt2FromMavenOverride=/data/data/com.termux/files/home/.androidide/aapt2
-   ```
-
-   并且删除 `local.properties` 文件
-
-3. 使用 Android Studio 或命令行构建 (请不要使用b.sh)：
+2. 使用 Android Studio 或命令行构建：
    ```bash
    ./gradlew assembleDebug
    ```

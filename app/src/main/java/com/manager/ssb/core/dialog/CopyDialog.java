@@ -67,6 +67,24 @@ public class CopyDialog {
                     File srcFile = fileItem.getFile();
                     File destFile = new File(targetDir, srcFile.getName());
                     
+                    // 新增：检测目标目录不能是自己或子目录
+                    if (srcFile.isDirectory()) {
+                        try {
+                            String srcCanonical = srcFile.getCanonicalPath();
+                            String targetCanonical = destFile.getCanonicalPath();
+
+                            if (targetCanonical.equals(srcCanonical) ||
+                                targetCanonical.startsWith(srcCanonical + File.separator)) {
+                                Toast.makeText(context,
+                                    R.string.copy_into_self_error,
+                                    Toast.LENGTH_LONG).show();
+                                return;
+                            }
+                        } catch (Exception e) {
+                            // 解析路径失败时忽略，不阻止操作
+                        }
+                    }
+                    
                     CopyProgressDialog progressDialog = new CopyProgressDialog(context);
                     progressDialog.show(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), 
                                       srcFile.getName());

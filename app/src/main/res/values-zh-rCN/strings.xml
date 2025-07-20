@@ -161,7 +161,7 @@
     <string name="rename_file_prompt">文件已存在。是否要重命名它？</string>
 
     <!-- Progress dialog title and message -->
-    <string name="copy_progress_title">正在复制文件</string>
+    <string name="copy_progress_title">正在复制文件...</string>
     <string name="copy_progress_message">正在复制文件，请稍候...</string>
 
     <!-- Labels -->
@@ -176,6 +176,10 @@
     <string name="dir_create_failed">无法创建目标目录</string>
     <string name="dir_not_writable">目标目录不可写</string>
     <string name="ok">确定</string>
+    
+    <string name="second">秒</string>
+    <string name="minute">分</string>
+    <string name="hour">时</string>
 
 
 

@@ -29,7 +29,6 @@ public class BottomMenuClickListener implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        // 使用 if-else
         if (v.getId() == R.id.btn_sync) {
             handleSync();
         } else if (v.getId() == R.id.btn_create) {
