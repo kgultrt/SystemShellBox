@@ -15,15 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
+package com.manager.ssb.core.openmethod;
 
-// FileType.java (枚举)
-package com.manager.ssb.core;
+import android.content.Context;
+import android.content.Intent;
+import android.widget.Toast;
 
-public enum FileType {
-    AUDIO,
-    TEXT,
-    IMAGE,
-    VIDEO,
-    COMPRESS,
-    UNKNOWN
+import com.manager.ssb.R;
+import com.manager.ssb.Application;
+import com.manager.ssb.core.FileHandler;
+import com.manager.ssb.core.editor.MainActivity;
+
+public class CompressFileHandler implements FileHandler {
+    @Override
+    public void handle(Context context, String filePath, String fileName) {
+        String msg = Application.getAppContext().getString(R.string.wip);
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+    }
 }

@@ -112,6 +112,8 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
                 iconResId = R.drawable.ic_music;
             } else if (item.isTextFile()) {
                 iconResId = R.drawable.ic_text;
+            } else if (item.isZipFile()) {
+                iconResId = R.drawable.ic_zip;
             } else {
                 iconResId = item.isDirectory() ? R.drawable.ic_folder : R.drawable.ic_file;
             }

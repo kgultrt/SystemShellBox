@@ -26,6 +26,7 @@ import java.util.Map;
 
 import com.manager.ssb.core.openmethod.AudioFileHandler;
 import com.manager.ssb.core.openmethod.TextFileHandler;
+import com.manager.ssb.core.openmethod.CompressFileHandler;
 import com.manager.ssb.core.openmethod.UnknownFileHandler;
 
 
@@ -35,6 +36,7 @@ public class FileOpener {
     static {
         HANDLER_MAP.put(FileType.AUDIO, new AudioFileHandler());
         HANDLER_MAP.put(FileType.TEXT, new TextFileHandler());
+        HANDLER_MAP.put(FileType.COMPRESS, new CompressFileHandler());
         HANDLER_MAP.put(FileType.UNKNOWN, new UnknownFileHandler());
     }
 

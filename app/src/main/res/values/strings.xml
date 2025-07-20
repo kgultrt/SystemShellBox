@@ -109,6 +109,7 @@
     <string name="open_with_title">Choose how to open "%s"</string>
     <string name="option_text_editor">Text Editor</string>
     <string name="option_audio_player">Audio Player</string>
+    <string name="option_compressed_file_viewer">Compressed File Viewer</string>
     <string name="option_system_default">System Default</string>
     <string name="no_app_found">No application found to open this file</string>
     
@@ -180,6 +181,23 @@
     <string name="second">S</string>
     <string name="minute">M</string>
     <string name="hour">H</string>
+    
+    <string name="manage">Manage</string>
+    <string name="confirm_delete_title">Confirm Deletion</string>
+    <string name="confirm_delete_message">Are you sure you want to delete \'%1$s\' ？</string>
+    <string name="delete_selected">Delete Selected</string>
+    <string name="clear_all">Empty All</string>
+    <string name="manage_history">Manage History</string>
+    <string name="manage_bookmarks">Manage Bookmark</string>
+    <string name="confirm_clear_title">Confirm Empty</string>
+    <string name="confirm_clear_history">Are you sure you want to clear all history? This action cannot be undone.</string>
+    <string name="confirm_clear_bookmarks">Are you sure you want to clear all bookmarks? This action cannot be undone.</string>
+    <string name="history_cleared">History has been cleared</string>
+    <string name="bookmarks_cleared">Bookmark emptied</string>
+    <string name="no_history">No History</string>
+    <string name="no_bookmarks">No bookmark</string>
+    <string name="no_history_to_manage">No history to manage</string>
+    <string name="no_bookmarks_to_manage">No bookmarks to manage</string>
 
 
     <string-array name="size_units">

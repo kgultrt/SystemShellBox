@@ -18,6 +18,7 @@ import com.google.gson.JsonArray;
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class BottomMenuClickListener implements View.OnClickListener {
 
@@ -190,34 +191,144 @@ public class BottomMenuClickListener implements View.OnClickListener {
             .setTitle(context.getString(R.string.bookmark))
             .setItems(new CharSequence[]{context.getString(R.string.bookmark_dialog), context.getString(R.string.his_dialog)}, (dialog, which) -> {
                 // 根据选择类型执行不同操作
-                showBookmarkHistoryDialog(which == 0); // 0 = HIS，1 = BOOK
+                showBookmarkHistoryDialog(which == 1); // 0 = 书签，1 = 历史
             })
             .show();
     }
     
     private void showBookmarkHistoryDialog(boolean isHistory) {
-        List<String> history = getHistory();
+        List<String> items = isHistory ? getHistory() : getBookmark();
         
-        if (isHistory == false) {
-            new MaterialAlertDialogBuilder(context)
-                .setTitle(context.getString(R.string.his_dialog))
-                .setItems(history.toArray(new String[0]), (dialog, which) -> {
-                    String selectedPath = history.get(which);
-                    handleHistoryItemClick(selectedPath); // 进入历史记录目录
-                })
-                .setNegativeButton(context.getString(R.string.cancel), null)
-                .show();
+        // 检查是否有数据
+        if (items.isEmpty()) {
+            Toast.makeText(context, 
+                context.getString(isHistory ? R.string.no_history : R.string.no_bookmarks),
+                Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        CharSequence[] itemsArray = items.toArray(new String[0]);
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context)
+            .setTitle(isHistory ? context.getString(R.string.his_dialog) : context.getString(R.string.bookmark_dialog))
+            .setItems(itemsArray, (dialog, which) -> {
+                String selectedPath = items.get(which);
+                handleHistoryItemClick(selectedPath);
+            })
+            .setNeutralButton(context.getString(R.string.manage), (d, w) -> {
+                // 管理按钮
+                showManagementDialog(isHistory);
+            })
+            .setNegativeButton(context.getString(R.string.cancel), null);
+            
+        builder.show();
+    }
+    
+    // 显示删除确认对话框
+    private void showDeleteConfirmationDialog(boolean isHistory, int position, String path) {
+        new MaterialAlertDialogBuilder(context)
+            .setTitle(context.getString(R.string.confirm_delete_title))
+            .setMessage(context.getString(R.string.confirm_delete_message, new File(path).getName()))
+            .setPositiveButton(context.getString(R.string.delete), (dialog, which) -> {
+                // 执行删除
+                deleteItem(isHistory, position);
+                // 显示更新后的列表
+                showBookmarkHistoryDialog(isHistory);
+            })
+            .setNegativeButton(context.getString(R.string.cancel), null)
+            .show();
+    }
+    
+    // 删除单个项
+    private void deleteItem(boolean isHistory, int position) {
+        if (isHistory) {
+            List<String> history = getHistory();
+            if (position >= 0 && position < history.size()) {
+                history.remove(position);
+                Config.set("his.item", history);
+                Config.set("his.length.num", history.size());
+                Toast.makeText(context, context.getString(R.string.delete_success), Toast.LENGTH_SHORT).show();
+            }
         } else {
             List<String> bookmark = getBookmark();
-            
-            new MaterialAlertDialogBuilder(context)
-                .setTitle(context.getString(R.string.bookmark_dialog))
-                .setItems(bookmark.toArray(new String[0]), (dialog, which) -> {
-                    String selectedPath = bookmark.get(which);
-                    handleHistoryItemClick(selectedPath);
-                })
-                .setNegativeButton(context.getString(R.string.cancel), null)
-                .show();
+            if (position >= 0 && position < bookmark.size()) {
+                bookmark.remove(position);
+                Config.set("bookmark.item", bookmark);
+                Config.set("bookmark.length.num", bookmark.size());
+                Toast.makeText(context, context.getString(R.string.delete_success), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
+    // 显示管理对话框
+    private void showManagementDialog(boolean isHistory) {
+        List<String> items = isHistory ? getHistory() : getBookmark();
+        
+        // 如果没有数据，提示用户
+        if (items.isEmpty()) {
+            Toast.makeText(context, 
+                context.getString(isHistory ? R.string.no_history_to_manage : R.string.no_bookmarks_to_manage), 
+                Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 创建可勾选的选项数组
+        boolean[] checkedItems = new boolean[items.size()];
+        Arrays.fill(checkedItems, false);
+        
+        new MaterialAlertDialogBuilder(context)
+            .setTitle(isHistory ? 
+                     context.getString(R.string.manage_history) : 
+                     context.getString(R.string.manage_bookmarks))
+            .setMultiChoiceItems(items.toArray(new String[0]), checkedItems, (dialog, which, isChecked) -> {
+                // 更新选中状态
+                checkedItems[which] = isChecked;
+            })
+            .setPositiveButton(context.getString(R.string.delete_selected), (dialog, which) -> {
+                // 删除选中的项目
+                // 从后往前删除避免索引问题
+                List<Integer> positionsToDelete = new ArrayList<>();
+                for (int i = checkedItems.length - 1; i >= 0; i--) {
+                    if (checkedItems[i]) {
+                        deleteItem(isHistory, i);
+                    }
+                }
+                // 显示更新后的列表
+                showBookmarkHistoryDialog(isHistory);
+            })
+            .setNeutralButton(context.getString(R.string.clear_all), (dialog, which) -> {
+                // 清空所有
+                showClearAllConfirmationDialog(isHistory);
+            })
+            .setNegativeButton(context.getString(R.string.cancel), null)
+            .show();
+    }
+    
+    // 显示清空所有确认对话框
+    private void showClearAllConfirmationDialog(boolean isHistory) {
+        new MaterialAlertDialogBuilder(context)
+            .setTitle(context.getString(R.string.confirm_clear_title))
+            .setMessage(context.getString(
+                isHistory ? R.string.confirm_clear_history : R.string.confirm_clear_bookmarks))
+            .setPositiveButton(context.getString(R.string.clear_all), (dialog, which) -> { // 使用 clear_all 字符串
+                clearAllItems(isHistory);
+                // 显示更新后的列表（会显示空状态提示）
+                showBookmarkHistoryDialog(isHistory);
+            })
+            .setNegativeButton(context.getString(R.string.cancel), null)
+            .show();
+    }
+    
+    // 清空所有项目
+    private void clearAllItems(boolean isHistory) {
+        if (isHistory) {
+            Config.set("his.item", new JsonArray());
+            Config.set("his.length.num", 0);
+            Toast.makeText(context, context.getString(R.string.history_cleared), Toast.LENGTH_SHORT).show();
+        } else {
+            Config.set("bookmark.item", new JsonArray());
+            Config.set("bookmark.length.num", 0);
+            Toast.makeText(context, context.getString(R.string.bookmarks_cleared), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -263,4 +374,3 @@ public class BottomMenuClickListener implements View.OnClickListener {
         }
     }
 }
-

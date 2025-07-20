@@ -109,6 +109,7 @@
     <string name="open_with_title">选择打开 %s 的方式</string>
     <string name="option_text_editor">文本编辑器</string>
     <string name="option_audio_player">音频播放器</string>
+    <string name="option_compressed_file_viewer">压缩文件查看器</string>
     <string name="option_system_default">系统默认</string>
     <string name="no_app_found">未找到打开此文件的应用</string>
 
@@ -176,12 +177,28 @@
     <string name="dir_create_failed">无法创建目标目录</string>
     <string name="dir_not_writable">目标目录不可写</string>
     <string name="ok">确定</string>
-    
+
     <string name="second">秒</string>
     <string name="minute">分</string>
     <string name="hour">时</string>
 
-
+    <!-- 管理功能 -->
+    <string name="manage">管理</string>
+    <string name="confirm_delete_title">确认删除</string>
+    <string name="confirm_delete_message">确定要删除 \'%1$s\' 吗？</string>
+    <string name="delete_selected">删除选中</string>
+    <string name="clear_all">清空全部</string>
+    <string name="manage_history">管理历史记录</string>
+    <string name="manage_bookmarks">管理书签</string>
+    <string name="confirm_clear_title">确认清空</string>
+    <string name="confirm_clear_history">确定要清空所有历史记录吗？此操作不可撤销。</string>
+    <string name="confirm_clear_bookmarks">确定要清空所有书签吗？此操作不可撤销。</string>
+    <string name="history_cleared">历史记录已清空</string>
+    <string name="bookmarks_cleared">书签已清空</string>
+    <string name="no_history">没有历史记录</string>
+    <string name="no_bookmarks">没有书签</string>
+    <string name="no_history_to_manage">没有可管理的历史记录</string>
+    <string name="no_bookmarks_to_manage">没有可管理的书签</string>
 
 
     <string name="shared_user_label">Termux 用户</string>

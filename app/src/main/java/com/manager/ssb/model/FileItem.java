@@ -31,6 +31,7 @@ public class FileItem {
     private final boolean isDirectory;
     private volatile Boolean isAudioFile = null;
     private volatile Boolean isTextFile = null;
+    private volatile Boolean isZipFile = null; // 新增压缩文件状态缓存
 
     // 支持的音频文件扩展名集合
     private static final Set<String> AUDIO_EXTENSIONS = new HashSet<>(
@@ -39,6 +40,11 @@ public class FileItem {
 
     private static final Set<String> TEXT_EXTENSIONS = new HashSet<>(
             Arrays.asList("txt", "java", "c", "cpp", "cs", "py", "cxx", "js", "css", "md", "go", "log", "sh", "rs", "bat", "kt", "h", "lua")
+    );
+    
+    // 新增压缩文件扩展名集合
+    private static final Set<String> ZIP_EXTENSIONS = new HashSet<>(
+            Arrays.asList("zip", "tar", "gz", "bz2", "7z", "rar")
     );
 
     public FileItem(File file) {
@@ -56,6 +62,27 @@ public class FileItem {
 
     public boolean isDirectory() {
         return isDirectory;
+    }
+
+    // 新增压缩文件检测方法
+    public boolean isZipFile() {
+        if (isZipFile == null) {
+            isZipFile = checkIsZipFile();
+        }
+        return isZipFile;
+    }
+
+    private boolean checkIsZipFile() {
+        if (isDirectory) {
+            return false;
+        }
+        String fileName = file.getName().toLowerCase();
+        int lastDotIndex = fileName.lastIndexOf('.');
+        if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
+            String extension = fileName.substring(lastDotIndex + 1);
+            return ZIP_EXTENSIONS.contains(extension);
+        }
+        return false;
     }
 
     public boolean isAudioFile() {
