@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.manager.ssb.R;
 import com.manager.ssb.util.FileUtils;
+import com.manager.ssb.util.NativeFileOperation;
 
 import java.util.Locale;
 
@@ -65,11 +66,28 @@ public class CopyProgressDialog {
         lastTotal = 0;
         currentFileName = fileName;
     }
-
-    public void updateProgress(String currentFileName, long bytesCopied, long totalBytes) {
+    
+    public Context getContext() {
+        return context;
+    }
+    
+    public void updateProgress(String currentFile, long bytesCopied, long totalBytes) {
+        updateProgress(currentFile, bytesCopied, totalBytes, NativeFileOperation.STATUS_SUCCESS);
+    }
+    
+    public void updateProgress(String currentFile, long bytesCopied, long totalBytes, int status) {
         // 确保在主线程执行UI更新
         new Handler(Looper.getMainLooper()).post(() -> {
-            this.currentFileName = currentFileName;
+            // 冲突状态特殊处理
+            if (status == NativeFileOperation.STATUS_CONFLICT) {
+                progressBar.setIndeterminate(true);
+                progressText.setText(context.getString(R.string.file_conflict_detected));
+                etaText.setText(context.getString(R.string.waiting_for_user));
+                return;
+            }
+            
+            // 重置为正常状态
+            progressBar.setIndeterminate(false);
             
             // 更新当前文件进度
             int fileProgress = totalBytes > 0 ? (int) (bytesCopied * 100 / totalBytes) : 0;
@@ -81,7 +99,7 @@ public class CopyProgressDialog {
             
             if (progressText != null) {
                 String progressStr = String.format(Locale.US, "%s: %d%% (%s/%s)",
-                    FileUtils.getShortName(currentFileName),
+                    FileUtils.getShortName(currentFile),
                     fileProgress,
                     FileUtils.formatFileSize(bytesCopied),
                     FileUtils.formatFileSize(totalBytes));

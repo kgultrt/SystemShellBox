@@ -12,10 +12,16 @@
 #include <utime.h>
 #include <sys/statvfs.h>
 
+
 #define TAG "SSB_UTILS"
 #define BUFFER_SIZE (256 * 1024)
 #define MAX_PATH_LEN 4096
 #define MAX_RECURSION_DEPTH 50
+
+// 定义状态码
+#define STATUS_SUCCESS 0
+#define STATUS_ERROR -1
+#define STATUS_CONFLICT -100
 
 // 错误处理宏
 #define KISS_FAIL(env, code, msg) do { \
@@ -152,7 +158,7 @@ static int delete_recursive(const char *path) {
     return 1;
 }
 
-JNIEXPORT jboolean JNICALL
+JNIEXPORT jint JNICALL
 Java_com_manager_ssb_util_NativeFileOperation_nativeCopy(
     JNIEnv* env, 
     jobject thiz,
@@ -185,13 +191,40 @@ Java_com_manager_ssb_util_NativeFileOperation_nativeCopy(
     jmethodID progressMethod = NULL;
     if (jCallback) {
         jclass callbackClass = (*env)->GetObjectClass(env, jCallback);
-        progressMethod = (*env)->GetMethodID(env, callbackClass, "onProgress", "(Ljava/lang/String;JJ)V");
+        progressMethod = (*env)->GetMethodID(env, callbackClass, "onProgress", "(Ljava/lang/String;JJI)V");
     }
     
     // 检测源类型
     struct stat src_stat;
     if (lstat(src, &src_stat) != 0) 
         KISS_FAIL(env, 1, "Failed to access source");
+        
+    const char* filename = strrchr(src, '/');
+        if (filename) filename++;
+        else filename = src;
+        
+    // 在文件复制前检查目标是否存在
+    if (access(dest, F_OK) == 0 && S_ISREG(src_stat.st_mode)) {
+        __android_log_print(ANDROID_LOG_WARN, TAG, "File conflict detected: %s", dest);
+        
+        // 如果文件存在，返回冲突状态码
+        if (jCallback && progressMethod) {
+            jstring jFilename = (*env)->NewStringUTF(env, filename);
+            (*env)->CallVoidMethod(
+                env, 
+                jCallback, 
+                progressMethod, 
+                jFilename,
+                0L,
+                src_stat.st_size,
+                (jint)STATUS_CONFLICT
+            );
+            (*env)->DeleteLocalRef(env, jFilename);
+        }
+        
+        recursion_depth--;
+        return STATUS_CONFLICT;
+    }
     
     // 文件复制
     if (S_ISREG(src_stat.st_mode)) {
@@ -248,7 +281,8 @@ Java_com_manager_ssb_util_NativeFileOperation_nativeCopy(
                     progressMethod, 
                     jFilename,
                     (jlong)offset, 
-                    (jlong)src_stat.st_size
+                    (jlong)src_stat.st_size,
+                    (jint)STATUS_SUCCESS
                 );
                 (*env)->DeleteLocalRef(env, jFilename);
             }
@@ -368,8 +402,9 @@ Java_com_manager_ssb_util_NativeFileOperation_nativeCopy(
     (*env)->ReleaseStringUTFChars(env, jSrc, src);
     (*env)->ReleaseStringUTFChars(env, jDest, dest);
     
+    // 正常返回改为0表示成功
     recursion_depth--;
-    return JNI_TRUE;
+    return STATUS_SUCCESS;
 }
 
 JNIEXPORT jboolean JNICALL

@@ -1,6 +1,8 @@
 package com.manager.ssb.util;
 
 import java.util.Locale;
+import java.io.File;
+
 import com.manager.ssb.Application;
 import com.manager.ssb.R;
 
@@ -54,5 +56,31 @@ public class FileUtils {
         long hours = minutes / 60;
         minutes %= 60;
         return String.format(Locale.US, "%d" + Application.getAppContext().getString(R.string.hour) + "%02d" + Application.getAppContext().getString(R.string.minute), hours, minutes);
+    }
+    
+    // 生成唯一文件名
+    public static File generateUniqueFileName(File file) {
+        File parent = file.getParentFile();
+        String name = file.getName();
+        int dotIndex = name.lastIndexOf('.');
+        String baseName;
+        String extension = "";
+        
+        if (dotIndex >= 0) {
+            baseName = name.substring(0, dotIndex);
+            extension = name.substring(dotIndex);
+        } else {
+            baseName = name;
+        }
+
+        int counter = 1;
+        File newFile;
+        do {
+            String newName = baseName + " (" + counter + ")" + extension;
+            newFile = new File(parent, newName);
+            counter++;
+        } while (newFile.exists());
+
+        return newFile;
     }
 }

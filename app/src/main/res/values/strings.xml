@@ -204,6 +204,14 @@
     
     <string name="compress_format_detected">Recognized %s format (Function under development)</string>
     <string name="unsupported_compress_format">Unsupported compression format</string>
+  
+  
+    <string name="file_conflict_detected">File conflict detected</string>
+    <string name="waiting_for_user">Waiting for user action...</string>
+    <string name="overwrite_file">Move and replace</string>
+    <string name="skip_file">Skip the file</string>
+    <string name="keep_both">Move but keep both files</string>
+    <string name="apply_to_all_conflicts">Do the same for subsequent conflict</string>
 
 
     <string-array name="size_units">

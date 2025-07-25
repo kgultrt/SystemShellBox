@@ -199,12 +199,21 @@
     <string name="no_bookmarks">没有书签</string>
     <string name="no_history_to_manage">没有可管理的历史记录</string>
     <string name="no_bookmarks_to_manage">没有可管理的书签</string>
-    
+
     <string name="exit_dialog">退出确认</string>
     <string name="exit_dialog_c">确定要退出应用吗？</string>
-    
+
     <string name="compress_format_detected">已识别 %s 格式 (功能开发中)</string>
     <string name="unsupported_compress_format">不支持的压缩格式</string>
+
+    <!-- 冲突处理相关字符串 -->
+    <string name="file_conflict_detected">检测到文件冲突</string>
+    <string name="waiting_for_user">等待用户操作中…</string>
+    <string name="overwrite_file">移动并替换</string>
+    <string name="skip_file">跳过该文件</string>
+    <string name="keep_both">移动但保留两个文件</string>
+    <string name="apply_to_all_conflicts">为后续冲突执行相同操作</string>
+
 
 
 
