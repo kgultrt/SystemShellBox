@@ -92,5 +92,6 @@ fi
 # 安装到设备
 echo "部署到设备..."
 adb -s 0.0.0.0 install "$APK_PATH"
+#adb -s 192.168.10.3 install "$APK_PATH"
 
 echo "构建成功!"

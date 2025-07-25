@@ -23,123 +23,88 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.manager.ssb.core.FileType;
+
 public class FileItem {
     private final File file;
     private long cachedSize = -1;
     private long cachedLastModified = -1;
 
     private final boolean isDirectory;
+    private final String fileExtension; // 预存储小写扩展名
+    
+    // 使用volatile保证多线程可见性，采用延迟初始化
     private volatile Boolean isAudioFile = null;
     private volatile Boolean isTextFile = null;
-    private volatile Boolean isZipFile = null; // 新增压缩文件状态缓存
+    private volatile Boolean isZipFile = null;
 
-    // 支持的音频文件扩展名集合
-    private static final Set<String> AUDIO_EXTENSIONS = new HashSet<>(
-            Arrays.asList("mp3", "wav", "ogg", "aac", "flac", "m4a", "wma", "mid")
-    );
-
-    private static final Set<String> TEXT_EXTENSIONS = new HashSet<>(
-            Arrays.asList("txt", "java", "c", "cpp", "cs", "py", "cxx", "js", "css", "md", "go", "log", "sh", "rs", "bat", "kt", "h", "lua")
+    // 扩展名集合定义为不可变静态集合
+    private static final Set<String> AUDIO_EXTENSIONS = Set.of(
+        "mp3", "wav", "ogg", "aac", "flac", "m4a", "wma", "mid"
     );
     
-    // 新增压缩文件扩展名集合
-    private static final Set<String> ZIP_EXTENSIONS = new HashSet<>(
-            Arrays.asList("zip", "tar", "gz", "bz2", "7z", "rar")
+    private static final Set<String> TEXT_EXTENSIONS = Set.of(
+        "txt", "java", "c", "cpp", "cs", "py", "cxx", "js", "css", 
+        "md", "go", "log", "sh", "rs", "bat", "kt", "h", "lua", "json"
+    );
+    
+    private static final Set<String> ZIP_EXTENSIONS = Set.of(
+        "zip", "tar", "gz", "bz2", "7z", "rar"
     );
 
     public FileItem(File file) {
         this.file = file;
         this.isDirectory = file.isDirectory();
+        this.fileExtension = initExtension();
     }
 
-    public String getName() {
-        return file.getName();
+    // 一次性计算扩展名（目录返回null）
+    private String initExtension() {
+        if (isDirectory) return null;
+        String name = file.getName();
+        int dotIndex = name.lastIndexOf('.');
+        return (dotIndex > 0 && dotIndex < name.length() - 1) ? 
+            name.substring(dotIndex + 1).toLowerCase() : null;
     }
 
-    public String getPath() {
-        return file.getPath();
-    }
+    public String getName() { return file.getName(); }
+    public String getPath() { return file.getPath(); }
+    public boolean isDirectory() { return isDirectory; }
+    public File getFile() { return file; }
 
-    public boolean isDirectory() {
-        return isDirectory;
+    // 类型判断改为直接使用预存扩展名
+    public boolean isAudioFile() {
+        if (isAudioFile == null) isAudioFile = fileExtension != null && AUDIO_EXTENSIONS.contains(fileExtension);
+        return isAudioFile;
     }
-
-    // 新增压缩文件检测方法
+    
+    public boolean isTextFile() {
+        if (isTextFile == null) isTextFile = fileExtension != null && TEXT_EXTENSIONS.contains(fileExtension);
+        return isTextFile;
+    }
+    
     public boolean isZipFile() {
-        if (isZipFile == null) {
-            isZipFile = checkIsZipFile();
-        }
+        if (isZipFile == null) isZipFile = fileExtension != null && ZIP_EXTENSIONS.contains(fileExtension);
         return isZipFile;
     }
 
-    private boolean checkIsZipFile() {
-        if (isDirectory) {
-            return false;
-        }
-        String fileName = file.getName().toLowerCase();
-        int lastDotIndex = fileName.lastIndexOf('.');
-        if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
-            String extension = fileName.substring(lastDotIndex + 1);
-            return ZIP_EXTENSIONS.contains(extension);
-        }
-        return false;
-    }
-
-    public boolean isAudioFile() {
-        if (isAudioFile == null) {
-            isAudioFile = checkIsAudioFile();
-        }
-        return isAudioFile;
-    }
-
-    private boolean checkIsAudioFile() {
-        if (isDirectory) {
-            return false;
-        }
-        String fileName = file.getName().toLowerCase();
-        int lastDotIndex = fileName.lastIndexOf('.');
-        if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
-            String extension = fileName.substring(lastDotIndex + 1);
-            return AUDIO_EXTENSIONS.contains(extension);
-        }
-        return false;
-    }
-
-    public boolean isTextFile() {
-        if (isTextFile == null) {
-            isTextFile = checkIsTextFile();
-        }
-        return isTextFile;
-    }
-
-    private boolean checkIsTextFile() {
-        if (isDirectory) {
-            return false;
-        }
-        String fileName = file.getName().toLowerCase();
-        int lastDotIndex = fileName.lastIndexOf('.');
-        if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
-            String extension = fileName.substring(lastDotIndex + 1);
-            return TEXT_EXTENSIONS.contains(extension);
-        }
-        return false;
-    }
-
+    // 尺寸和修改时间保持原有延迟加载
     public long getSize() {
-        if (cachedSize == -1) {
-            cachedSize = isDirectory ? 0 : file.length();
-        }
+        if (cachedSize == -1) cachedSize = isDirectory ? 0 : file.length();
         return cachedSize;
     }
-
+    
     public long getLastModified() {
-        if (cachedLastModified == -1) {
-            cachedLastModified = file.lastModified();
-        }
+        if (cachedLastModified == -1) cachedLastModified = file.lastModified();
         return cachedLastModified;
     }
-
-    public File getFile() {
-        return file;
+    
+    public FileType resolveFileType() {
+        if (isDirectory()) return FileType.DIRECTORY;
+        if (isAudioFile()) return FileType.AUDIO;
+        if (isTextFile()) return FileType.TEXT;
+        if (isZipFile()) return FileType.COMPRESS;
+        return FileType.UNKNOWN;
     }
+
 }

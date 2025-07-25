@@ -3,7 +3,7 @@
     <color name="panel_highlight">#22009688</color>
     <color name="item_hover">#334D4DFF</color>
     
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#034BDA</color>
+    <!-- <color name="colorPrimary">#FDFBFA</color> -->
+    <!-- <color name="colorPrimaryDark">#3700B3</color> -->
+    <!-- <color name="colorAccent">#034BDA</color> -->
 </resources>

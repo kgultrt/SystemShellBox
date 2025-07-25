@@ -894,12 +894,49 @@ public class MainActivity extends AppCompatActivity {
             });
         }, TaskTypes.LOAD_FILES);
     }
+    
+    public void onBackPressedCall() {
+        File willLoad;
+
+        switch (activePanel) {
+            case LEFT:
+                willLoad = currentDirectoryLeft.getParentFile();
+                if (willLoad != null) {
+                    loadDirectory(willLoad, ActivePanel.LEFT);
+                } else {
+                    showExitDialog(); // 根目录处理：显示退出对话框
+                }
+                break;
+            case RIGHT:
+                willLoad = currentDirectoryRight.getParentFile();
+                if (willLoad != null) {
+                    loadDirectory(willLoad, ActivePanel.RIGHT);
+                } else {
+                    showExitDialog(); // 根目录处理：显示退出对话框
+                }
+                break;
+        }
+    }
+
+    private void showExitDialog() {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle(getString(R.string.exit_dialog))
+               .setMessage(getString(R.string.exit_dialog_c))
+               .setPositiveButton(R.string.ok, (dialog, which) -> finish())
+               .setNegativeButton(R.string.cancel, null)
+               .show();
+    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         binding = null;
         executorService.shutdownNow(); // 关闭线程池
+    }
+    
+    @Override
+    public void onBackPressed() {
+        onBackPressedCall();
     }
 
 }

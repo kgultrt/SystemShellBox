@@ -198,6 +198,12 @@
     <string name="no_bookmarks">No bookmark</string>
     <string name="no_history_to_manage">No history to manage</string>
     <string name="no_bookmarks_to_manage">No bookmarks to manage</string>
+    
+    <string name="exit_dialog">Exit Confirmation</string>
+    <string name="exit_dialog_c">Are you sure you want to quit the app?</string>
+    
+    <string name="compress_format_detected">Recognized %s format (Function under development)</string>
+    <string name="unsupported_compress_format">Unsupported compression format</string>
 
 
     <string-array name="size_units">

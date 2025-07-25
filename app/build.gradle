@@ -106,7 +106,18 @@ android {
                     buildNumberFile.text = "0"
             }
             
-            versionNameSuffix "-release${buildNumber + 1}"
+            def releaseNumberFile = file("${project.rootDir}/releaseNumber.txt")
+            def releaseNumber = 0 // 默认构建号
+
+            // 如果 buildNumber 文件存在，读取其中的值
+            if (releaseNumberFile.exists()) {
+                releaseNumber = Integer.parseInt(releaseNumberFile.text.trim())
+            } else {
+                    // 如果文件不存在，初始化为0
+                    releaseNumberFile.text = "0"
+            }
+            
+            versionNameSuffix "-release${releaseNumber + 1}-${buildNumber + 1}"
             
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

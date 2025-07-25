@@ -37,12 +37,12 @@
 
         <activity
             android:name="com.manager.ssb.core.editor.MainActivity"
-            android:exported="true"
+            android:exported="false"
             android:screenOrientation="locked" />
         
         <activity
             android:name="com.manager.ssb.CrashActivity"
-            android:exported="true"
+            android:exported="false"
             android:theme="@android:style/Theme.Material.Light.NoActionBar">
         </activity>
 

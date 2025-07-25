@@ -367,10 +367,14 @@ public class BottomMenuClickListener implements View.OnClickListener {
         
         if (isLeftPanel) {
             File willLoad = activity.getLeftDir().getParentFile();
-            activity.loadDirectory(willLoad, ActivePanel.LEFT);
+            if (willLoad != null) {
+                activity.loadDirectory(willLoad, ActivePanel.LEFT);
+            }
         } else {
             File willLoad = activity.getRightDir().getParentFile();
-            activity.loadDirectory(willLoad, ActivePanel.RIGHT);
+            if (willLoad != null) {
+                activity.loadDirectory(willLoad, ActivePanel.RIGHT);
+            }
         }
     }
 }

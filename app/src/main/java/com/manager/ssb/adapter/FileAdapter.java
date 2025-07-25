@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.manager.ssb.R;
 import com.manager.ssb.model.FileItem;
+import com.manager.ssb.core.FileType;
 import com.manager.ssb.MainActivity;
 import com.manager.ssb.enums.ActivePanel;
 
@@ -107,15 +108,25 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
                 R.drawable.ic_folder : R.drawable.ic_file);
 
         executorService.submit(() -> {
+            // 一次性获取文件类型枚举，避免多次调用判断方法
+            FileType fileType = item.resolveFileType();
+    
             final int iconResId;
-            if (item.isAudioFile()) {
-                iconResId = R.drawable.ic_music;
-            } else if (item.isTextFile()) {
-                iconResId = R.drawable.ic_text;
-            } else if (item.isZipFile()) {
-                iconResId = R.drawable.ic_zip;
-            } else {
-                iconResId = item.isDirectory() ? R.drawable.ic_folder : R.drawable.ic_file;
+            switch (fileType) {
+                case AUDIO:
+                    iconResId = R.drawable.ic_music;
+                    break;
+                case TEXT:
+                    iconResId = R.drawable.ic_text;
+                    break;
+                case COMPRESS:
+                    iconResId = R.drawable.ic_zip;
+                    break;
+                case DIRECTORY:
+                    iconResId = R.drawable.ic_folder;
+                    break;
+                default:
+                    iconResId = R.drawable.ic_file;
             }
 
             final String sizeText = item.isDirectory() ? "" : formatSize(context, item.getSize());
@@ -128,6 +139,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
                 holder.tvTime.setText(timeText);
             });
         });
+
 
         // 修改后的点击监听器
         holder.itemView.setOnClickListener(v -> {

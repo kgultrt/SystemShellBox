@@ -56,10 +56,10 @@ public class FileTypeRegistry {
         
         registerCompressExtension(".zip");
         registerCompressExtension(".tar"); 
-        registerCompressExtension("gz");
-        registerCompressExtension("bz2");
-        registerCompressExtension("7z");
-        registerCompressExtension("rar");
+        registerCompressExtension(".gz");
+        registerCompressExtension(".bz2");
+        registerCompressExtension(".7z");
+        registerCompressExtension(".rar");
     }
 
     public static void registerAudioExtension(String extension) {
