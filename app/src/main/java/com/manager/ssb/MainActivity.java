@@ -67,6 +67,7 @@ import com.manager.ssb.databinding.ActivityMainBinding;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.dialog.SettingsDialogFragment;
 import com.manager.ssb.core.term.TerminalInstaller;
+import com.manager.ssb.util.SignatureVerify;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -367,6 +368,7 @@ public class MainActivity extends AppCompatActivity {
         initMenuActions();
         
         boolean isFirst = Config.get("isFirst", true);
+        boolean isPassed = SignatureVerify.verify();
         int lastBuildNumber = Config.get("lastBuildNumber", 0);
         int currentBuildNumber = extractBuildNumber(getCurrentVersion());
 
@@ -379,6 +381,12 @@ public class MainActivity extends AppCompatActivity {
             // 检测到新版本显示更新日志
             showUpdateDialog(currentBuildNumber);
             Config.set("lastBuildNumber", currentBuildNumber);
+        }
+        
+        if (isPassed) {
+            // do nothing
+        } else {
+            showWarningDialog();
         }
     }
     
@@ -420,6 +428,15 @@ public class MainActivity extends AppCompatActivity {
             .setTitle(getString(R.string.update_title, buildNumber))
             .setMessage(R.string.update_log_content) // 使用单一更新日志资源
             .setPositiveButton(android.R.string.ok, null)
+            .show();
+    }
+    
+    private void showWarningDialog() {
+        new MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.warning_title)
+            .setMessage(R.string.warning_content)
+            .setPositiveButton(android.R.string.ok, null)
+            .setCancelable(false)
             .show();
     }
     

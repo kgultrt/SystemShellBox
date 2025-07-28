@@ -83,3 +83,6 @@ lint/tmp/
 # lint/reports/
 
 local.properties
+keystore.properties
+
+key.jks

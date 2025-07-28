@@ -4,6 +4,8 @@
     <string name="welcome_content">Thank you for installing this app!</string>
     <string name="update_title">Updated to Build %d!</string>
     <string name="update_log_content">Content of this update:\n1.The text editor is more complete (but autocompletion is problematic, causing crashes)\n2.Crash screen added!\n3.Added a little accent theme color to the app\n4.Add Text Editor Top Bar\n\nSee the update log for detailed changes</string>
+    <string name="warning_title">You may be a victim of software piracy.</string>
+    <string name="warning_content">Signature tampering detected!\nAlthough not to stop you from continuing to use, but it is best not to use! Third-party versions may steal your personal information!\n\nOfficial version download link: https://github.com/kgultrt/SystemShellBox</string>
 
 
     <string name="app_name">System Shell Box</string>
