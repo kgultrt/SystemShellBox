@@ -110,6 +110,7 @@
     <string name="option_text_editor">Text Editor</string>
     <string name="option_audio_player">Audio Player</string>
     <string name="option_compressed_file_viewer">Compressed File Viewer</string>
+    <string name="option_browser">Browser</string>
     <string name="option_system_default">System Default</string>
     <string name="no_app_found">No application found to open this file</string>
     
@@ -212,6 +213,15 @@
     <string name="skip_file">Skip the file</string>
     <string name="keep_both">Move but keep both files</string>
     <string name="apply_to_all_conflicts">Do the same for subsequent conflict</string>
+    
+    <string name="input_website_hint">Enter a Web address or local path</string>
+    
+    <string name="html_file_action">HTML file: %1$s</string>
+    <string name="edit">editor</string>
+    <string name="internal_browser">Built-in browser open</string>
+    <string name="external_browser">External Browser Open</string>
+    <string name="not_recommended">(Not recommended)</string>
+    <string name="no_browser_found">No available browser apps found</string>
 
 
     <string-array name="size_units">

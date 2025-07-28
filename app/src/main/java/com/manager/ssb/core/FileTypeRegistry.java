@@ -53,6 +53,7 @@ public class FileTypeRegistry {
         registerTextExtension(".h");
         registerTextExtension(".lua");
         registerTextExtension(".json");
+        registerTextExtension(".properties");
         
         registerCompressExtension(".zip");
         registerCompressExtension(".tar"); 
@@ -60,6 +61,9 @@ public class FileTypeRegistry {
         registerCompressExtension(".bz2");
         registerCompressExtension(".7z");
         registerCompressExtension(".rar");
+        
+        registerHtmlExtension(".html");
+        registerHtmlExtension(".htm");
     }
 
     public static void registerAudioExtension(String extension) {
@@ -72,6 +76,10 @@ public class FileTypeRegistry {
     
     public static void registerCompressExtension(String extension) {
         registerExtension(extension, FileType.COMPRESS);
+    }
+    
+    public static void registerHtmlExtension(String extension) {
+        registerExtension(extension, FileType.HTML);
     }
 
     public static void registerExtension(String extension, FileType fileType) {

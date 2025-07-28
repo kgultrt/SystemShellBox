@@ -22,6 +22,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme">
 
         <!-- 主入口 Activity -->
@@ -44,6 +45,13 @@
             android:name="com.manager.ssb.CrashActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        </activity>
+        
+        <activity
+            android:name="com.manager.ssb.core.browser.HtmlActivity"
+            android:exported="false"
+            android:screenOrientation="locked"
+            android:theme="@style/AppTheme">
         </activity>
 
         <!-- termux -->

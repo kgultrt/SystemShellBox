@@ -110,6 +110,7 @@
     <string name="option_text_editor">文本编辑器</string>
     <string name="option_audio_player">音频播放器</string>
     <string name="option_compressed_file_viewer">压缩文件查看器</string>
+    <string name="option_browser">浏览器</string>
     <string name="option_system_default">系统默认</string>
     <string name="no_app_found">未找到打开此文件的应用</string>
 
@@ -213,6 +214,16 @@
     <string name="skip_file">跳过该文件</string>
     <string name="keep_both">移动但保留两个文件</string>
     <string name="apply_to_all_conflicts">为后续冲突执行相同操作</string>
+
+    <string name="input_website_hint">输入网址或本地路径</string>
+    <!-- HTML文件操作 -->
+    <string name="html_file_action">HTML文件: %1$s</string>
+    <string name="edit">编辑</string>
+    <string name="internal_browser">内置浏览器打开</string>
+    <string name="external_browser">外部浏览器打开</string>
+    <string name="not_recommended">(不推荐)</string>
+    <string name="no_browser_found">未找到可用的浏览器应用</string>
+
 
 
 

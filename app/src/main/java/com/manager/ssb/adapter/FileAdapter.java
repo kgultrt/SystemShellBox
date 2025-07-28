@@ -122,6 +122,9 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
                 case COMPRESS:
                     iconResId = R.drawable.ic_zip;
                     break;
+                case HTML:
+                    iconResId = R.drawable.ic_web;
+                    break;
                 case DIRECTORY:
                     iconResId = R.drawable.ic_folder;
                     break;

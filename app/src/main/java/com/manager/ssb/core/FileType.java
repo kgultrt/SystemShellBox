@@ -26,5 +26,6 @@ public enum FileType {
     VIDEO,
     COMPRESS,
     DIRECTORY,
+    HTML,
     UNKNOWN
 }

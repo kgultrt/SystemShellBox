@@ -47,6 +47,7 @@ public class UnknownFileHandler implements FileHandler {
         CUSTOM_HANDLERS.put("text_editor", new TextFileHandler());
         CUSTOM_HANDLERS.put("audio_player", new AudioFileHandler());
         CUSTOM_HANDLERS.put("compressed_file_viewer", new CompressFileHandler());
+        CUSTOM_HANDLERS.put("browser", new HtmlFileHandler());
     }
 
     @Override
@@ -60,6 +61,7 @@ public class UnknownFileHandler implements FileHandler {
         options.add(context.getString(R.string.option_text_editor));    // 文本编辑器
         options.add(context.getString(R.string.option_audio_player));   // 音频播放器
         options.add(context.getString(R.string.option_compressed_file_viewer));   // 压缩文件查看器
+        options.add(context.getString(R.string.option_browser));   // 内置浏览器
         options.add(context.getString(R.string.option_system_default)); // 系统默认方式
         options.add(context.getString(R.string.cancel));                // 取消
 
@@ -90,6 +92,8 @@ public class UnknownFileHandler implements FileHandler {
                     CUSTOM_HANDLERS.get("audio_player").handle(context, filePath, fileName);
                 } else if (selectedOption.equals(context.getString(R.string.option_compressed_file_viewer))) {
                     CUSTOM_HANDLERS.get("compressed_file_viewer").handle(context, filePath, fileName);
+                } else if (selectedOption.equals(context.getString(R.string.option_browser))) {
+                    CUSTOM_HANDLERS.get("browser").handle(context, filePath, fileName);
                 } else if (selectedOption.equals(context.getString(R.string.option_system_default))) {
                     openWithSystemDefault(context, filePath);
                 }

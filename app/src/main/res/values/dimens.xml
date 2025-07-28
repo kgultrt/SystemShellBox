@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <dimen name="dialog_padding">16dp</dimen>
-
+    <dimen name="top_bar_height">48dp</dimen>
+    <dimen name="compact_bar_height">36dp</dimen>
+    <dimen name="compact_button_size">32dp</dimen>
+    <dimen name="progress_bar_width">80dp</dimen>
 </resources>

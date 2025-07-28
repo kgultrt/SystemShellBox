@@ -37,6 +37,7 @@ public class FileItem {
     private volatile Boolean isAudioFile = null;
     private volatile Boolean isTextFile = null;
     private volatile Boolean isZipFile = null;
+    private volatile Boolean isHtmlFile = null;
 
     // 扩展名集合定义为不可变静态集合
     private static final Set<String> AUDIO_EXTENSIONS = Set.of(
@@ -45,11 +46,15 @@ public class FileItem {
     
     private static final Set<String> TEXT_EXTENSIONS = Set.of(
         "txt", "java", "c", "cpp", "cs", "py", "cxx", "js", "css", 
-        "md", "go", "log", "sh", "rs", "bat", "kt", "h", "lua", "json"
+        "md", "go", "log", "sh", "rs", "bat", "kt", "h", "lua", "json", "properties"
     );
     
     private static final Set<String> ZIP_EXTENSIONS = Set.of(
         "zip", "tar", "gz", "bz2", "7z", "rar"
+    );
+    
+    private static final Set<String> HTML_EXTENSIONS = Set.of(
+        "html", "htm"
     );
 
     public FileItem(File file) {
@@ -87,6 +92,11 @@ public class FileItem {
         if (isZipFile == null) isZipFile = fileExtension != null && ZIP_EXTENSIONS.contains(fileExtension);
         return isZipFile;
     }
+    
+    public boolean isHtmlFile() {
+        if (isHtmlFile == null) isHtmlFile = fileExtension != null && HTML_EXTENSIONS.contains(fileExtension);
+        return isHtmlFile;
+    }
 
     // 尺寸和修改时间保持原有延迟加载
     public long getSize() {
@@ -104,6 +114,7 @@ public class FileItem {
         if (isAudioFile()) return FileType.AUDIO;
         if (isTextFile()) return FileType.TEXT;
         if (isZipFile()) return FileType.COMPRESS;
+        if (isHtmlFile()) return FileType.HTML;
         return FileType.UNKNOWN;
     }
 

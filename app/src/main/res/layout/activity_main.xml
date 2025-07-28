@@ -34,7 +34,7 @@
                 android:padding="6.0dip"
                 android:layout_width="36.0dip"
                 android:layout_height="36.0dip"
-                android:src="@drawable/ic_menu"
+                android:src="@drawable/ic_more_vert"
                 android:contentDescription="@string/menu" />
         </LinearLayout>
         <LinearLayout

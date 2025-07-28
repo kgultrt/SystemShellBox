@@ -157,6 +157,7 @@ dependencies {
     implementation("com.google.android.material:material:1.9.0")
     implementation("com.google.code.gson:gson:2.8.8")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation 'androidx.webkit:webkit:1.7.0' // WebView支持
     
     api project(":terminal-view")
 }
