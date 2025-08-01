@@ -67,7 +67,6 @@ import com.manager.ssb.databinding.ActivityMainBinding;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.dialog.SettingsDialogFragment;
 import com.manager.ssb.core.term.TerminalInstaller;
-import com.manager.ssb.util.SignatureVerify;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -368,7 +367,6 @@ public class MainActivity extends AppCompatActivity {
         initMenuActions();
         
         boolean isFirst = Config.get("isFirst", true);
-        boolean isPassed = SignatureVerify.verify();
         int lastBuildNumber = Config.get("lastBuildNumber", 0);
         int currentBuildNumber = extractBuildNumber(getCurrentVersion());
 
@@ -381,12 +379,6 @@ public class MainActivity extends AppCompatActivity {
             // 检测到新版本显示更新日志
             showUpdateDialog(currentBuildNumber);
             Config.set("lastBuildNumber", currentBuildNumber);
-        }
-        
-        if (isPassed) {
-            // do nothing
-        } else {
-            showWarningDialog();
         }
     }
     
@@ -843,9 +835,9 @@ public class MainActivity extends AppCompatActivity {
         catch (Exception e) { /* 忽略 */ }
     
         try { sb.append(getString(R.string.git_branch_name)).append(": ")
-                .append(BuildConfig.GIT_BRANCH_NAME); } 
+                .append(BuildConfig.GIT_BRANCH_NAME).append("\n\n"); } 
         catch (Exception e) { /* 忽略 */ }
-
+        
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.about)
                 .setMessage(sb.toString())

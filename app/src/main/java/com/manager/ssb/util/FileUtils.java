@@ -60,27 +60,39 @@ public class FileUtils {
     
     // 生成唯一文件名
     public static File generateUniqueFileName(File file) {
-        File parent = file.getParentFile();
         String name = file.getName();
-        int dotIndex = name.lastIndexOf('.');
-        String baseName;
         String extension = "";
+        String baseName = name;
         
-        if (dotIndex >= 0) {
-            baseName = name.substring(0, dotIndex);
+        int dotIndex = name.lastIndexOf('.');
+        if (dotIndex > 0) {
             extension = name.substring(dotIndex);
-        } else {
-            baseName = name;
+            baseName = name.substring(0, dotIndex);
         }
-
+        
         int counter = 1;
         File newFile;
         do {
-            String newName = baseName + " (" + counter + ")" + extension;
-            newFile = new File(parent, newName);
+            String newName = baseName + "_" + counter + extension;
+            newFile = new File(file.getParent(), newName);
             counter++;
         } while (newFile.exists());
-
+        
         return newFile;
+    }
+    
+    public static boolean deleteRecursive(File fileOrDirectory) {
+        if (fileOrDirectory == null) return false;
+        
+        if (fileOrDirectory.isDirectory()) {
+            File[] files = fileOrDirectory.listFiles();
+            if (files != null) {
+                for (File child : files) {
+                    deleteRecursive(child);
+                }
+            }
+        }
+        
+        return fileOrDirectory.delete();
     }
 }

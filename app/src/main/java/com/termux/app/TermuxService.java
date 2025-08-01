@@ -22,6 +22,8 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import com.manager.ssb.R;
+import com.manager.ssb.Application;
+
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSession.SessionChangedCallback;
@@ -208,13 +210,13 @@ public final class TermuxService extends Service implements SessionChangedCallba
 
         int sessionCount = mTerminalSessions.size();
         int taskCount = mBackgroundTasks.size();
-        String contentText = sessionCount + " session" + (sessionCount == 1 ? "" : "s");
+        String contentText = sessionCount + " " + Application.getAppContext().getString(R.string.session);
         if (taskCount > 0) {
-            contentText += ", " + taskCount + " task" + (taskCount == 1 ? "" : "s");
+            contentText += ", " + taskCount + " " + Application.getAppContext().getString(R.string.task);
         }
 
         final boolean wakeLockHeld = mWakeLock != null;
-        if (wakeLockHeld) contentText += " (wake lock held)";
+        if (wakeLockHeld) contentText += " " + Application.getAppContext().getString(R.string.session_lock);
 
         Notification.Builder builder = new Notification.Builder(this);
         builder.setContentTitle(getText(R.string.application_name));

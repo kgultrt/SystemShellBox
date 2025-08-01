@@ -2,8 +2,8 @@
 <resources>
     <color name="panel_highlight">#22009688</color>
     <color name="item_hover">#334D4DFF</color>
-    
-    <!-- <color name="colorPrimary">#FDFBFA</color> -->
-    <!-- <color name="colorPrimaryDark">#3700B3</color> -->
-    <!-- <color name="colorAccent">#034BDA</color> -->
+    <color name="te_background">#FFFFFF</color>
+    <color name="te_title">#0F172A</color>
+    <color name="te_divid">#E2E8F0</color>
+    <color name="te_top">#D8ECFF</color>
 </resources>

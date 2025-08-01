@@ -6,7 +6,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.manager.ssb.R;
@@ -17,17 +16,17 @@ import com.manager.ssb.MainActivity;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.util.FileUtils;
 import com.manager.ssb.util.NativeFileOperation;
+import com.manager.ssb.util.StepFileCopier;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class CopyDialog {
 
-    private static class ConflictPolicy {
-        int action = FileConflictDialog.ConflictResolution.OVERWRITE;
-        boolean applyToAll = false;
+    public static class ConflictPolicy {
+        public int action = NativeFileOperation.ConflictAction.OVERWRITE;
+        public boolean applyToAll = false;
     }
-
+    
     public static void show(@NonNull Context context,
                            @NonNull FileItem fileItem,
                            @NonNull NotifyingExecutorService executorService,
@@ -36,8 +35,8 @@ public class CopyDialog {
 
         MainActivity activity = (MainActivity) context;
         String target = activePanel == ActivePanel.LEFT ? 
-                       activity.getRightDir().getAbsolutePath() : 
-                       activity.getLeftDir().getAbsolutePath();
+                      activity.getRightDir().getAbsolutePath() : 
+                      activity.getLeftDir().getAbsolutePath();
 
         EditText input = new EditText(context);
         input.setHint(R.string.enter_new_path);
@@ -71,7 +70,7 @@ public class CopyDialog {
                                 return;
                             }
                         } catch (Exception e) {
-                            // 解析路径失败时忽略
+                            Log.e("CopyDialog", "Error resolving path", e);
                         }
                     }
                     
@@ -102,93 +101,110 @@ public class CopyDialog {
     private static void copyWithConflictHandling(File srcFile, File destFile,
                                              CopyProgressDialog progressDialog,
                                              ConflictPolicy policy,
-                                             OnCopyCallback callback) throws Exception {
-    final Handler mainHandler = new Handler(Looper.getMainLooper());
-    
-    // 使用 final 数组包装 destFile，使其可以在 lambda 中修改
-    final File[] destFileHolder = new File[]{destFile};
-    
-    // 复制源文件到目标路径
-    int result = NativeFileOperation.copy(
-        srcFile.getAbsolutePath(), 
-        destFileHolder[0].getAbsolutePath(),
-        (currentFile, copied, total, status) -> {
-            // 当遇到冲突时
-            if (status == NativeFileOperation.STATUS_CONFLICT) {
-                // 创建工作线程等待对象
-                final Object lock = new Object();
-                final AtomicInteger resolution = new AtomicInteger(NativeFileOperation.ConflictAction.OVERWRITE);
-                final AtomicBoolean userResponded = new AtomicBoolean(false);
-                
-                // 在UI线程显示冲突对话框
-                mainHandler.post(() -> {
-                    FileConflictDialog.show(progressDialog.getContext(), 
-                        new File(currentFile).getName(), 
-                        (action, applyToAll) -> {
-                            policy.action = action;
-                            policy.applyToAll = applyToAll;
-                            resolution.set(action);
-                            
-                            synchronized (lock) {
-                                userResponded.set(true);
-                                lock.notifyAll();
-                            }
-                        });
-                });
-                
-                // 阻塞当前工作线程直到用户响应
-                synchronized (lock) {
-                    while (!userResponded.get()) {
-                        try {
-                            lock.wait();
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            return;
-                        }
-                    }
+                                             OnCopyCallback callback) {
+        final Handler mainHandler = new Handler(Looper.getMainLooper());
+        final AtomicBoolean canceled = new AtomicBoolean(false);
+        
+        progressDialog.setOnCancelListener(() -> canceled.set(true));
+        
+        // 为后台线程保存进度对话框上下文
+        CopyProgressDialog.setLastContext(progressDialog.getContext());
+        
+        new Thread(() -> {
+            int finalResult = NativeFileOperation.STATUS_SUCCESS;
+            final int[] resultHolder = new int[]{NativeFileOperation.STATUS_SUCCESS};
+            final File[] destHolder = new File[]{destFile};
+            
+            // 创建进度回调适配器
+            NativeFileOperation.ProgressCallback progressCallback = 
+                (currentFile, copied, total, status) -> 
+                    mainHandler.post(() -> 
+                        progressDialog.updateProgress(currentFile, copied, total, status)
+                    );
+            
+            try {
+                if (srcFile.isFile()) {
+                    finalResult = StepFileCopier.copyFileWithRetry(
+                        srcFile.getAbsolutePath(),
+                        destFile.getAbsolutePath(),
+                        policy,
+                        progressCallback
+                    );
+                } else if (srcFile.isDirectory()) {
+                    finalResult = copyDirectoryWithConflict(
+                        srcFile, 
+                        destFile, 
+                        policy,
+                        progressCallback
+                    );
                 }
-                
-                // 根据用户选择执行操作
-                switch (resolution.get()) {
-                    case NativeFileOperation.ConflictAction.OVERWRITE:
-                        NativeFileOperation.delete(destFileHolder[0].getAbsolutePath());
-                        break;
-                        
-                    case NativeFileOperation.ConflictAction.KEEP_BOTH:
-                        // 生成唯一文件名并更新 destFileHolder
-                        destFileHolder[0] = FileUtils.generateUniqueFileName(destFileHolder[0]);
-                        break;
-                        
-                    case NativeFileOperation.ConflictAction.SKIP:
-                        return;
-                }
+            } catch (Exception e) {
+                finalResult = NativeFileOperation.STATUS_ERROR;
+                Log.e("CopyDialog", "Error during copy", e);
             }
             
-            // 更新进度
-            progressDialog.updateProgress(currentFile, copied, total);
-        });
+            // 最终结果处理
+            mainHandler.post(() -> {
+                progressDialog.dismiss();
+                
+                if (resultHolder[0] == NativeFileOperation.STATUS_SUCCESS) {
+                    showToast(progressDialog.getContext(), 
+                             progressDialog.getContext().getString(R.string.copy_success));
+                    callback.onCopySuccess(destHolder[0]);
+                } else if (resultHolder[0] == NativeFileOperation.STATUS_SKIPPED) {
+                    // 部分文件被跳过
+                    showToast(progressDialog.getContext(), 
+                             progressDialog.getContext().getString(R.string.copy_partially_completed));
+                    callback.onCopySuccess(destHolder[0]);
+                } else {
+                    // 失败时清理目标文件
+                    FileUtils.deleteRecursive(destHolder[0]);
+                    showError(progressDialog.getContext(), 
+                             progressDialog.getContext().getString(R.string.copy_failed));
+                }
+            });
+        }).start();
+    }
     
-    // 处理最终结果
-    mainHandler.post(() -> {
-        progressDialog.dismiss();
-        
-        if (result == NativeFileOperation.STATUS_SUCCESS) {
-            showToast(progressDialog.getContext(), 
-                     progressDialog.getContext().getString(R.string.copy_success));
-            callback.onCopySuccess(destFileHolder[0]);
-        } else {
-            // 失败时清理目标文件
-            if (destFileHolder[0].exists()) {
-                NativeFileOperation.delete(destFileHolder[0].getAbsolutePath());
+    private static int copyDirectoryWithConflict(File srcDir, File destDir,
+                                             ConflictPolicy policy,
+                                             NativeFileOperation.ProgressCallback callback) {
+        // 创建目标目录（如果不存在）
+        if (!destDir.exists()) {
+            if (!destDir.mkdirs()) {
+                callback.onProgress(srcDir.getName(), 0, 0, NativeFileOperation.STATUS_ERROR);
+                return NativeFileOperation.STATUS_ERROR;
             }
-            showError(progressDialog.getContext(), 
-                     progressDialog.getContext().getString(R.string.copy_failed));
         }
-    });
-}
-
+        
+        File[] children = srcDir.listFiles();
+        if (children == null) return NativeFileOperation.STATUS_SUCCESS;
+        
+        for (File child : children) {
+            File childDest = new File(destDir, child.getName());
+            
+            if (child.isDirectory()) {
+                int childResult = copyDirectoryWithConflict(child, childDest, policy, callback);
+                if (childResult == NativeFileOperation.STATUS_ERROR) {
+                    return NativeFileOperation.STATUS_ERROR;
+                }
+            } else {
+                int result = StepFileCopier.copyFileWithRetry(
+                    child.getAbsolutePath(),
+                    childDest.getAbsolutePath(),
+                    policy,
+                    callback
+                );
+                
+                if (result == NativeFileOperation.STATUS_ERROR) {
+                    return result;
+                }
+            }
+        }
+        
+        return NativeFileOperation.STATUS_SUCCESS;
+    }
     
-    // 辅助方法
     private static void showToast(Context context, String message) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
     }

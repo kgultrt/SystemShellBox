@@ -21,6 +21,10 @@
     <string name="git_commit_short_hash">Git Commit Short Hash</string>
     <string name="git_commit_author">Git Commit Author</string>
     <string name="git_branch_name">Git Branch Name</string>
+    <string name="signature_expected">Expecting signature md5</string>
+    <string name="signature_APK">From APK md5</string>
+    <string name="signature_API">From API md5</string>
+    <string name="signature_SVC">From SVC md5</string>
 
     <string name="wip">Coming Soon...</string>
     <string name="wip_back">In the process of remaking...</string>
@@ -209,12 +213,16 @@
     <string name="unsupported_compress_format">Unsupported compression format</string>
   
   
-    <string name="file_conflict_detected">File conflict detected</string>
-    <string name="waiting_for_user">Waiting for user action...</string>
-    <string name="overwrite_file">Move and replace</string>
-    <string name="skip_file">Skip the file</string>
-    <string name="keep_both">Move but keep both files</string>
-    <string name="apply_to_all_conflicts">Do the same for subsequent conflict</string>
+    <string name="file_conflict">文件冲突</string>
+    <string name="conflict_message">文件 %1$s 已存在</string>
+    <string name="overwrite">覆盖</string>
+    <string name="keep_both">保留两者</string>
+    <string name="skip">跳过</string>
+    <string name="apply_to_all">应用到所有冲突</string>
+    <string name="file_conflict_detected">检测到文件冲突</string>
+    <string name="waiting_for_user">等待用户响应</string>
+    <string name="retrying_copy">正在重试复制...</string>
+    <string name="copy_partially_completed">复制部分完成</string>
     
     <string name="input_website_hint">Enter a Web address or local path</string>
     
@@ -271,6 +279,9 @@
     <string name="session_rename_positive_button">Set</string>
     <string name="session_new_named_title">New named session</string>
     <string name="session_new_named_positive_button">Create</string>
+    <string name="session">session (s)</string>
+    <string name="session_lock">(wake lock held)</string>
+    <string name="task">task (s)</string>
 
     <string name="styling_not_installed">The Termux:Style add-on is not installed.</string>
     <string name="styling_install">Install</string>
@@ -285,6 +296,9 @@
 
     <string name="delete">Delete</string>
     <string name="format">Format</string>
+    
+    
+    
     <string name="empty">
     </string>
     <string name="icon_text">

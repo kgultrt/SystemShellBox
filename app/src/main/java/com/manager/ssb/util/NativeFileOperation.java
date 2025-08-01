@@ -4,19 +4,20 @@ import java.io.File;
 
 public class NativeFileOperation {
     
-    // 添加冲突状态码
     public static final int STATUS_SUCCESS = 0;
     public static final int STATUS_ERROR = -1;
     public static final int STATUS_CONFLICT = -100;
+    public static final int STATUS_SKIPPED = -101;
+    public static final int STATUS_RETRYING = -102;
     
-    // 添加冲突处理选项
+    // 冲突处理选项
     public interface ConflictAction {
         int OVERWRITE = 0;
         int SKIP = 1;
         int KEEP_BOTH = 2;
     }
     
-    // 修改回调接口添加状态码
+    // 修改后的回调接口
     public interface ProgressCallback {
         void onProgress(String currentFile, long copied, long total, int status);
     }
@@ -24,15 +25,14 @@ public class NativeFileOperation {
     static {
         System.loadLibrary("ssb_daemon");
     }
-    // 修改JNI方法签名
+    
+    // 修改后的JNI方法签名
     private native static int nativeCopy(String src, String dest, ProgressCallback callback);
     
-    // 修改copy方法
     public static int copy(String src, String dest, ProgressCallback callback) {
         return nativeCopy(src, dest, callback);
     }
     
-    // 其他方法保持不变
     public static boolean delete(String path) {
         return nativeDelete(path);
     }

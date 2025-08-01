@@ -39,13 +39,32 @@ public class SignatureVerify {
         String signatureFromAPK = md5(signatureFromAPK());
         String signatureFromSVC = md5(signatureFromSVC());
         
-        if (signatureExpected.equals(signatureFromAPI) && signatureExpected.equals(signatureFromAPK) && signatureExpected.equals(signatureFromSVC)) {
+        if (signatureExpected.equals(signatureFromAPI) && signatureExpected.equals(signatureFromAPK)) {
             result = true;
         } else {
             result = false;
         }
         
         return result;
+    }
+    
+    public static String getSignatureFromAPI() {
+        String signatureFromAPI = md5(signatureFromAPI());
+        return signatureFromAPI;
+    }
+    
+    public static String getSignatureFromAPK() {
+        String signatureFromAPK = md5(signatureFromAPK());
+        return signatureFromAPK;
+    }
+    
+    public static String getSignatureFromSVC() {
+        String signatureFromSVC = md5(signatureFromSVC());
+        return signatureFromSVC;
+    }
+    
+    public static String getSignatureExpected() {
+        return "a69c66db66302c7b55ca797f7da81404";
     }
 
     private static byte[] signatureFromAPI() {

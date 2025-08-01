@@ -364,8 +364,8 @@ Java_com_manager_ssb_util_NativeFileOperation_nativeCopy(
             (*env)->DeleteLocalRef(env, jSrcPath);
             (*env)->DeleteLocalRef(env, jDestPath);
             
-            if (!result) {
-                __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to copy: %s", src_path);
+            if (result == STATUS_ERROR) {
+                __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to copy: %s to %s", src_path, dest_path);
                 success = 0;
                 break;
             }

@@ -1,2 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <color name="panel_highlight">#22009688</color>
+    <color name="item_hover">#334D4DFF</color>
+    <color name="te_background">#000000</color>
+    <color name="te_title">#4F5460</color>
+    <color name="te_divid">#878E96</color>
+    <color name="te_top">#7F8C97</color>
+</resources>

@@ -20,6 +20,11 @@
     <string name="git_commit_short_hash">Git提交短哈希</string>
     <string name="git_commit_author">Git提交作者</string>
     <string name="git_branch_name">Git分支名称</string>
+    <string name="signature_expected">期待签名md5</string>
+    <string name="signature_APK">From APK md5</string>
+    <string name="signature_API">From API md5</string>
+    <string name="signature_SVC">From SVC md5</string>
+
 
     <string name="wip">即将推出...</string>
     <string name="wip_back">回炉重造中...</string>
@@ -210,12 +215,16 @@
     <string name="unsupported_compress_format">不支持的压缩格式</string>
 
     <!-- 冲突处理相关字符串 -->
+    <string name="file_conflict">文件冲突</string>
+    <string name="conflict_message">文件 %1$s 已存在</string>
+    <string name="overwrite">覆盖</string>
+    <string name="keep_both">保留两者</string>
+    <string name="skip">跳过</string>
+    <string name="apply_to_all">应用到所有冲突</string>
     <string name="file_conflict_detected">检测到文件冲突</string>
-    <string name="waiting_for_user">等待用户操作中…</string>
-    <string name="overwrite_file">移动并替换</string>
-    <string name="skip_file">跳过该文件</string>
-    <string name="keep_both">移动但保留两个文件</string>
-    <string name="apply_to_all_conflicts">为后续冲突执行相同操作</string>
+    <string name="waiting_for_user">等待用户响应</string>
+    <string name="retrying_copy">正在重试复制...</string>
+    <string name="copy_partially_completed">复制部分完成</string>
 
     <string name="input_website_hint">输入网址或本地路径</string>
     <!-- HTML文件操作 -->
@@ -296,6 +305,9 @@
     <!-- 新建命名会话 -->
     <string name="session_new_named_positive_button">创建</string>
     <!-- 创建 -->
+    <string name="session">会话</string>
+    <string name="session_lock">(保持唤醒锁)</string>
+    <string name="task">任务</string>
 
     <string name="styling_not_installed">Termux:Style 附加组件未安装。</string>
     <!-- Termux:Style 附加组件未安装。 -->
