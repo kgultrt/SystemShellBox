@@ -16,15 +16,7 @@
    ```bash
    git clone https://github.com/kgultrt/SystemShellBox
    ```
-
-2. Modify Gradle configuration:  
-   Open the `gradle.properties` file in the project root and **delete the following line**:
-   ```properties
-   # 专门管环境设置，请删除这一行
-   android.aapt2FromMavenOverride=/data/data/com.termux/files/home/.androidide/aapt2
-   ```
-
-   Also delete the `local.properties` file.
+2. Open keystore.properties.sample, modify its contents, configure your signature file, and change the file name to keystore.properties
 
 3. Build using Android Studio or command line (do NOT use b.sh):
    ```bash
@@ -33,9 +25,10 @@
 
 ## How to Contribute?
 
-⚠️ **Important**: This repository **currently does NOT accept external Pull Requests**. If you need custom modifications, please download the source code directly or fork the repository.
+If you find a bug, you can create a PR/open an Issets
+Thank you very much for your contribution.
 
-☕ Buy me a coffee: Not required, but greatly appreciated if you'd like to support the project. (Donation methods not yet available)
+Give me the money: Not required, but greatly appreciated if you'd like to support the project. (Donation methods not yet available)
 
 ## License
 
@@ -54,13 +47,36 @@ I take this licensing choice seriously to protect the project’s integrity and 
 
 Please respect this license when using or distributing this project. Forks, modified versions, or redistributed binaries must also comply with GPLv3 and be released with full source code.
 
-Note on third-party code:  
-This project includes components such as `terminal-view` and `terminal-emulator`, derived from the [Termux project](https://github.com/termux/termux-app), which are distributed under the Apache License 2.0. This license is GPLv3-compatible, and their inclusion complies with the terms of both licenses.
-
 I appreciate contributions from the open-source community and welcome any questions or discussions regarding licensing via GitHub Issues.
 
 ## Used Projects
-[ReTerminal by RohitKushvaha01 - MIT License](https://github.com/RohitKushvaha01/ReTerminal)
+[termux-app - GPLv3 and Apache 2.0](https://github.com/termux/termux-app)
+
+[ApkSignatureKillerEx - No LICENSE](https://github.com/L-JINBIN/ApkSignatureKillerEx)
+
+[CodeEditor - GPLv3](https://github.com/MrIkso/CodeEditor)
+
+Because the way projects are used is a bit special, let's clarify where the code for these projects is:
+
+termux-app:
+
+app/src/main/java/com/termux/app/\* (GPLv3)
+
+terminal-view/\* (Apache 2.0)
+
+terminal-emulator/\* (Apache 2.0)
+
+ApkSignatureKillerEx:
+
+app/src/main/jni/signature/\* (No LICENSE)
+
+app/src/main/java/com/manager/ssb/util/SignatureVerify.java (No LICENSE)
+
+CodeEditor:
+
+app/src/main/java/com/mrikso/codeeditor/\* (GPLv3)
+
+Some changes have been made to the code during this period for the sake of adaptability. Please check it yourself.
 
 ## Important Notice
 **This project is completely free.** If you **paid** for this software, **request a refund immediately.**
