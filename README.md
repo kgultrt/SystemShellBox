@@ -10,8 +10,6 @@
 
 **注意**: 此应用目前还处于早期，功能相当不完善
 
-**⚠️ app/src/main/java/com/termux/app/\* 下面的所有内容都是来源于termux项目，版权归原作者所有!**
-
 ## 如何构建？
 
 ### 步骤
@@ -20,7 +18,9 @@
    git clone https://github.com/kgultrt/SystemShellBox
    ```
 
-2. 使用 Android Studio 或命令行构建：
+2. 打开 keystore.properties.sample，修改其内容，并配置你的签名文件，并把文件名更改为keystore.properties
+
+3. 使用 Android Studio 或命令行构建：
    ```bash
    ./gradlew assembleDebug
    ```
@@ -52,12 +52,12 @@
 - 本项目明确反对将其用于魔改、闭源、插入广告或付费墙的再发布行为；
 - 本项目的发布目的是服务开发者社群，不欢迎任何企图将其转为牟利产品的行为。
 
-此外，本项目中的 terminal-view 和 terminal-emulator 代码来源于 [Termux](https://github.com/termux/termux-app) 项目，并在 Apache License 2.0 下发布。根据 FSF 的兼容性说明，Apache 2.0 与 GPLv3 兼容，故可以合法集成至本项目中。
-
 我感谢开源社区的贡献，并希望您在遵守协议的前提下，充分使用并贡献本项目。如果您有任何有关许可证的问题，欢迎通过 Issues 联系我进行探讨。
 
 ## 使用的项目
-[ReTerminal by RohitKushvaha01 - MIT License](https://github.com/RohitKushvaha01/ReTerminal)
+[termux-app - GPLv3](https://github.com/termux/termux-app)
+[ApkSignatureKillerEx - No LICENSE](https://github.com/L-JINBIN/ApkSignatureKillerEx)
+[CodeEditor - GPLv3](https://github.com/MrIkso/CodeEditor)
 
 ## 提醒
 **本项目完全免费，**若您是**付费**购买的此软件，**请退款。**
