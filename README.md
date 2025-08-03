@@ -71,15 +71,18 @@ terminal-view/\* (Apache 2.0)
 
 terminal-emulator/\* (Apache 2.0)
 
+
 ApkSignatureKillerEx:
 
 app/src/main/jni/signature/\* (No LICENSE)
 
 app/src/main/java/com/manager/ssb/util/SignatureVerify.java (No LICENSE)
 
+
 CodeEditor:
 
 app/src/main/java/com/mrikso/codeeditor/\* (GPLv3)
+
 
 期间为了适配性对代码做了些许的更改，请自行查阅。
 
