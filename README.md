@@ -55,9 +55,33 @@
 我感谢开源社区的贡献，并希望您在遵守协议的前提下，充分使用并贡献本项目。如果您有任何有关许可证的问题，欢迎通过 Issues 联系我进行探讨。
 
 ## 使用的项目
-[termux-app - GPLv3](https://github.com/termux/termux-app)
+[termux-app - GPLv3 and Apache 2.0](https://github.com/termux/termux-app)
+
 [ApkSignatureKillerEx - No LICENSE](https://github.com/L-JINBIN/ApkSignatureKillerEx)
+
 [CodeEditor - GPLv3](https://github.com/MrIkso/CodeEditor)
+
+因为使用项目的方式有点特殊，在此明确一下这些项目的代码到底在哪里:
+
+termux-app:
+
+app/src/main/java/com/termux/app/\* (GPLv3)
+
+terminal-view/\* (Apache 2.0)
+
+terminal-emulator/\* (Apache 2.0)
+
+ApkSignatureKillerEx:
+
+app/src/main/jni/signature/\* (No LICENSE)
+
+app/src/main/java/com/manager/ssb/util/SignatureVerify.java (No LICENSE)
+
+CodeEditor:
+
+app/src/main/java/com/mrikso/codeeditor/\* (GPLv3)
+
+期间为了适配性对代码做了些许的更改，请自行查阅。
 
 ## 提醒
 **本项目完全免费，**若您是**付费**购买的此软件，**请退款。**
