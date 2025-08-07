@@ -31,15 +31,20 @@ public class StepFileCopier {
                 final CountDownLatch latch = new CountDownLatch(1);
                 
                 new Handler(Looper.getMainLooper()).post(() -> {
-                    FileConflictDialog.show(
-                        CopyProgressDialog.getLastContext(),
-                        new File(src).getName(),
-                        (action, apply) -> {
-                            userChoice[0] = action;
-                            applyToAll[0] = apply;
-                            latch.countDown();
-                        }
-                    );
+                    if (!policy.applyToAll) {
+                        FileConflictDialog.show(
+                            CopyProgressDialog.getLastContext(),
+                            new File(src).getName(),
+                            (action, apply) -> {
+                                userChoice[0] = action;
+                                applyToAll[0] = apply;
+                                latch.countDown();
+                            }
+                        );
+                    } else {
+                         userChoice[0] = policy.action;
+                         latch.countDown();
+                    }
                 });
                 
                 // 非阻塞等待用户响应

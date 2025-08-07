@@ -27,6 +27,8 @@ public class CopyDialog {
         public boolean applyToAll = false;
     }
     
+    public static ConflictPolicy policy = new ConflictPolicy();
+    
     public static void show(@NonNull Context context,
                            @NonNull FileItem fileItem,
                            @NonNull NotifyingExecutorService executorService,
@@ -41,6 +43,7 @@ public class CopyDialog {
         EditText input = new EditText(context);
         input.setHint(R.string.enter_new_path);
         input.setText(target);
+        
 
         new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.copy_file)
@@ -73,9 +76,6 @@ public class CopyDialog {
                             Log.e("CopyDialog", "Error resolving path", e);
                         }
                     }
-                    
-                    // 创建冲突策略对象
-                    ConflictPolicy policy = new ConflictPolicy();
                     
                     CopyProgressDialog progressDialog = new CopyProgressDialog(context);
                     progressDialog.show(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), 

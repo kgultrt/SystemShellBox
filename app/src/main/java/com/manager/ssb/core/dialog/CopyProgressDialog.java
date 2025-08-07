@@ -111,9 +111,9 @@ public class CopyProgressDialog {
     }
     
     private void showConflictState() {
-        progressBar.setIndeterminate(true);
-        progressText.setText(context.getString(R.string.file_conflict_detected));
-        etaText.setText(context.getString(R.string.waiting_for_user));
+        // progressBar.setIndeterminate(true);
+        // progressText.setText(context.getString(R.string.file_conflict_detected));
+        // etaText.setText(context.getString(R.string.waiting_for_user));
     }
     
     private void showRetryState() {
