@@ -49,8 +49,11 @@ jobs:
         sdkmanager --install "ndk;${NDK_VERSION}"
         echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}" >> $GITHUB_ENV
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+    - name: Grant execute permission for gradlew and jks
+      run: |
+        chmod +x gradlew
+        mv keystore.properties.sample keystore.properties
+        mv yourkey.jks.sample yourkey.jks
 
     - name: Build with Gradle
       run: |
