@@ -1,0 +1,1 @@
+WARNING: linker: Warning: "/data/data/com.termux/files/home/android-sdk/ndk/24.0.8215888/toolchains/llvm/prebuilt/linux-aarch64/lib64/libc++_shared.so" unused DT entry: unknown processor-specific (type 0x70000001 arg 0x0) (ignoring)

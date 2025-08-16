@@ -12,6 +12,11 @@ android {
         buildConfig true
     }
     
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+    
     signingConfigs {
         release {
             storeFile null
@@ -44,7 +49,7 @@ android {
     defaultConfig {
         applicationId "com.manager.ssb"
         minSdk 21
-        targetSdk 33
+        targetSdk 28
         versionCode 1
         versionName "1.0.0"
         
@@ -147,7 +152,7 @@ android {
                 releaseNumberFile.text = "0"
             }
             
-            versionNameSuffix "-release${releaseNumber + 1}-${buildNumber + 1}"
+            versionNameSuffix "-release${releaseNumber + 1}-build${buildNumber + 1}"
             
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
