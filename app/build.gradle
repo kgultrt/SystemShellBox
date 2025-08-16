@@ -154,6 +154,21 @@ android {
             
             versionNameSuffix "-release${releaseNumber + 1}-build${buildNumber + 1}"
             
+            // 在构建完成后递增 buildNumber 并写入文件
+            tasks.whenTaskAdded { task ->
+                if (task.name == 'assembleRelease') {
+                    task.doLast {
+                        // 更新 buildNumber 文件
+                        buildNumber = buildNumber + 1
+                        buildNumberFile.text = buildNumber.toString()
+                        
+                        // 更新 releaseNumber 文件
+                        releaseNumber = releaseNumber + 1
+                        releaseNumberFile.text = releaseNumber.toString()
+                    }
+                }
+            }
+            
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             
