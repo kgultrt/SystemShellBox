@@ -554,19 +554,6 @@ public class MainActivity extends AppCompatActivity {
         targetList.addAll(newItems);
         result.dispatchUpdatesTo(adapter);
     }
-
-    private void showLoading(boolean show, ActivePanel panel) {
-        mainHandler.post(() -> {
-            switch (panel) {
-                case LEFT:
-                    binding.progressBarLeft.setVisibility(show ? View.VISIBLE : View.GONE);
-                    break;
-                case RIGHT:
-                    binding.progressBarRight.setVisibility(show ? View.VISIBLE : View.GONE);
-                    break;
-            }
-        });
-    }
     
     private void handleItemClick(FileItem item, ActivePanel panel) {
         if (item.isDirectory()) {
@@ -875,7 +862,6 @@ public class MainActivity extends AppCompatActivity {
     }
     
     public void loadDirectory(File directory, ActivePanel panel) {
-        showLoading(true, panel);
         executorService.submit(() -> {
             List<FileItem> newItems = new ArrayList<>();
 
@@ -897,7 +883,6 @@ public class MainActivity extends AppCompatActivity {
             });
 
             mainHandler.post(() -> {
-                showLoading(false, panel);
                 updateFileList(newItems, panel);
                 updatePanelDirectory(directory, panel);
             });

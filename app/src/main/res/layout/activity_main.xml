@@ -68,12 +68,6 @@
             android:layout_width="0.0dip"
             android:layout_height="fill_parent"
             android:layout_weight="1.0">
-            <ProgressBar
-                android:id="@+id/progressBar_left"
-                android:visibility="gone"
-                android:layout_width="fill_parent"
-                android:layout_height="4.0dip"
-                style="@style/Widget.AppCompat.ProgressBar.Horizontal" />
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_files_left"
                 android:paddingTop="8.0dip"
@@ -92,12 +86,6 @@
             android:layout_width="0.0dip"
             android:layout_height="fill_parent"
             android:layout_weight="1.0">
-            <ProgressBar
-                android:id="@+id/progressBar_right"
-                android:visibility="gone"
-                android:layout_width="fill_parent"
-                android:layout_height="4.0dip"
-                style="@style/Widget.AppCompat.ProgressBar.Horizontal" />
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_files_right"
                 android:paddingTop="8.0dip"
@@ -109,7 +97,6 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- 这里是底部菜单 -->
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
@@ -118,7 +105,6 @@
         android:gravity="center"
         android:layout_marginTop="4dp">
 
-        <!-- 同步按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_sync"
             android:text="@string/sync"
@@ -128,7 +114,6 @@
             android:icon="@drawable/ic_sync"
             android:padding="4dp" />
 
-        <!-- 新建按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_create"
             android:text="@string/create_dialog"
@@ -138,7 +123,6 @@
             android:icon="@drawable/ic_create"
             android:padding="4dp" />
 
-        <!-- 书签和历史记录按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_bookmark_history"
             android:text="@string/bookmark"
@@ -148,7 +132,6 @@
             android:icon="@drawable/ic_bookmark"
             android:padding="4dp" />
 
-        <!-- 返回上一级按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_back"
             android:text="@string/back_lastdir"
