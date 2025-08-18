@@ -1,4 +1,3 @@
-// 修改后的 CrashActivity.java
 package com.manager.ssb;
 
 import android.app.Activity;
@@ -21,6 +20,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.manager.ssb.R;
+
 public class CrashActivity extends Activity {
 
     private String crashReport = "";
@@ -28,7 +29,7 @@ public class CrashActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Thread.setDefaultUncaughtExceptionHandler((thread, ex) -> {
-            Log.e("CrashActivity", "崩溃处理器自身崩溃", ex);
+            Log.e("CrashActivity", "Crash processor self crash", ex);
             finishAndExit();
         });
         
@@ -48,7 +49,7 @@ public class CrashActivity extends Activity {
             createUserFriendlyLayout();
             
         } catch (Throwable ex) {
-            Log.e("CrashActivity", "创建崩溃界面失败", ex);
+            Log.e("CrashActivity", "Failed to create crash interface", ex);
             finishAndExit();
         }
     }
@@ -59,9 +60,10 @@ public class CrashActivity extends Activity {
                 return getIntent().getStringExtra(Application.EXTRA_CRASH_INFO);
             }
         } catch (Throwable t) {
-            Log.w("CrashActivity", "获取崩溃信息失败", t);
+            Log.w("CrashActivity", "Failed to get crash information", t);
         }
-        return "无法获取崩溃信息\n请通过日志工具查看详细错误";
+        
+        return getString(R.string.cannot_get_crash_info);
     }
     
     private void createUserFriendlyLayout() {
@@ -76,7 +78,7 @@ public class CrashActivity extends Activity {
         
         // 标题区域
         TextView header = new TextView(this);
-        header.setText("还有这种操作？");
+        header.setText(getString(R.string.crash_title));
         header.setTextSize(20);
         header.setTextColor(Color.BLACK);
         header.setGravity(Gravity.CENTER);
@@ -85,7 +87,7 @@ public class CrashActivity extends Activity {
         
         // 提示信息
         TextView suggestion = new TextView(this);
-        suggestion.setText("发生了意外错误，请将此错误信息发送给开发者以便在未来的版本修复这个问题：");
+        suggestion.setText(getString(R.string.crash_what_happened));
         suggestion.setTextSize(14);
         suggestion.setTextColor(0xFF888888);
         suggestion.setPadding(32, 0, 32, 16);
@@ -121,15 +123,15 @@ public class CrashActivity extends Activity {
         buttonContainer.setGravity(Gravity.CENTER);
         
         // 添加操作按钮
-        buttonContainer.addView(createActionButton("重启应用", this::restartApp));
-        buttonContainer.addView(createActionButton("复制错误", this::copyCrashInfo));
-        buttonContainer.addView(createActionButton("退出应用", v -> finishAndExit()));
+        buttonContainer.addView(createActionButton(getString(R.string.crash_try_reboot), this::restartApp));
+        buttonContainer.addView(createActionButton(getString(R.string.crash_copy), this::copyCrashInfo));
+        buttonContainer.addView(createActionButton(getString(R.string.crash_exit), v -> finishAndExit()));
         
         container.addView(buttonContainer);
         
         // 开发者联系信息
         TextView contact = new TextView(this);
-        contact.setText("遇到问题请联系开发者：apple_1145141919@outlook.com");
+        contact.setText(getString(R.string.crash_tip) + "apple_1145141919@outlook.com  or  kgultrt (github)");
         contact.setTextSize(12);
         contact.setTextColor(0xFF555555);
         contact.setGravity(Gravity.CENTER);
@@ -170,7 +172,7 @@ public class CrashActivity extends Activity {
                 startActivity(intent);
             }
         } catch (Exception e) {
-            showToast("无法重启应用");
+            showToast(getString(R.string.crash_reboot_failed));
         } finally {
             finishAndExit();
         }
@@ -179,11 +181,11 @@ public class CrashActivity extends Activity {
     private void copyCrashInfo(View view) {
         try {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("崩溃报告", crashReport);
+            ClipData clip = ClipData.newPlainText("Crash Report", crashReport);
             clipboard.setPrimaryClip(clip);
-            showToast("错误信息已复制到剪贴板");
+            showToast(getString(R.string.crash_has_copyed));
         } catch (Exception e) {
-            showToast("复制失败，请手动选择文本复制");
+            showToast(getString(R.string.crash_copy_failed));
         }
     }
     
@@ -191,7 +193,7 @@ public class CrashActivity extends Activity {
         try {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Log.w("CrashActivity", "无法显示Toast", e);
+            Log.w("CrashActivity", "Toast cannot be displayed", e);
         }
     }
     
@@ -208,6 +210,6 @@ public class CrashActivity extends Activity {
     @Override
     public void onBackPressed() {
         // 提供选择而非完全禁用返回键
-        showToast("请选择一个操作：重启、复制或退出");
+        showToast(getString(R.string.crash_how));
     }
 }

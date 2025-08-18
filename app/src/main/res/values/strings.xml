@@ -213,16 +213,28 @@
     <string name="unsupported_compress_format">Unsupported compression format</string>
   
   
-    <string name="file_conflict">文件冲突</string>
-    <string name="conflict_message">文件 %1$s 已存在</string>
-    <string name="overwrite">覆盖</string>
-    <string name="keep_both">保留两者</string>
-    <string name="skip">跳过</string>
-    <string name="apply_to_all">应用到所有冲突</string>
-    <string name="file_conflict_detected">检测到文件冲突</string>
-    <string name="waiting_for_user">等待用户响应</string>
-    <string name="retrying_copy">正在重试复制...</string>
-    <string name="copy_partially_completed">复制部分完成</string>
+    <string name="file_conflict">File conflict</string>
+    <string name="conflict_message">File %1$s has already exist</string>
+    <string name="overwrite">Overwrite</string>
+    <string name="keep_both">Keep Both</string>
+    <string name="skip">Skip it</string>
+    <string name="apply_to_all">Apply to all conflict</string>
+    <string name="file_conflict_detected">File conflict detected</string>
+    <string name="waiting_for_user">Waiting for user response</string>
+    <string name="retrying_copy">Retrying replication...</string>
+    <string name="copy_partially_completed">Copy partially completed</string>
+    
+    <string name="cannot_get_crash_info">Unable to get crash information</string>
+    <string name="crash_title">How??????</string>
+    <string name="crash_what_happened">An unexpected error has occurred. Please send this error message to the developer to fix this problem in a future release:</string>
+    <string name="crash_try_reboot">Restart the app</string>
+    <string name="crash_copy">Copy Error</string>
+    <string name="crash_exit">Quit app</string>
+    <string name="crash_tip">Contact Developer: </string>
+    <string name="crash_reboot_failed">Unable to restart app</string>
+    <string name="crash_has_copyed">Error message copied to clipboard</string>
+    <string name="crash_copy_failed">Copy failed</string>
+    <string name="crash_how">Please select an action: Restart, Copy, or Quit</string>
     
     <string name="input_website_hint">Enter a Web address or local path</string>
     

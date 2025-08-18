@@ -33,7 +33,7 @@ public class Application extends android.app.Application {
         Thread.setDefaultUncaughtExceptionHandler((thread, ex) -> {
             // 1. 将崩溃信息写入日志文件（即使后面所有步骤都失败，我们仍有备份）
             String crashInfo = getCrashReport(ex);
-            Log.e(TAG, "应用崩溃:\n" + crashInfo);
+            Log.e(TAG, "Application crash:\n" + crashInfo);
             
             // 2. 启动崩溃显示Activity（使用最低限度的系统功能）
             Intent intent = new Intent();
@@ -64,17 +64,17 @@ private String getCrashReport(Throwable ex) {
     PrintWriter pw = new PrintWriter(sw);
 
     // 基本信息
-    pw.println("====== 致命应用崩溃 ======");
-    pw.println("时间: " + new Date());
+    pw.println("====== Fatal app crash ======");
+    pw.println("Time: " + new Date());
     pw.println();
 
     // 设备信息
-    pw.println("====== 设备信息 ======");
-    pw.println("应用版本: " + getAppVersion());
-    pw.println("Android版本: " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")");
-    pw.println("设备型号: " + Build.MANUFACTURER + " " + Build.MODEL);
-    pw.println("CPU架构: " + Build.SUPPORTED_ABIS[0]);
-    pw.println("可用内存: " + Runtime.getRuntime().maxMemory() / (1024 * 1024) + "MB");
+    pw.println("====== Device information ======");
+    pw.println("Application Version: " + getAppVersion());
+    pw.println("Android Version: " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")");
+    pw.println("Equipment model: " + Build.MANUFACTURER + " " + Build.MODEL);
+    pw.println("CPU architecture: " + Build.SUPPORTED_ABIS[0]);
+    pw.println("Available Memory: " + Runtime.getRuntime().maxMemory() / (1024 * 1024) + "MB");
     pw.println();
 
     // 处理主异常及其相关异常
@@ -140,7 +140,7 @@ private String getIndent(int depth) {
         try {
             return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
         } catch (Exception e) {
-            return "未知";
+            return "Unknow";
         }
     }
 }

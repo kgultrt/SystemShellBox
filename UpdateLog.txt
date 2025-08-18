@@ -111,8 +111,14 @@ TermOnePlus: https://gitlab.com/termapps/termoneplus
 3.书签和历史记录添加管理功能
 4.优化文件列表性能
 
+1.0.0-release1-build495:
+1.第一个发布版！
+2.修复CopyDialog中的复制策略问题
+3.远程仓库的.gitignore更新
+
 短期计划:
 zip格式支持
+多选支持
 
 下一步计划:
 1.文本编辑器 [√]
@@ -137,7 +143,10 @@ zip格式支持
 20.mp4等视频播放器
 21.网络存储/挂载 (FTP, SFTP, WebDev...)
 22.更好的shell环境
+23.多选项 ←(WIP)
 
 将会开源于:
-1.0.0-build300 (基本完善的时候，不确定性很大)
-好吧... 看来又要得等一段时间了... build 650?
+开源辣！！！
+
+SSB-Package Build System 将会开源于:
+直到拥有一个包管理器
