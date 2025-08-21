@@ -19,8 +19,11 @@
 package com.manager.ssb.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Handler;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -38,8 +41,10 @@ import com.manager.ssb.enums.ActivePanel;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
@@ -59,6 +64,10 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
     private boolean clickEnabled = true;
     private boolean longClickEnabled = true;
+    
+    // 多选状态相关变量
+    private boolean isMultiSelectMode = false;
+    private final Set<String> selectedItems = new HashSet<>(); // 使用文件路径作为唯一标识
 
     public void setClickEnabled(boolean enabled) {
         this.clickEnabled = enabled;
@@ -67,6 +76,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     public void setLongClickEnabled(boolean enabled) {
         this.longClickEnabled = enabled;
     }
+    
     public interface OnItemClickListener {
         void onItemClick(FileItem item);
     }
@@ -74,6 +84,42 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     // 长按功能
     public interface OnItemLongClickListener {
         void onItemLongClick(FileItem item, View view);
+    }
+    
+    // 多选模式相关方法
+    public boolean isMultiSelectMode() {
+        return isMultiSelectMode;
+    }
+    
+    public void setMultiSelectMode(boolean multiSelectMode) {
+        isMultiSelectMode = multiSelectMode;
+        if (!multiSelectMode) {
+            clearSelection();
+        }
+        notifyDataSetChanged();
+    }
+    
+    public void toggleSelection(FileItem item) {
+        String path = item.getPath(); // 假设FileItem有getPath()方法
+        if (selectedItems.contains(path)) {
+            selectedItems.remove(path);
+        } else {
+            selectedItems.add(path);
+        }
+        notifyItemChanged(fileList.indexOf(item));
+    }
+    
+    public void clearSelection() {
+        selectedItems.clear();
+        notifyDataSetChanged();
+    }
+    
+    public Set<String> getSelectedItems() {
+        return new HashSet<>(selectedItems);
+    }
+    
+    public int getSelectedCount() {
+        return selectedItems.size();
     }
 
 
@@ -103,6 +149,13 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         FileItem item = fileList.get(position);
         Context context = holder.itemView.getContext();
+
+        // 设置背景色（多选状态）
+        if (isMultiSelectMode && selectedItems.contains(item.getPath())) {
+            holder.itemView.setBackgroundColor(Color.parseColor("#ADD8E6")); // 浅蓝色
+        } else {
+            holder.itemView.setBackgroundColor(Color.TRANSPARENT);
+        }
 
         holder.ivIcon.setImageResource(item.isDirectory() ?
                 R.drawable.ic_folder : R.drawable.ic_file);
@@ -143,9 +196,14 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             });
         });
 
-
         // 修改后的点击监听器
         holder.itemView.setOnClickListener(v -> {
+            if (isMultiSelectMode) {
+                // 多选模式下的点击：切换选中状态
+                toggleSelection(item);
+                return;
+            }
+            
             // 禁用切换
             ((MainActivity) context).canSwichActivePanel = false;
             
@@ -167,8 +225,14 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             ((MainActivity) context).canSwichActivePanel = true;
         });
         
-        // 监听器
+        // 长按监听器
         holder.itemView.setOnLongClickListener(v -> {
+            if (isMultiSelectMode) {
+                // 多选模式下的长按：切换选中状态
+                toggleSelection(item);
+                return true;
+            }
+            
             if (!longClickEnabled) return false;
             
             if ("..".equals(item.getName())) return false; // 屏蔽返回项
@@ -189,6 +253,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     public void onViewRecycled(@NonNull ViewHolder holder) {
         super.onViewRecycled(holder);
         holder.ivIcon.setImageDrawable(null);
+        holder.itemView.setBackgroundColor(Color.TRANSPARENT);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -196,6 +261,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         TextView tvName;
         TextView tvSize;
         TextView tvTime;
+        private final GestureDetector gestureDetector;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -203,6 +269,44 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             tvName = itemView.findViewById(R.id.tv_name);
             tvSize = itemView.findViewById(R.id.tv_size);
             tvTime = itemView.findViewById(R.id.tv_time);
+            
+            // 手势检测器用于左右滑动
+            gestureDetector = new GestureDetector(itemView.getContext(), new GestureDetector.SimpleOnGestureListener() {
+                private static final int SWIPE_THRESHOLD = 100;
+                private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
+                @Override
+                public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                    float diffX = e2.getX() - e1.getX();
+                    float diffY = e2.getY() - e1.getY();
+                    
+                    if (Math.abs(diffX) > Math.abs(diffY) &&
+                        Math.abs(diffX) > SWIPE_THRESHOLD &&
+                        Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        
+                        // 左右滑动都触发多选模式
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            // 通过itemView的parent获取RecyclerView
+                            RecyclerView recyclerView = (RecyclerView) itemView.getParent();
+                            if (recyclerView != null) {
+                                FileAdapter adapter = (FileAdapter) recyclerView.getAdapter();
+                                if (adapter != null && !adapter.isMultiSelectMode) {
+                                    adapter.setMultiSelectMode(true);
+                                    adapter.toggleSelection(adapter.fileList.get(position));
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    return false;
+                }
+            });
+
+            itemView.setOnTouchListener((v, event) -> {
+                gestureDetector.onTouchEvent(event);
+                return false; // 返回false以便其他事件（如点击）可以继续处理
+            });
         }
     }
 

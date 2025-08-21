@@ -44,7 +44,7 @@
         <activity
             android:name="com.manager.ssb.CrashActivity"
             android:exported="false"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar">
+            android:screenOrientation="locked" >
         </activity>
         
         <activity
