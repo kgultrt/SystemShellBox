@@ -9,6 +9,8 @@
 
 **Note**: This app is currently in early development and lacks many features.
 
+🎓 Low Maintenance Status Warning: The maintainer is will in high school residence and is expected to be updated less frequently (about 1-2 times per semester). But as long as time, I will actively maintain, thank you for your understanding and patience!
+
 ## Project Presentation
 
 ![Project Presentation](./demo.gif)

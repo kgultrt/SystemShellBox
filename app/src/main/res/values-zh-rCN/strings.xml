@@ -3,7 +3,8 @@
     <string name="welcome_title">欢迎使用System Shell Box！</string>
     <string name="welcome_content">感谢您安装本应用！\n本项目的宗旨是在手机上打造一个很强大的的开发软件，让电子文盲也能知道终端的强大\n玩得开心!</string>
     <string name="update_title">已更新到 Build %d！</string>
-    <string name="update_log_content">本次更新内容：\n1.一目了然，还需要我说吗\n\n有关详细更改，请参阅更新日志</string>
+    <string name="update_log_content">本次更新内容：\n0.DEBUG!\n\n有关详细更改，请参阅更新日志</string>
+    
     <string name="warning_title">你可能是盗版软件的受害者。</string>
     <string name="warning_content">检测到签名篡改！\n虽然不制止你继续使用，但最好还是不要用了！第三方版本有可能盗取你的个人信息！\n\n官方版本下载链接: https://github.com/kgultrt/SystemShellBox</string>
 
