@@ -825,7 +825,7 @@ public class MainActivity extends AppCompatActivity {
         catch (Exception e) { /* 忽略 */ }
     
         try { sb.append(getString(R.string.git_branch_name)).append(": ")
-                .append(BuildConfig.GIT_BRANCH_NAME).append("\n\n"); } 
+                .append(BuildConfig.GIT_BRANCH_NAME); } 
         catch (Exception e) { /* 忽略 */ }
         
         new MaterialAlertDialogBuilder(this)

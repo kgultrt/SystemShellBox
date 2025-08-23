@@ -27,7 +27,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
 import android.os.Handler;
 import android.util.TypedValue;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -42,7 +41,6 @@ import com.manager.ssb.R;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.FileType;
 import com.manager.ssb.MainActivity;
-import com.manager.ssb.enums.ActivePanel;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -73,7 +71,14 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     
     // 多选状态相关变量
     private boolean isMultiSelectMode = false;
-    private final Set<String> selectedItems = new HashSet<>(); // 使用文件路径作为唯一标识
+    private final Set<String> selectedItems = new HashSet<>();
+    
+    // 滑动相关变量
+    private float startX = 0;
+    private float startY = 0;
+    private boolean isSwiping = false;
+    private ViewHolder swipingViewHolder = null;
+    private static final float SWIPE_THRESHOLD = 20; // 滑动阈值(像素)
 
     public void setClickEnabled(boolean enabled) {
         this.clickEnabled = enabled;
@@ -107,12 +112,17 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     
     public void toggleSelection(FileItem item) {
         String path = item.getPath();
+        
         if (selectedItems.contains(path)) {
             selectedItems.remove(path);
+            if (getSelectedCount() == 0) {
+                setMultiSelectMode(false);
+            }
         } else {
             if ("..".equals(item.getName())) return; // 屏蔽返回项
             selectedItems.add(path);
         }
+        
         notifyItemChanged(fileList.indexOf(item));
     }
     
@@ -128,7 +138,6 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     public int getSelectedCount() {
         return selectedItems.size();
     }
-
 
     public FileAdapter(List<FileItem> fileList, 
                        OnItemClickListener listener,
@@ -258,6 +267,9 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             }
             return true;
         });
+        
+        // 重置位置
+        holder.itemView.setTranslationX(0);
     }
 
     @Override
@@ -270,14 +282,14 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         super.onViewRecycled(holder);
         holder.ivIcon.setImageDrawable(null);
         holder.itemView.setBackgroundColor(Color.TRANSPARENT);
+        holder.itemView.setTranslationX(0);
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivIcon;
         TextView tvName;
         TextView tvSize;
         TextView tvTime;
-        private final GestureDetector gestureDetector;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -286,42 +298,68 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             tvSize = itemView.findViewById(R.id.tv_size);
             tvTime = itemView.findViewById(R.id.tv_time);
             
-            // 手势检测器用于左右滑动
-            gestureDetector = new GestureDetector(itemView.getContext(), new GestureDetector.SimpleOnGestureListener() {
-                private static final int SWIPE_THRESHOLD = 100;
-                private static final int SWIPE_VELOCITY_THRESHOLD = 100;
-
+            // 设置触摸监听器来处理滑动
+            itemView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
-                public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                    float diffX = e2.getX() - e1.getX();
-                    float diffY = e2.getY() - e1.getY();
-                    
-                    if (Math.abs(diffX) > Math.abs(diffY) &&
-                        Math.abs(diffX) > SWIPE_THRESHOLD &&
-                        Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                        
-                        // 左右滑动都触发多选模式
-                        int position = getAdapterPosition();
-                        if (position != RecyclerView.NO_POSITION) {
-                            // 通过itemView的parent获取RecyclerView
-                            RecyclerView recyclerView = (RecyclerView) itemView.getParent();
-                            if (recyclerView != null) {
-                                FileAdapter adapter = (FileAdapter) recyclerView.getAdapter();
-                                if (adapter != null && !adapter.isMultiSelectMode) {
-                                    adapter.setMultiSelectMode(true);
-                                    adapter.toggleSelection(adapter.fileList.get(position));
-                                    return true;
-                                }
+                public boolean onTouch(View v, MotionEvent event) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            startX = event.getX();
+                            startY = event.getY();
+                            isSwiping = false;
+                            swipingViewHolder = ViewHolder.this;
+                            return false; // 返回false让其他事件处理
+                            
+                        case MotionEvent.ACTION_MOVE:
+                            if (isMultiSelectMode) return false;
+                            
+                            float currentX = event.getX();
+                            float currentY = event.getY();
+                            float deltaX = currentX - startX;
+                            float deltaY = currentY - startY;
+                            
+                            // 检查是否是水平滑动
+                            if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
+                                isSwiping = true;
+                                
+                                // 移动项目视图
+                                itemView.setTranslationX(deltaX);
+                                return true; // 消费事件
                             }
-                        }
+                            return false;
+                            
+                        case MotionEvent.ACTION_UP:
+                        case MotionEvent.ACTION_CANCEL:
+                            if (isSwiping && swipingViewHolder == ViewHolder.this) {
+                                // 滑动结束，恢复位置或触发多选
+                                float endX = event.getX();
+                                float delta = endX - startX;
+                                
+                                // 如果滑动距离足够大，触发多选模式
+                                if (Math.abs(delta) > itemView.getWidth() * 0.3f) {
+                                    if (!isMultiSelectMode) {
+                                        setMultiSelectMode(true);
+                                    }
+                                    int position = getAdapterPosition();
+                                    if (position != RecyclerView.NO_POSITION) {
+                                        toggleSelection(fileList.get(position));
+                                    }
+                                }
+                                
+                                // 恢复位置
+                                itemView.animate()
+                                        .translationX(0)
+                                        .setDuration(150)
+                                        .start();
+                                
+                                isSwiping = false;
+                                swipingViewHolder = null;
+                                return true;
+                            }
+                            return false;
                     }
                     return false;
                 }
-            });
-
-            itemView.setOnTouchListener((v, event) -> {
-                gestureDetector.onTouchEvent(event);
-                return false; // 返回false以便其他事件（如点击）可以继续处理
             });
         }
     }
