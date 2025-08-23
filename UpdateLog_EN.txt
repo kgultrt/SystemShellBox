@@ -98,5 +98,10 @@ Next Steps
 15. Audio player [√]
 16. Top-right menu [√]
 
-Open Source Release
-Planned for version 1.0.0-build300 (when basically complete; might vary)
+Apologize:
+The author is about to enter high school
+Still living on campus, so it may not be updated frequently in the next three years.
+If you want, you can build a lot of PRs.
+After three years/when I take a vacation, I will read them one by one
+Oh, yes; you may have noticed a big difference between here and the Chinese version.
+That's because I'm too lazy to write an English translation, so I apologize to you here.
