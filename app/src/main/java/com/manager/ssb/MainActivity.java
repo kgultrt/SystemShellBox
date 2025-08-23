@@ -513,7 +513,10 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void updatePathDisplay() {
-        binding.tvCurrentPath.setText(getCurrentDirectory().getAbsolutePath());
+        boolean isMultiSelect = adapterLeft.isMultiSelectMode() || adapterRight.isMultiSelectMode();
+        
+        String displayText = getCurrentDirectory().getAbsolutePath() + " " + isMultiSelect;
+        binding.tvCurrentPath.setText(displayText);
     }
 
     private File getCurrentDirectory() {
@@ -877,6 +880,15 @@ public class MainActivity extends AppCompatActivity {
             }
 
             Collections.sort(newItems, (a, b) -> {
+                // 优先处理".."目录
+                boolean aIsParent = "..".equals(a.getName());
+                boolean bIsParent = "..".equals(b.getName());
+            
+                if (aIsParent && bIsParent) return 0;
+                if (aIsParent) return -1;  // a是".."则排在前面
+                if (bIsParent) return 1;   // b是".."则a排在后面
+            
+                // 原始排序规则
                 if (a.isDirectory() && !b.isDirectory()) return -1;
                 if (!a.isDirectory() && b.isDirectory()) return 1;
                 return a.getName().compareToIgnoreCase(b.getName());

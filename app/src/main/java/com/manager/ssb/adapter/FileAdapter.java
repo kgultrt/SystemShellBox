@@ -157,7 +157,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         FileItem item = fileList.get(position);
         Context context = holder.itemView.getContext();
 
-        // 设置背景色（多选状态） - 使用RippleDrawable保留波纹效果
+        // 设置背景色（多选状态）
         if (isMultiSelectMode && selectedItems.contains(item.getPath())) {
             // 创建波纹效果的选择背景
             ColorStateList colorStateList = ColorStateList.valueOf(Color.parseColor("#88888888"));
@@ -269,7 +269,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     public void onViewRecycled(@NonNull ViewHolder holder) {
         super.onViewRecycled(holder);
         holder.ivIcon.setImageDrawable(null);
-        // 不再设置透明背景（保留波纹效果）
+        holder.itemView.setBackgroundColor(Color.TRANSPARENT);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -288,23 +288,19 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             
             // 手势检测器用于左右滑动
             gestureDetector = new GestureDetector(itemView.getContext(), new GestureDetector.SimpleOnGestureListener() {
-                // 降低滑动阈值（提高灵敏度）
-                private static final int SWIPE_THRESHOLD = 30;  // 从100降低到30像素
-                private static final int SWIPE_VELOCITY_THRESHOLD = 50; // 从100降低到50
-                private static final int DIRECTION_TOLERANCE = 3; // 方向容差（x/y比例）
+                private static final int SWIPE_THRESHOLD = 100;
+                private static final int SWIPE_VELOCITY_THRESHOLD = 100;
 
                 @Override
                 public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
                     float diffX = e2.getX() - e1.getX();
                     float diffY = e2.getY() - e1.getY();
                     
-                    // 判断是否为横向滑动（x方向移动量 > y方向容差倍）
-                    boolean isHorizontalSwipe = Math.abs(diffX) > DIRECTION_TOLERANCE * Math.abs(diffY);
-                    
-                    if (isHorizontalSwipe &&
+                    if (Math.abs(diffX) > Math.abs(diffY) &&
                         Math.abs(diffX) > SWIPE_THRESHOLD &&
                         Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
                         
+                        // 左右滑动都触发多选模式
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
                             // 通过itemView的parent获取RecyclerView
@@ -321,42 +317,11 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
                     }
                     return false;
                 }
-
-                // 添加onScroll增强检测
-                @Override
-                public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-                    float diffX = e2.getX() - e1.getX();
-                    float diffY = e2.getY() - e1.getY();
-                    
-                    boolean isHorizontalSwipe = Math.abs(diffX) > DIRECTION_TOLERANCE * Math.abs(diffY);
-                    boolean isSignificantMove = Math.abs(diffX) > SWIPE_THRESHOLD;
-                    
-                    if (isHorizontalSwipe && isSignificantMove) {
-                        int position = getAdapterPosition();
-                        if (position != RecyclerView.NO_POSITION) {
-                            RecyclerView recyclerView = (RecyclerView) itemView.getParent();
-                            if (recyclerView != null) {
-                                FileAdapter adapter = (FileAdapter) recyclerView.getAdapter();
-                                if (adapter != null && !adapter.isMultiSelectMode) {
-                                    adapter.setMultiSelectMode(true);
-                                    adapter.toggleSelection(adapter.fileList.get(position));
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                    return super.onScroll(e1, e2, distanceX, distanceY);
-                }
             });
 
-            // 使用完整触摸监听确保手势检测
             itemView.setOnTouchListener((v, event) -> {
-                boolean handled = gestureDetector.onTouchEvent(event);
-                // ACTION_UP时触发点击事件
-                if (event.getAction() == MotionEvent.ACTION_UP) {
-                    v.performClick();
-                }
-                return handled;
+                gestureDetector.onTouchEvent(event);
+                return false; // 返回false以便其他事件（如点击）可以继续处理
             });
         }
     }
