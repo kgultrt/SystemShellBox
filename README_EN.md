@@ -9,6 +9,10 @@
 
 **Note**: This app is currently in early development and lacks many features.
 
+## Project Presentation
+
+![Project Presentation](./demo.gif)
+
 ## How to Build?
 
 ### Steps
