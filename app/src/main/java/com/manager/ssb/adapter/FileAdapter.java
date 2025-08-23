@@ -79,6 +79,10 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     private boolean isSwiping = false;
     private ViewHolder swipingViewHolder = null;
     private static final float SWIPE_THRESHOLD = 20; // 滑动阈值(像素)
+    private static final float LONG_PRESS_THRESHOLD = 10; // 长按移动阈值(像素)
+    private Handler longPressHandler = new Handler();
+    private Runnable longPressRunnable;
+    private boolean isLongPressTriggered = false;
 
     public void setClickEnabled(boolean enabled) {
         this.clickEnabled = enabled;
@@ -103,11 +107,18 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     }
     
     public void setMultiSelectMode(boolean multiSelectMode) {
+        boolean wasMultiSelectMode = isMultiSelectMode;
         isMultiSelectMode = multiSelectMode;
+        
         if (!multiSelectMode) {
-            clearSelection();
+            // 清除所有选中状态
+            selectedItems.clear();
         }
-        notifyDataSetChanged();
+        
+        // 只有在模式真正改变时才通知更新
+        if (wasMultiSelectMode != isMultiSelectMode) {
+            notifyDataSetChanged();
+        }
     }
     
     public void toggleSelection(FileItem item) {
@@ -117,18 +128,19 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             selectedItems.remove(path);
             if (getSelectedCount() == 0) {
                 setMultiSelectMode(false);
+            } else {
+                notifyItemChanged(fileList.indexOf(item));
             }
         } else {
             if ("..".equals(item.getName())) return; // 屏蔽返回项
             selectedItems.add(path);
+            notifyItemChanged(fileList.indexOf(item));
         }
-        
-        notifyItemChanged(fileList.indexOf(item));
     }
     
     public void clearSelection() {
         selectedItems.clear();
-        notifyDataSetChanged();
+        setMultiSelectMode(false);
     }
     
     public Set<String> getSelectedItems() {
@@ -151,6 +163,28 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         this.panel = panel;
         this.executorService = executorService;
         this.mainHandler = mainHandler;
+        
+        // 初始化长按检测
+        longPressRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (swipingViewHolder != null && !isSwiping && !isLongPressTriggered) {
+                    isLongPressTriggered = true;
+                    int position = swipingViewHolder.getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        FileItem item = fileList.get(position);
+                        if (longClickListener != null && !"..".equals(item.getName())) {
+                            if (!isMultiSelectMode) {
+                                longClickListener.onItemLongClick(item, swipingViewHolder.itemView);
+                            } else {
+                                // 多选模式下的长按
+                                // do nothing (WIP)
+                            }
+                        }
+                    }
+                }
+            }
+        };
     }
 
     @NonNull
@@ -165,6 +199,15 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         FileItem item = fileList.get(position);
         Context context = holder.itemView.getContext();
+
+        // 重置视图状态
+        holder.itemView.setTranslationX(0);
+        holder.itemView.setAlpha(1f);
+        
+        // 清除可能存在的波纹效果
+        if (holder.itemView.getBackground() instanceof RippleDrawable) {
+            holder.itemView.getBackground().setState(new int[0]);
+        }
 
         // 设置背景色（多选状态）
         if (isMultiSelectMode && selectedItems.contains(item.getPath())) {
@@ -249,27 +292,6 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             // 启用切换
             ((MainActivity) context).canSwichActivePanel = true;
         });
-        
-        // 长按监听器
-        holder.itemView.setOnLongClickListener(v -> {
-            if (isMultiSelectMode) {
-                // 多选模式下的长按：切换选中状态
-                toggleSelection(item);
-                return true;
-            }
-            
-            if (!longClickEnabled) return false;
-            
-            if ("..".equals(item.getName())) return false; // 屏蔽返回项
-            
-            if (longClickListener != null) {
-                longClickListener.onItemLongClick(item, v);
-            }
-            return true;
-        });
-        
-        // 重置位置
-        holder.itemView.setTranslationX(0);
     }
 
     @Override
@@ -283,6 +305,12 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         holder.ivIcon.setImageDrawable(null);
         holder.itemView.setBackgroundColor(Color.TRANSPARENT);
         holder.itemView.setTranslationX(0);
+        holder.itemView.setAlpha(1f);
+        
+        // 清除波纹效果
+        if (holder.itemView.getBackground() instanceof RippleDrawable) {
+            holder.itemView.getBackground().setState(new int[0]);
+        }
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -302,13 +330,27 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             itemView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
+                    int position = getAdapterPosition();
+                    if (position == RecyclerView.NO_POSITION) return false;
+                    
+                    FileItem item = fileList.get(position);
+                    
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_DOWN:
                             startX = event.getX();
                             startY = event.getY();
                             isSwiping = false;
+                            isLongPressTriggered = false;
                             swipingViewHolder = ViewHolder.this;
-                            return false; // 返回false让其他事件处理
+                            
+                            // 清除可能存在的波纹效果
+                            if (v.getBackground() instanceof RippleDrawable) {
+                                v.getBackground().setState(new int[0]);
+                            }
+                            
+                            // 开始长按检测
+                            longPressHandler.postDelayed(longPressRunnable, 500); // 500ms长按阈值
+                            return false;
                             
                         case MotionEvent.ACTION_MOVE:
                             if (isMultiSelectMode) return false;
@@ -318,44 +360,85 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
                             float deltaX = currentX - startX;
                             float deltaY = currentY - startY;
                             
-                            // 检查是否是水平滑动
-                            if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
-                                isSwiping = true;
+                            // 检查是否是滑动
+                            if (Math.abs(deltaX) > SWIPE_THRESHOLD || Math.abs(deltaY) > SWIPE_THRESHOLD) {
+                                // 取消长按检测
+                                longPressHandler.removeCallbacks(longPressRunnable);
                                 
-                                // 移动项目视图
-                                itemView.setTranslationX(deltaX);
-                                return true; // 消费事件
+                                // 检查是否是水平滑动
+                                if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5f) {
+                                    isSwiping = true;
+                                    
+                                    // 移动项目视图并添加视觉反馈
+                                    v.setTranslationX(deltaX);
+                                    
+                                    // 添加透明度效果，使滑动更明显
+                                    float alpha = 1f - Math.min(0.3f, Math.abs(deltaX) / v.getWidth() * 0.5f);
+                                    v.setAlpha(alpha);
+                                    
+                                    return true; // 消费事件
+                                }
                             }
                             return false;
                             
                         case MotionEvent.ACTION_UP:
                         case MotionEvent.ACTION_CANCEL:
+                            // 取消长按检测
+                            longPressHandler.removeCallbacks(longPressRunnable);
+                            
                             if (isSwiping && swipingViewHolder == ViewHolder.this) {
                                 // 滑动结束，恢复位置或触发多选
                                 float endX = event.getX();
                                 float delta = endX - startX;
                                 
                                 // 如果滑动距离足够大，触发多选模式
-                                if (Math.abs(delta) > itemView.getWidth() * 0.3f) {
+                                if (Math.abs(delta) > v.getWidth() * 0.3f && !"..".equals(item.getName())) {
                                     if (!isMultiSelectMode) {
                                         setMultiSelectMode(true);
-                                    }
-                                    int position = getAdapterPosition();
-                                    if (position != RecyclerView.NO_POSITION) {
-                                        toggleSelection(fileList.get(position));
+                                        // 直接选中当前项目
+                                        selectedItems.add(item.getPath());
+                                        notifyItemChanged(position);
+                                    } else {
+                                        toggleSelection(item);
                                     }
                                 }
                                 
-                                // 恢复位置
-                                itemView.animate()
+                                // 平滑恢复位置
+                                v.animate()
                                         .translationX(0)
-                                        .setDuration(150)
+                                        .alpha(1f)
+                                        .setDuration(200)
+                                        .withEndAction(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                // 确保波纹效果被清除
+                                                if (v.getBackground() instanceof RippleDrawable) {
+                                                    v.getBackground().setState(new int[0]);
+                                                }
+                                            }
+                                        })
                                         .start();
                                 
                                 isSwiping = false;
                                 swipingViewHolder = null;
                                 return true;
                             }
+                            
+                            // 如果是长按后抬起，不触发点击事件
+                            if (isLongPressTriggered) {
+                                isLongPressTriggered = false;
+                                // 清除波纹效果
+                                if (v.getBackground() instanceof RippleDrawable) {
+                                    v.getBackground().setState(new int[0]);
+                                }
+                                return true;
+                            }
+                            
+                            // 清除可能存在的波纹效果
+                            if (v.getBackground() instanceof RippleDrawable) {
+                                v.getBackground().setState(new int[0]);
+                            }
+                            
                             return false;
                     }
                     return false;
