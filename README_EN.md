@@ -92,6 +92,12 @@ Some changes have been made to the code during this period for the sake of adapt
 
 Download the app for **free** from the Releases page.
 
+## Version number management
+
+The project uses a local build number file (`buildNumber.txt`) to track the number of builds of the debug version.
+
+This file is not committed to version control and each developer has their own build count.
+
 ## FAQ
 1. Why so many auto-commits?
 

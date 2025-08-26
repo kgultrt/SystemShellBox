@@ -35,6 +35,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <activity
+            android:name="com.manager.ssb.apkpatch.MainActivity"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_apk"
+            android:label="@string/apkpatch_name"
+            android:screenOrientation="locked">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name="com.manager.ssb.core.editor.MainActivity"

@@ -247,6 +247,9 @@
     <string name="external_browser">外部浏览器打开</string>
     <string name="not_recommended">(不推荐)</string>
     <string name="no_browser_found">未找到可用的浏览器应用</string>
+    
+    <string name="apkpatch_name">系统终端盒：APK编辑器</string>
+    <string name="apkpatch_original">APKPATCH 将要比 MT 更好！</string>
 
 
 

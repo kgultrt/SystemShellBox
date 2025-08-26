@@ -97,6 +97,12 @@ app/src/main/java/com/mrikso/codeeditor/\* (GPLv3)
 
 并且从发行版页面**免费**下载此应用。
 
+## 版本号管理
+
+项目使用本地构建号文件 (`buildNumber.txt`) 来跟踪调试版本的构建次数。
+
+此文件不会提交到版本控制，每个开发者有自己的构建计数。
+
 ## 常见问题
 1. 为什么这么多 auto commit?
 

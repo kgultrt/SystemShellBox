@@ -245,6 +245,9 @@
     <string name="external_browser">External Browser Open</string>
     <string name="not_recommended">(Not recommended)</string>
     <string name="no_browser_found">No available browser apps found</string>
+    
+    <string name="apkpatch_name">System Shell Box: Apk Editor</string>
+    <string name="apkpatch_original">APKPATCH Will Better Than MT!</string>
 
 
     <string-array name="size_units">

@@ -85,4 +85,6 @@ lint/tmp/
 local.properties
 keystore.properties
 
+buildNumber.txt
+
 key.jks

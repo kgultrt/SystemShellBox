@@ -99,6 +99,20 @@ android {
 
     buildTypes {
         debug {
+            def getGitInfo = { commandParts ->
+                def proc = commandParts.execute([], project.rootDir)
+                def output = new ByteArrayOutputStream()
+                def error = new ByteArrayOutputStream()
+                proc.waitForProcessOutput(output, error)
+                if (proc.exitValue() != 0) {
+                    logger.error("Git command failed: ${commandParts.join(' ')}\nError: ${error.toString()}")
+                    return "unknown"
+                }
+                return output.toString().trim()
+            }
+            
+            def gitCommitShortHash = getGitInfo(['git', 'rev-parse', '--short', 'HEAD'])
+            
             // 动态生成版本名称，追加 Build 号
             def buildNumberFile = file("${project.rootDir}/buildNumber.txt")
             def buildNumber = 0 // 默认构建号
@@ -110,9 +124,10 @@ android {
                 // 如果文件不存在，初始化为0
                 buildNumberFile.text = "0"
             }
+            
 
-            // 修改版本名称
-            versionNameSuffix "-build${buildNumber + 1}"
+            // 组合版本后缀
+            versionNameSuffix "-build${buildNumber + 1}.${gitCommitShortHash}"
 
             // 在构建完成后递增 buildNumber 并写入文件
             tasks.whenTaskAdded { task ->
@@ -129,6 +144,20 @@ android {
         }
         
         release {
+            def getGitInfo = { commandParts ->
+                def proc = commandParts.execute([], project.rootDir)
+                def output = new ByteArrayOutputStream()
+                def error = new ByteArrayOutputStream()
+                proc.waitForProcessOutput(output, error)
+                if (proc.exitValue() != 0) {
+                    logger.error("Git command failed: ${commandParts.join(' ')}\nError: ${error.toString()}")
+                    return "unknown"
+                }
+                return output.toString().trim()
+            }
+            
+            def gitCommitShortHash = getGitInfo(['git', 'rev-parse', '--short', 'HEAD'])
+            
             // 动态生成版本名称，追加 Build 号
             def buildNumberFile = file("${project.rootDir}/buildNumber.txt")
             def buildNumber = 0 // 默认构建号
@@ -152,7 +181,7 @@ android {
                 releaseNumberFile.text = "0"
             }
             
-            versionNameSuffix "-release${releaseNumber + 1}-build${buildNumber + 1}"
+            versionNameSuffix "-release${releaseNumber + 1}-build${buildNumber + 1}.${gitCommitShortHash}"
             
             // 在构建完成后递增 buildNumber 并写入文件
             tasks.whenTaskAdded { task ->
@@ -176,6 +205,7 @@ android {
             signingConfig signingConfigs.release
         }
     }
+    
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
