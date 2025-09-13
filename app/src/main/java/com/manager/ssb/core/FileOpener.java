@@ -39,6 +39,7 @@ public class FileOpener {
         HANDLER_MAP.put(FileType.TEXT, new TextFileHandler());
         HANDLER_MAP.put(FileType.COMPRESS, new CompressFileHandler());
         HANDLER_MAP.put(FileType.HTML, new HtmlFileHandler());
+        HANDLER_MAP.put(FileType.APK, new UnknownFileHandler());
         HANDLER_MAP.put(FileType.UNKNOWN, new UnknownFileHandler());
     }
 

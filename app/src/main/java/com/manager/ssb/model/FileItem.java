@@ -38,6 +38,7 @@ public class FileItem {
     private volatile Boolean isTextFile = null;
     private volatile Boolean isZipFile = null;
     private volatile Boolean isHtmlFile = null;
+    private volatile Boolean isApkFile = null;
 
     // 扩展名集合定义为不可变静态集合
     private static final Set<String> AUDIO_EXTENSIONS = Set.of(
@@ -55,6 +56,10 @@ public class FileItem {
     
     private static final Set<String> HTML_EXTENSIONS = Set.of(
         "html", "htm"
+    );
+    
+    private static final Set<String> APK_EXTENSIONS = Set.of(
+        "apk"
     );
 
     public FileItem(File file) {
@@ -97,6 +102,11 @@ public class FileItem {
         if (isHtmlFile == null) isHtmlFile = fileExtension != null && HTML_EXTENSIONS.contains(fileExtension);
         return isHtmlFile;
     }
+    
+    public boolean isApkFile() {
+        if (isApkFile == null) isApkFile = fileExtension != null && APK_EXTENSIONS.contains(fileExtension);
+        return isApkFile;
+    }
 
     // 尺寸和修改时间保持原有延迟加载
     public long getSize() {
@@ -115,6 +125,7 @@ public class FileItem {
         if (isTextFile()) return FileType.TEXT;
         if (isZipFile()) return FileType.COMPRESS;
         if (isHtmlFile()) return FileType.HTML;
+        if (isApkFile()) return FileType.APK;
         return FileType.UNKNOWN;
     }
 

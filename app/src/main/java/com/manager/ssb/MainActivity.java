@@ -85,20 +85,25 @@ import java.util.regex.Matcher;
 
 public class MainActivity extends AppCompatActivity {
 
+    //整理
     private ActivityMainBinding binding;
-    public ActivePanel activePanel = ActivePanel.LEFT;
     private File currentDirectoryLeft;
     private File currentDirectoryRight;
     private final List<FileItem> fileListLeft = new ArrayList<>();
     private final List<FileItem> fileListRight = new ArrayList<>();
-    public FileAdapter adapterLeft;
-    public FileAdapter adapterRight;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private NotifyingExecutorService executorService;
     private boolean storageInfoLoaded = false;
-    public boolean canSwichActivePanel = true;
     private TaskNotificationManager notificationManager;
+    private static final int PERMISSION_REQUEST_CODE = 1001;
+    private static final int MANAGE_EXTERNAL_STORAGE_REQUEST_CODE = 1002;
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1003;
+    private final Map<Integer, Runnable> menuActionMap = new HashMap<>();
     
+    public ActivePanel activePanel = ActivePanel.LEFT;
+    public FileAdapter adapterLeft;
+    public FileAdapter adapterRight;
+    public boolean canSwichActivePanel = true;
     public final Handler disableHandler = new Handler();
     public final Runnable enableClicksRunnable = () -> {
         adapterLeft.setClickEnabled(true);
@@ -108,13 +113,6 @@ public class MainActivity extends AppCompatActivity {
         
         canSwichActivePanel = true;
     };
-
-    private static final int PERMISSION_REQUEST_CODE = 1001;
-    private static final int MANAGE_EXTERNAL_STORAGE_REQUEST_CODE = 1002;
-    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1003;
-    
-    // 声明菜单操作映射表
-    private final Map<Integer, Runnable> menuActionMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -385,7 +383,7 @@ public class MainActivity extends AppCompatActivity {
     // 提取构建号的核心方法
     private int extractBuildNumber(String version) {
         // 使用正则提取末尾的数字
-        Pattern pattern = Pattern.compile("(\\d+)$");
+        Pattern pattern = Pattern.compile("build(\\d+)");
         Matcher matcher = pattern.matcher(version);
         if (matcher.find()) {
             return Integer.parseInt(matcher.group(1));

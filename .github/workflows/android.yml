@@ -1,6 +1,8 @@
 name: Android CI
 
 on:
+  push:
+    branches: [ legacy ]
   workflow_dispatch:
     inputs:
       module:
@@ -44,7 +46,7 @@ jobs:
     - name: Install Android SDK & NDK
       uses: android-actions/setup-android@v2
 
-    - name: Install NDK version ${{ env.NDK_VERSION }}
+    - name: Install NDK
       run: |
         sdkmanager --install "ndk;${NDK_VERSION}"
         echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}" >> $GITHUB_ENV
@@ -57,8 +59,17 @@ jobs:
 
     - name: Build with Gradle
       run: |
-        BUILD_CMD=assemble${{ github.event.inputs.buildType == 'release' && 'Release' || 'Debug' }}
-        ./gradlew ${{ github.event.inputs.module }}:$BUILD_CMD
+        # 根据事件类型选择参数来源
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          MODULE="${{ github.event.inputs.module }}"
+          BUILD_TYPE="${{ github.event.inputs.buildType }}"
+        else
+          MODULE="app"
+          BUILD_TYPE="Debug"
+        fi
+        
+        BUILD_CMD=assemble${BUILD_TYPE}
+        ./gradlew $MODULE:$BUILD_CMD
 
     - name: Upload APKs
       uses: actions/upload-artifact@v4

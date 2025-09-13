@@ -27,5 +27,6 @@ public enum FileType {
     COMPRESS,
     DIRECTORY,
     HTML,
+    APK,
     UNKNOWN
 }

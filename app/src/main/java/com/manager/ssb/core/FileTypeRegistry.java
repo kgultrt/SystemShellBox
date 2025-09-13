@@ -64,6 +64,8 @@ public class FileTypeRegistry {
         
         registerHtmlExtension(".html");
         registerHtmlExtension(".htm");
+        
+        registerAndroidAppExtension(".apk");
     }
 
     public static void registerAudioExtension(String extension) {
@@ -80,6 +82,10 @@ public class FileTypeRegistry {
     
     public static void registerHtmlExtension(String extension) {
         registerExtension(extension, FileType.HTML);
+    }
+    
+    public static void registerAndroidAppExtension(String extension) {
+        registerExtension(extension, FileType.APK);
     }
 
     public static void registerExtension(String extension, FileType fileType) {

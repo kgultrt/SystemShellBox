@@ -21,27 +21,28 @@ package com.manager.ssb.core.config;
 import android.content.Context;
 import android.util.Log;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
 import com.manager.ssb.Application;
 
 import java.io.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Config {
-
+    private static final String TAG = "Config";
     private static final String CONFIG_PATH = "config/config.json";
-    private static File configFile;
-    private static volatile JsonObject rootConfig = null; // 缓存整个 JSON 对象
-    private static ConcurrentHashMap<String, Object> configCache = new ConcurrentHashMap<>(); // 使用 ConcurrentHashMap
+    
+    private static final AtomicReference<JsonObject> rootConfig = new AtomicReference<>(new JsonObject());
+    private static final ConcurrentHashMap<String, Object> configCache = new ConcurrentHashMap<>();
     private static final Gson gson = new Gson();
-    private static final ExecutorService executor = Executors.newSingleThreadExecutor(); // 异步线程池
-    private static CompletableFuture<Void> loadFuture = CompletableFuture.completedFuture(null);
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static volatile CompletableFuture<Void> loadFuture = CompletableFuture.completedFuture(null);
+    
+    private static File configFile;
 
     static {
         initialize();
@@ -50,192 +51,340 @@ public class Config {
     public static void initialize() {
         Context context = Application.getAppContext();
         File configDir = new File(context.getFilesDir(), "config");
-        if (!configDir.exists()) {
-            configDir.mkdirs();
+        if (!configDir.exists() && !configDir.mkdirs()) {
+            Log.e(TAG, "Failed to create config directory");
+            return;
         }
         configFile = new File(configDir, "config.json");
-
-        refresh(); // 首次自动加载
+        refresh();
     }
 
     public static void refresh() {
-        loadFuture = CompletableFuture.runAsync(() -> { // 异步加载
+        // 如果正在加载，直接返回
+        if (!loadFuture.isDone()) {
+            return;
+        }
+        
+        loadFuture = CompletableFuture.runAsync(() -> {
             try {
                 if (!configFile.exists()) {
                     createDefaultConfig();
+                    return;
                 }
 
-                // 读取配置
-                String json = readFile(configFile);
-                JsonObject newConfig = gson.fromJson(json, JsonObject.class);
-                rootConfig = newConfig;
-                configCache.clear(); // 清空缓存
-                Log.d("Config", "Config loaded successfully");
+                // 读取配置文件
+                String jsonContent;
+                try (FileInputStream fis = new FileInputStream(configFile);
+                     InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+                     BufferedReader reader = new BufferedReader(isr)) {
+                    
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    jsonContent = sb.toString();
+                }
 
+                JsonObject newConfig = gson.fromJson(jsonContent, JsonObject.class);
+                if (newConfig != null) {
+                    rootConfig.set(newConfig);
+                    configCache.clear();
+                    Log.d(TAG, "Config loaded successfully");
+                } else {
+                    Log.e(TAG, "Failed to parse config file");
+                }
             } catch (Exception e) {
-                e.printStackTrace();
-                Log.e("Config", "Failed to load config", e);
+                Log.e(TAG, "Failed to load config", e);
             }
         }, executor);
     }
 
-    private static void createDefaultConfig() throws Exception {
-        JsonObject defaultConfig = new JsonObject();
-        defaultConfig.addProperty("appName", "System Shell Box");
-        defaultConfig.addProperty("isFirst", true);
+    private static void createDefaultConfig() {
+        try {
+            JsonObject defaultConfig = new JsonObject();
+            defaultConfig.addProperty("appName", "System Shell Box");
+            defaultConfig.addProperty("isFirst", true);
 
-        saveConfig(gson.toJson(defaultConfig));
+            // 直接保存默认配置
+            saveConfigInternal(gson.toJson(defaultConfig));
+            rootConfig.set(defaultConfig);
+            configCache.clear();
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to create default config", e);
+        }
     }
 
-    private static String readFile(File file) throws IOException {
-        FileInputStream fis = new FileInputStream(file);
-        byte[] data = new byte[(int) file.length()];
-        fis.read(data);
-        fis.close();
-        return new String(data, "UTF-8");
+    private static void saveConfigInternal(String json) throws IOException {
+        // 确保目录存在
+        File parentDir = configFile.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+        
+        // 使用try-with-resources确保资源正确关闭
+        try (FileOutputStream fos = new FileOutputStream(configFile);
+             OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+             BufferedWriter writer = new BufferedWriter(osw)) {
+            
+            writer.write(json);
+            writer.flush();
+        }
     }
 
-    private static void saveConfig(String json) {
-        executor.execute(() -> { // 异步保存
-            try (FileOutputStream fos = new FileOutputStream(configFile)) {
-                fos.write(json.getBytes("UTF-8"));
+    private static void saveConfigAsync() {
+        JsonObject config = rootConfig.get();
+        if (config == null) {
+            return;
+        }
+        
+        executor.execute(() -> {
+            try {
+                saveConfigInternal(gson.toJson(config));
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(TAG, "Failed to save config", e);
             }
         });
     }
 
     /**
-     * 获取配置项的值，支持嵌套 JSON (不使用 JSON Path)
-     *
-     * @param key          配置项的键，可以使用点号分隔符访问嵌套字段 (e.g., "nested.key1")
-     * @param defaultValue 默认值，如果配置项不存在则返回该值
-     * @param <T>          配置项的类型
-     * @return 配置项的值，如果不存在则返回默认值
+     * 获取配置项的值，支持嵌套JSON
+     * 完全兼容原始代码的使用方式
      */
     @SuppressWarnings("unchecked")
     public static <T> T get(String key, T defaultValue) {
         try {
-            // 确保配置加载完成
-            loadFuture.join();
-
+            // 确保配置已加载
+            if (loadFuture != null && !loadFuture.isDone()) {
+                loadFuture.get();
+            }
+            
             // 先从缓存中获取
             if (configCache.containsKey(key)) {
-                return (T) configCache.get(key);
+                Object cached = configCache.get(key);
+                // 确保缓存值的类型与默认值类型兼容
+                if (defaultValue == null || 
+                    (cached != null && (defaultValue.getClass().isInstance(cached) || 
+                     isCompatibleType(cached, defaultValue)))) {
+                    return (T) cached;
+                }
             }
 
-            // 从根 JSON 中解析
-            if (rootConfig == null) {
+            JsonObject config = rootConfig.get();
+            if (config == null) {
                 return defaultValue;
             }
 
             String[] keys = key.split("\\.");
-            JsonElement element = rootConfig;
+            JsonElement element = config;
 
             for (String k : keys) {
-                if (element instanceof JsonObject) {
-                    element = ((JsonObject) element).get(k);
-                    if (element == null) {
+                if (element.isJsonObject()) {
+                    element = element.getAsJsonObject().get(k);
+                    if (element == null || element.isJsonNull()) {
                         return defaultValue;
                     }
                 } else {
-                    return defaultValue; // 如果不是 JsonObject，说明路径错误
+                    return defaultValue;
                 }
             }
 
-            // 转换类型
-            if (element.isJsonPrimitive()) {
-                if (defaultValue instanceof String) {
-                    String value = element.getAsString();
-                    configCache.put(key, value);
-                    return (T) value;
-                } else if (defaultValue instanceof Integer) {
-                    Integer value = element.getAsInt();
-                    configCache.put(key, value);
-                    return (T) value;
-                } else if (defaultValue instanceof Boolean) {
-                    Boolean value = element.getAsBoolean();
-                    configCache.put(key, value);
-                    return (T) value;
-                } else if (defaultValue instanceof Double) {
-                    Double value = element.getAsDouble();
-                    configCache.put(key, value);
-                    return (T) value;
-                }
-                // 可以根据需要添加更多类型
-            }
-
+            // 转换为请求的类型
+            T result = convertJsonElement(element, defaultValue);
+            
             // 缓存结果
-            configCache.put(key, element);
-
-            return (T) element;
-
+            if (result != null) {
+                configCache.put(key, result);
+            }
+            
+            return result != null ? result : defaultValue;
         } catch (Exception e) {
-            Log.e("Config", "Error getting config", e);
+            Log.e(TAG, "Error getting config for key: " + key, e);
             return defaultValue;
         }
     }
 
+    /**
+     * 检查两个类型是否兼容
+     */
+    private static boolean isCompatibleType(Object value, Object defaultValue) {
+        if (value == null || defaultValue == null) {
+            return false;
+        }
+        
+        Class<?> valueClass = value.getClass();
+        Class<?> defaultClass = defaultValue.getClass();
+        
+        // 处理基本类型和它们的包装类
+        if (isPrimitiveOrWrapper(valueClass) && isPrimitiveOrWrapper(defaultClass)) {
+            return true;
+        }
+        
+        // 处理JsonElement及其子类
+        if (JsonElement.class.isAssignableFrom(valueClass) && 
+            JsonElement.class.isAssignableFrom(defaultClass)) {
+            return true;
+        }
+        
+        return valueClass.equals(defaultClass);
+    }
+    
+    /**
+     * 检查是否是基本类型或包装类
+     */
+    private static boolean isPrimitiveOrWrapper(Class<?> type) {
+        return type.isPrimitive() || 
+               type == Boolean.class || 
+               type == Integer.class || 
+               type == Double.class || 
+               type == Float.class || 
+               type == Long.class || 
+               type == Short.class || 
+               type == Byte.class || 
+               type == Character.class;
+    }
 
     /**
-     * 设置配置项的值，支持嵌套 JSON (不使用 JSON Path)
-     *
-     * @param key   配置项的键，可以使用点号分隔符访问嵌套字段 (e.g., "nested.newKey")
-     * @param value 配置项的值
+     * 设置配置项的值
+     * 完全兼容原始代码的使用方式
      */
     public static void set(String key, Object value) {
         try {
-            String[] keys = key.split("\\.");
-            JsonObject current = rootConfig;
+            // 确保配置已加载
+            if (loadFuture != null && !loadFuture.isDone()) {
+                loadFuture.get();
+            }
+            
+            JsonObject config = rootConfig.get();
+            if (config == null) {
+                config = new JsonObject();
+                rootConfig.set(config);
+            }
 
-            // 找到要设置的 JSON 对象
+            String[] keys = key.split("\\.");
+            JsonObject current = config;
+
+            // 遍历路径，创建不存在的对象
             for (int i = 0; i < keys.length - 1; i++) {
                 String k = keys[i];
-                if (!current.has(k)) {
+                JsonElement next = current.get(k);
+                
+                if (next == null || !next.isJsonObject()) {
                     JsonObject newObj = new JsonObject();
-                    current.add(k, newObj); // 如果不存在，创建新的 JSON 对象
+                    current.add(k, newObj);
+                    current = newObj;
+                } else {
+                    current = next.getAsJsonObject();
                 }
-                current = current.getAsJsonObject(k);
             }
 
             // 设置值
             String lastKey = keys[keys.length - 1];
-            JsonElement newElement = null;
-
-            if (value instanceof String) {
-                newElement = new JsonPrimitive((String) value);
-            } else if (value instanceof Integer) {
-                newElement = new JsonPrimitive((Integer) value);
-            } else if (value instanceof Boolean) {
-                newElement = new JsonPrimitive((Boolean) value);
-            } else if (value instanceof Double) {
-                newElement = new JsonPrimitive((Double) value);
-            } else if (value instanceof Number) {
-                newElement = new JsonPrimitive((Number) value);
-            } else if (value == null) {
+            JsonElement jsonValue = convertToJsonElement(value);
+            
+            if (jsonValue == null) {
                 current.remove(lastKey);
             } else {
-                // 使用 Gson 转换成 JsonElement
-                newElement = gson.toJsonTree(value);
+                current.add(lastKey, jsonValue);
             }
 
-            if (newElement != null) {
-                current.add(lastKey, newElement);
-            }
-
-            // 清除相关的缓存
-            configCache.clear();
-
-            saveConfig(); // 保存配置
+            // 清除相关的缓存项
+            configCache.remove(key);
+            
+            // 异步保存配置
+            saveConfigAsync();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error setting config for key: " + key, e);
         }
     }
 
+    /**
+     * 将JsonElement转换为指定类型
+     * 支持所有基本类型和JsonElement类型
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> T convertJsonElement(JsonElement element, T defaultValue) {
+        if (element == null) {
+            return defaultValue;
+        }
+        
+        // 如果默认值是JsonElement或其子类，直接返回
+        if (defaultValue instanceof JsonElement) {
+            return (T) element;
+        }
+        
+        // 处理基本类型
+        if (element.isJsonPrimitive()) {
+            JsonPrimitive primitive = element.getAsJsonPrimitive();
+            
+            if (defaultValue instanceof String) {
+                return (T) primitive.getAsString();
+            } else if (defaultValue instanceof Integer || defaultValue.getClass() == int.class) {
+                return (T) Integer.valueOf(primitive.getAsInt());
+            } else if (defaultValue instanceof Boolean || defaultValue.getClass() == boolean.class) {
+                return (T) Boolean.valueOf(primitive.getAsBoolean());
+            } else if (defaultValue instanceof Double || defaultValue.getClass() == double.class) {
+                return (T) Double.valueOf(primitive.getAsDouble());
+            } else if (defaultValue instanceof Float || defaultValue.getClass() == float.class) {
+                return (T) Float.valueOf(primitive.getAsFloat());
+            } else if (defaultValue instanceof Long || defaultValue.getClass() == long.class) {
+                return (T) Long.valueOf(primitive.getAsLong());
+            } else if (defaultValue instanceof Short || defaultValue.getClass() == short.class) {
+                return (T) Short.valueOf(primitive.getAsShort());
+            } else if (defaultValue instanceof Byte || defaultValue.getClass() == byte.class) {
+                return (T) Byte.valueOf(primitive.getAsByte());
+            }
+        } 
+        // 处理JsonArray
+        else if (element.isJsonArray() && defaultValue instanceof JsonArray) {
+            return (T) element.getAsJsonArray();
+        }
+        // 处理JsonObject
+        else if (element.isJsonObject() && defaultValue instanceof JsonObject) {
+            return (T) element.getAsJsonObject();
+        }
+        
+        // 如果类型不匹配，尝试使用Gson转换
+        try {
+            return gson.fromJson(element, (Class<T>) defaultValue.getClass());
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to convert JSON element to type: " + defaultValue.getClass().getSimpleName(), e);
+            return defaultValue;
+        }
+    }
 
-    private static void saveConfig() {
-        if (rootConfig != null) {
-            saveConfig(gson.toJson(rootConfig));
+    /**
+     * 将Java对象转换为JsonElement
+     * 支持所有基本类型和JsonElement类型
+     */
+    private static JsonElement convertToJsonElement(Object value) {
+        if (value == null) {
+            return null;
+        }
+        
+        if (value instanceof String) {
+            return new JsonPrimitive((String) value);
+        } else if (value instanceof Integer) {
+            return new JsonPrimitive((Integer) value);
+        } else if (value instanceof Boolean) {
+            return new JsonPrimitive((Boolean) value);
+        } else if (value instanceof Double) {
+            return new JsonPrimitive((Double) value);
+        } else if (value instanceof Float) {
+            return new JsonPrimitive((Float) value);
+        } else if (value instanceof Long) {
+            return new JsonPrimitive((Long) value);
+        } else if (value instanceof Short) {
+            return new JsonPrimitive((Short) value);
+        } else if (value instanceof Byte) {
+            return new JsonPrimitive((Byte) value);
+        } else if (value instanceof Character) {
+            return new JsonPrimitive((Character) value);
+        } else if (value instanceof JsonElement) {
+            return (JsonElement) value;
+        } else {
+            // 使用Gson转换其他对象
+            return gson.toJsonTree(value);
         }
     }
 }
