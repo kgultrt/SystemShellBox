@@ -58,6 +58,7 @@ jobs:
         mv yourkey.jks.sample yourkey.jks
 
     - name: Build with Gradle
+      id: build
       run: |
         # 根据事件类型选择参数来源
         if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -65,14 +66,18 @@ jobs:
           BUILD_TYPE="${{ github.event.inputs.buildType }}"
         else
           MODULE="app"
-          BUILD_TYPE="Debug"
+          BUILD_TYPE="debug"
         fi
         
-        BUILD_CMD=assemble${BUILD_TYPE}
+        # 将变量保存到输出，供后续步骤使用
+        echo "MODULE=$MODULE" >> $GITHUB_OUTPUT
+        echo "BUILD_TYPE=$BUILD_TYPE" >> $GITHUB_OUTPUT
+        
+        BUILD_CMD=assemble$(echo $BUILD_TYPE | sed 's/.*/\u&/')  # 首字母大写
         ./gradlew $MODULE:$BUILD_CMD
 
     - name: Upload APKs
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ github.event.inputs.module }}-${{ github.event.inputs.buildType }}-apk
-        path: ${{ github.event.inputs.module }}/build/outputs/apk/${{ github.event.inputs.buildType }}/
+        name: ${{ steps.build.outputs.MODULE }}-${{ steps.build.outputs.BUILD_TYPE }}-apk
+        path: ${{ steps.build.outputs.MODULE }}/build/outputs/apk/${{ steps.build.outputs.BUILD_TYPE }}/
