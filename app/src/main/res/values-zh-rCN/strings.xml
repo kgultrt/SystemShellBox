@@ -4,7 +4,7 @@
     <string name="welcome_content">感谢您安装本应用！\n本项目的宗旨是在手机上打造一个很强大的的开发软件，让电子文盲也能知道终端的强大\n玩得开心!</string>
     <string name="update_title">已更新到 Build %d！</string>
     <string name="update_log_content">本次更新内容：\n0.DEBUG!\n\n有关详细更改，请参阅更新日志</string>
-    
+
     <string name="warning_title">你可能是盗版软件的受害者。</string>
     <string name="warning_content">检测到签名篡改！\n虽然不制止你继续使用，但最好还是不要用了！第三方版本有可能盗取你的个人信息！\n\n官方版本下载链接: https://github.com/kgultrt/SystemShellBox</string>
 
@@ -52,13 +52,21 @@
     <string name="notification_channel_description">显示后台任务执行状态</string>
     <string name="notification_channel_start">任务开始执行</string>
     <string name="notification_channel_comp">任务已完成</string>
-    <string name="notification_channel_fail">任务失败: </string>
+    <string name="notification_channel_fail">任务失败</string>
     <string name="notification_channel_nuke">未知错误</string>
     <string name="notification_channel_canc">任务已取消</string>
     <string name="notification_channel_unkn">任务状态未知</string>
     <string name="notification_channel_proc">任务进行中</string>
     <string name="notification_channel_now">当前进度: </string>
     <string name="notification_channel_title">后台任务通知</string>
+    <string name="notification_channel_hide">隐藏</string>
+    <string name="notification_channel_act">活动任务</string>
+    <string name="notification_channel_rec">最近完成</string>
+    <string name="notification_channel_ready">就绪</string>
+    <string name="notification_channel_multi">运行中</string>
+    <string name="notification_channel_idle">空闲中</string>
+    <string name="notification_channel_recent">查看最近任务</string>
+    <string name="notification_channel_tasks">个任务</string>
 
     <string name="refresh">刷新</string>
     <string name="settings">设置</string>
@@ -226,7 +234,7 @@
     <string name="waiting_for_user">等待用户响应</string>
     <string name="retrying_copy">正在重试复制...</string>
     <string name="copy_partially_completed">复制部分完成</string>
-    
+
     <string name="cannot_get_crash_info">无法获取崩溃信息</string>
     <string name="crash_title">还有这种操作？</string>
     <string name="crash_what_happened">发生了意外错误，请将此错误信息发送给开发者以便在未来的版本修复这个问题：</string>
@@ -238,7 +246,7 @@
     <string name="crash_has_copyed">错误信息已复制到剪贴板</string>
     <string name="crash_copy_failed">复制失败</string>
     <string name="crash_how">请选择一个操作：重启、复制或退出</string>
-    
+
     <string name="input_website_hint">输入网址或本地路径</string>
     <!-- HTML文件操作 -->
     <string name="html_file_action">HTML文件: %1$s</string>
@@ -247,7 +255,7 @@
     <string name="external_browser">外部浏览器打开</string>
     <string name="not_recommended">(不推荐)</string>
     <string name="no_browser_found">未找到可用的浏览器应用</string>
-    
+
     <string name="apkpatch_name">系统终端盒：APK编辑器</string>
     <string name="apkpatch_original">APKPATCH 将要比 MT 更好！</string>
 

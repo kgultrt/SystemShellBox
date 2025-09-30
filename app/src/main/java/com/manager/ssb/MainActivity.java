@@ -436,7 +436,7 @@ public class MainActivity extends AppCompatActivity {
         menuActionMap.put(R.id.action_storage_info, this::showStorageDetails);
         menuActionMap.put(R.id.action_about, this::showAboutDialog);
         menuActionMap.put(R.id.action_terminal, this::startTerminal);
-        menuActionMap.put(R.id.action_exit, this::finish);
+        menuActionMap.put(R.id.action_exit, this::exitTheApp);
     }
 
     private void setupRecyclerViews() {
@@ -926,9 +926,15 @@ public class MainActivity extends AppCompatActivity {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setTitle(getString(R.string.exit_dialog))
                .setMessage(getString(R.string.exit_dialog_c))
-               .setPositiveButton(R.string.ok, (dialog, which) -> finish())
+               .setPositiveButton(R.string.ok, (dialog, which) -> exitTheApp())
                .setNegativeButton(R.string.cancel, null)
                .show();
+    }
+    
+    public void exitTheApp() {
+        notificationManager.clearAll();
+        
+        finish();
     }
 
     @Override

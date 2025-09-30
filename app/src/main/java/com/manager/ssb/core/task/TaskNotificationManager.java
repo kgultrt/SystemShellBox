@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// TaskNotificationManager.java (通知管理类)
+// TaskNotificationManager.java
 package com.manager.ssb.core.task;
 
 import android.app.Notification;
@@ -33,16 +33,40 @@ import com.manager.ssb.MainActivity;
 import com.manager.ssb.Application;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Queue;
 
 public class TaskNotificationManager implements TaskListener {
     private static final String CHANNEL_ID = "task_channel";
-    private static final int NOTIFICATION_ID_BASE = 1000;
+    private static final int PERSISTENT_NOTIFICATION_ID = 1000;
     
     private final Context context;
     private final NotificationManager notificationManager;
-    private final ConcurrentHashMap<String, Integer> taskNotificationIds = new ConcurrentHashMap<>();
-    private final AtomicInteger notificationCounter = new AtomicInteger(NOTIFICATION_ID_BASE);
+    private final ConcurrentHashMap<String, TaskInfo> activeTasks = new ConcurrentHashMap<>();
+    private final Queue<TaskResult> recentResults = new ConcurrentLinkedQueue<>();
+    private static final int MAX_RECENT_RESULTS = 5;
+
+    private static class TaskInfo {
+        String taskName;
+        int progress;
+        
+        TaskInfo(String taskName, int progress) {
+            this.taskName = taskName;
+            this.progress = progress;
+        }
+    }
+    
+    private static class TaskResult {
+        String taskName;
+        TaskStatus status;
+        long timestamp;
+        
+        TaskResult(String taskName, TaskStatus status) {
+            this.taskName = taskName;
+            this.status = status;
+            this.timestamp = System.currentTimeMillis();
+        }
+    }
 
     public TaskNotificationManager(Context context) {
         this.context = context.getApplicationContext();
@@ -58,77 +82,157 @@ public class TaskNotificationManager implements TaskListener {
                 NotificationManager.IMPORTANCE_LOW
             );
             channel.setDescription(Application.getAppContext().getString(R.string.notification_channel_description));
+            channel.setShowBadge(false);
             notificationManager.createNotificationChannel(channel);
         }
     }
 
     @Override
     public void onTaskStarted(String taskId, String taskName) {
-        int notificationId = notificationCounter.incrementAndGet();
-        taskNotificationIds.put(taskId, notificationId);
-
-        Notification notification = buildProgressNotification(taskName, Application.getAppContext().getString(R.string.notification_channel_start), 0)
-            .setOngoing(true)
-            .build();
-
-        notificationManager.notify(notificationId, notification);
+        activeTasks.put(taskId, new TaskInfo(taskName, 0));
+        updatePersistentNotification();
     }
 
     @Override
     public void onTaskFinished(String taskId, String taskName, TaskStatus status, Throwable exception) {
-        Integer notificationId = taskNotificationIds.remove(taskId);
-        if (notificationId == null) return;
-
-        String statusText = getStatusText(status, exception);
-        Notification notification = buildStatusNotification(taskName, statusText, status)
-            .setAutoCancel(true)
-            .build();
-
-        notificationManager.notify(notificationId, notification);
+        TaskInfo removedTask = activeTasks.remove(taskId);
+        
+        // 添加到最近结果列表
+        if (recentResults.size() >= MAX_RECENT_RESULTS) {
+            recentResults.poll(); // 移除最旧的结果
+        }
+        recentResults.offer(new TaskResult(taskName, status));
+        
+        updatePersistentNotification();
     }
 
-    private NotificationCompat.Builder buildProgressNotification(String title, String text, int progress) {
-        return new NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setSmallIcon(R.drawable.ic_task)
-            .setProgress(100, progress, false)
+    private void updatePersistentNotification() {
+        Notification notification = buildPersistentNotification();
+        notificationManager.notify(PERSISTENT_NOTIFICATION_ID, notification);
+    }
+
+    private Notification buildPersistentNotification() {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+            .setContentTitle(getNotificationTitle())
+            .setContentText(getNotificationText())
+            .setSmallIcon(getNotificationIcon())
+            .setOngoing(true)
             .setOnlyAlertOnce(true)
-            .setContentIntent(getDefaultPendingIntent());
-    }
-
-    private NotificationCompat.Builder buildStatusNotification(String title, String text, TaskStatus status) {
-        return new NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setSmallIcon(getStatusIcon(status))
+            .setShowWhen(false)
             .setContentIntent(getDefaultPendingIntent())
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+            .setPriority(NotificationCompat.PRIORITY_LOW);
+
+        // 如果有活动任务，添加进度条
+        if (!activeTasks.isEmpty()) {
+            builder.setProgress(100, getOverallProgress(), false);
+        }
+
+        // 添加操作按钮
+        if (!activeTasks.isEmpty()) {
+            // 可以添加取消所有任务等操作
+            builder.addAction(R.drawable.ic_close, 
+                Application.getAppContext().getString(R.string.notification_channel_hide), 
+                getDismissPendingIntent());
+        } else {
+            // 没有活动任务时允许用户清除通知
+            builder.setOngoing(false)
+                   .setAutoCancel(true);
+        }
+
+        // 如果有多个任务或历史记录，使用展开样式
+        if (activeTasks.size() > 1 || !recentResults.isEmpty()) {
+            NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+            
+            // 添加活动任务
+            if (!activeTasks.isEmpty()) {
+                inboxStyle.setBigContentTitle(Application.getAppContext().getString(R.string.notification_channel_act) + activeTasks.size());
+                for (TaskInfo task : activeTasks.values()) {
+                    inboxStyle.addLine("• " + task.taskName + " [" + task.progress + "%]");
+                }
+            }
+            
+            // 添加最近完成的任务
+            if (!recentResults.isEmpty()) {
+                if (!activeTasks.isEmpty()) {
+                    inboxStyle.addLine("");
+                }
+                inboxStyle.addLine(Application.getAppContext().getString(R.string.notification_channel_rec));
+                for (TaskResult result : recentResults) {
+                    String statusIcon = getStatus(result.status);
+                    inboxStyle.addLine(statusIcon + " " + result.taskName);
+                }
+            }
+            
+            builder.setStyle(inboxStyle);
+        }
+
+        return builder.build();
     }
 
-    private int getStatusIcon(TaskStatus status) {
-        switch (status) {
-            case COMPLETED:
-                return R.drawable.ic_task_success;
-            case FAILED:
-                return R.drawable.ic_task_failed;
-            case CANCELLED:
-                return R.drawable.ic_task_cancelled;
-            default:
-                return R.drawable.ic_task;
+    private String getNotificationTitle() {
+        if (activeTasks.isEmpty()) {
+            return Application.getAppContext().getString(R.string.notification_channel_ready);
+        } else if (activeTasks.size() == 1) {
+            TaskInfo task = activeTasks.values().iterator().next();
+            return task.taskName;
+        } else {
+            return Application.getAppContext().getString(R.string.notification_channel_multi) + activeTasks.size();
         }
     }
 
-    private String getStatusText(TaskStatus status, Throwable exception) {
+    private String getNotificationText() {
+        if (activeTasks.isEmpty()) {
+            if (recentResults.isEmpty()) {
+                return Application.getAppContext().getString(R.string.notification_channel_idle);
+            } else {
+                return Application.getAppContext().getString(R.string.notification_channel_recent);
+            }
+        } else if (activeTasks.size() == 1) {
+            TaskInfo task = activeTasks.values().iterator().next();
+            return Application.getAppContext().getString(R.string.notification_channel_now) + task.progress + "%";
+        } else {
+            return Application.getAppContext().getString(R.string.notification_channel_tasks) + activeTasks.size();
+        }
+    }
+
+    private int getNotificationIcon() {
+        if (activeTasks.isEmpty()) {
+            return R.drawable.ic_task;
+        } else {
+            return R.drawable.ic_task;
+        }
+    }
+
+    private int getOverallProgress() {
+        if (activeTasks.isEmpty()) {
+            return 0;
+        }
+        int totalProgress = 0;
+        for (TaskInfo task : activeTasks.values()) {
+            totalProgress += task.progress;
+        }
+        return totalProgress / activeTasks.size();
+    }
+
+    private String getStatus(TaskStatus status) {
         switch (status) {
             case COMPLETED:
-                return Application.getAppContext().getString(R.string.notification_channel_comp);
+                return "(" + Application.getAppContext().getString(R.string.notification_channel_comp) + ")";
             case FAILED:
-                return Application.getAppContext().getString(R.string.notification_channel_fail) + (exception != null ? exception.getMessage() : Application.getAppContext().getString(R.string.notification_channel_nuke));
+                return "(" + Application.getAppContext().getString(R.string.notification_channel_fail) + ")";
             case CANCELLED:
-                return Application.getAppContext().getString(R.string.notification_channel_canc);
+                return "(" + Application.getAppContext().getString(R.string.notification_channel_canc) + ")";
             default:
-                return Application.getAppContext().getString(R.string.notification_channel_unkn);
+                return "(" + Application.getAppContext().getString(R.string.notification_channel_unkn) + ")";
+        }
+    }
+
+    // 进度更新方法
+    public void updateTaskProgress(String taskId, int progress) {
+        TaskInfo taskInfo = activeTasks.get(taskId);
+        if (taskInfo != null) {
+            taskInfo.progress = progress;
+            updatePersistentNotification();
         }
     }
 
@@ -143,17 +247,21 @@ public class TaskNotificationManager implements TaskListener {
         );
     }
 
-    // 进度更新方法（可选）
-    public void updateTaskProgress(String taskId, int progress) {
-        Integer notificationId = taskNotificationIds.get(taskId);
-        if (notificationId != null) {
-            Notification notification = buildProgressNotification(
-                Application.getAppContext().getString(R.string.notification_channel_proc), 
-                Application.getAppContext().getString(R.string.notification_channel_now) + progress + "%",
-                progress
-            ).build();
-            
-            notificationManager.notify(notificationId, notification);
-        }
+    private PendingIntent getDismissPendingIntent() {
+        Intent dismissIntent = new Intent(context, NotificationDismissReceiver.class);
+        dismissIntent.setAction("DISMISS_NOTIFICATION");
+        return PendingIntent.getBroadcast(
+            context,
+            1,
+            dismissIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+    }
+
+    // 清除所有通知状态
+    public void clearAll() {
+        activeTasks.clear();
+        recentResults.clear();
+        notificationManager.cancel(PERSISTENT_NOTIFICATION_ID);
     }
 }

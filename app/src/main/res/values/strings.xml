@@ -4,7 +4,7 @@
     <string name="welcome_content">Thank you for installing this app!</string>
     <string name="update_title">Updated to Build %d!</string>
     <string name="update_log_content">Content of this update:\n0.DEBUG!\n\nSee the update log for detailed changes</string>
-    
+
     <string name="warning_title">You may be a victim of software piracy.</string>
     <string name="warning_content">Signature tampering detected!\nAlthough not to stop you from continuing to use, but it is best not to use! Third-party versions may steal your personal information!\n\nOfficial version download link: https://github.com/kgultrt/SystemShellBox</string>
 
@@ -50,13 +50,21 @@
     <string name="notification_channel_description">Display background task execution status</string>
     <string name="notification_channel_start">Task start execution</string>
     <string name="notification_channel_comp">Task Completed</string>
-    <string name="notification_channel_fail">Task failed: </string>
+    <string name="notification_channel_fail">Task failed</string>
     <string name="notification_channel_nuke">Unknown error</string>
     <string name="notification_channel_canc">Task Cancelled</string>
     <string name="notification_channel_unkn">Task status unknown</string>
     <string name="notification_channel_proc">Task in progress</string>
     <string name="notification_channel_now">Current Progress: </string>
     <string name="notification_channel_title">Background task notification</string>
+    <string name="notification_channel_hide">Hide</string>
+    <string name="notification_channel_act">Active Task</string>
+    <string name="notification_channel_rec">Recently completed</string>
+    <string name="notification_channel_ready">Ready</string>
+    <string name="notification_channel_multi">In operation</string>
+    <string name="notification_channel_idle">Idle</string>
+    <string name="notification_channel_recent">View Recent Task</string>
+    <string name="notification_channel_tasks"> Task(s)</string>
 
     <string name="refresh">Refresh</string>
     <string name="settings">Settings</string>
@@ -120,7 +128,7 @@
     <string name="option_browser">Browser</string>
     <string name="option_system_default">System Default</string>
     <string name="no_app_found">No application found to open this file</string>
-    
+
     <string name="create_dialog">Create</string>
     <string name="create_dir">New Folder</string>
     <string name="create_file">New File</string>
@@ -131,14 +139,14 @@
     <string name="fileex">File already exists</string>
     <string name="create_fail">Failed to create</string>
     <string name="create_dialog_ok">Create</string>
-    
+
     <string name="sync">Sync</string>
     <string name="bookmark">Bookmark/History</string>
     <string name="back_lastdir">Return previous</string>
-    
+
     <string name="his_dialog">History Record</string>
     <string name="his_dialog_fail">The record is invalid and cannot be loaded</string>
-    
+
     <string name="move">Move</string>
     <string name="enter_new_path">Please enter the destination directory path</string>
     <string name="enter_target_directory">Target location:</string>
@@ -147,7 +155,7 @@
     <string name="move_success">File moved successfully</string>
     <string name="move_failed">File move failed</string>
     <string name="move_into_self_error">Cannot move a folder to itself or a subfolder</string>
-    
+
     <string name="copy">Copy</string>
     <string name="copy_file">Copy File</string>
     <string name="copy_success">File copy succeeded</string>
@@ -164,11 +172,11 @@
     <string name="loaded_more">More content loaded</string>
     <string name="load_complete">File load complete</string>
     <string name="long_line_warning">An overly long row was detected, which may cause performance degradation</string>
-    
+
     <string name="enter_new_name">Enter new name</string>
     <string name="file_exists">File already exists</string>
     <string name="rename_file_prompt">The file already exists. Do you want to rename it?</string>
-    
+
     <!-- Progress dialog title and message -->
     <string name="copy_progress_title">Copying Files...</string>
     <string name="copy_progress_message">Please wait while the files are being copied...</string>
@@ -178,18 +186,18 @@
     <string name="to">To</string>
     <string name="file_item">File Item</string>
     <string name="eta">ETA</string>
-    
+
     <string name="error_title">Operation failed</string>
     <string name="dir_not_accessible">Unable to access the destination directory</string>
     <string name="space_insufficient">%s free space required</string>
     <string name="dir_create_failed">Unable to create the destination directory</string>
     <string name="dir_not_writable">The destination directory is not writable</string>
     <string name="ok">OK</string>
-    
+
     <string name="second">S</string>
     <string name="minute">M</string>
     <string name="hour">H</string>
-    
+
     <string name="manage">Manage</string>
     <string name="confirm_delete_title">Confirm Deletion</string>
     <string name="confirm_delete_message">Are you sure you want to delete \'%1$s\' ？</string>
@@ -206,14 +214,14 @@
     <string name="no_bookmarks">No bookmark</string>
     <string name="no_history_to_manage">No history to manage</string>
     <string name="no_bookmarks_to_manage">No bookmarks to manage</string>
-    
+
     <string name="exit_dialog">Exit Confirmation</string>
     <string name="exit_dialog_c">Are you sure you want to quit the app?</string>
-    
+
     <string name="compress_format_detected">Recognized %s format (Function under development)</string>
     <string name="unsupported_compress_format">Unsupported compression format</string>
-  
-  
+
+
     <string name="file_conflict">File conflict</string>
     <string name="conflict_message">File %1$s has already exist</string>
     <string name="overwrite">Overwrite</string>
@@ -224,7 +232,7 @@
     <string name="waiting_for_user">Waiting for user response</string>
     <string name="retrying_copy">Retrying replication...</string>
     <string name="copy_partially_completed">Copy partially completed</string>
-    
+
     <string name="cannot_get_crash_info">Unable to get crash information</string>
     <string name="crash_title">How??????</string>
     <string name="crash_what_happened">An unexpected error has occurred. Please send this error message to the developer to fix this problem in a future release:</string>
@@ -236,16 +244,16 @@
     <string name="crash_has_copyed">Error message copied to clipboard</string>
     <string name="crash_copy_failed">Copy failed</string>
     <string name="crash_how">Please select an action: Restart, Copy, or Quit</string>
-    
+
     <string name="input_website_hint">Enter a Web address or local path</string>
-    
+
     <string name="html_file_action">HTML file: %1$s</string>
     <string name="edit">editor</string>
     <string name="internal_browser">Built-in browser open</string>
     <string name="external_browser">External Browser Open</string>
     <string name="not_recommended">(Not recommended)</string>
     <string name="no_browser_found">No available browser apps found</string>
-    
+
     <string name="apkpatch_name">System Shell Box: Apk Editor</string>
     <string name="apkpatch_original">APKPATCH Will Better Than MT!</string>
 
@@ -312,9 +320,9 @@
 
     <string name="delete">Delete</string>
     <string name="format">Format</string>
-    
-    
-    
+
+
+
     <string name="empty">
     </string>
     <string name="icon_text">
