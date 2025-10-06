@@ -13,14 +13,14 @@
 #include <sys/statvfs.h>
 
 
-#define TAG "SSB_UTILS"
+#define TAG "file_utils"
 #define BUFFER_SIZE (256 * 1024)
 #define MAX_PATH_LEN 4096
 #define MAX_RECURSION_DEPTH 50
 
 // 定义状态码
 #define STATUS_SUCCESS 0
-#define STATUS_ERROR -1
+#define STATUS_ERROR 1
 #define STATUS_CONFLICT -100
 
 // 错误处理宏

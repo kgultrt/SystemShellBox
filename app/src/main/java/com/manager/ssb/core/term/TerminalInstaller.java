@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+// Warning: Don't touch this shit!
 package com.manager.ssb.core.term;
 
 import android.app.Activity;
@@ -31,6 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.annotation.StringRes;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
@@ -41,6 +43,7 @@ import org.json.JSONObject;
 
 import com.manager.ssb.R;
 import com.manager.ssb.core.config.Config;
+import com.manager.ssb.Application;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -69,7 +72,7 @@ public class TerminalInstaller {
     private static String latestVersionCache;
     
     // 用于控制进度更新频率，避免过于频繁的UI更新
-    private static final long PROGRESS_UPDATE_INTERVAL = 200; // 毫秒
+    private static final long PROGRESS_UPDATE_INTERVAL = 1; // 毫秒
     private static long lastProgressUpdateTime = 0;
     private static final AtomicInteger currentProgress = new AtomicInteger(0);
     private static final AtomicBoolean isUpdatingProgress = new AtomicBoolean(false);
@@ -112,7 +115,7 @@ public class TerminalInstaller {
         }
 
         if (!silent) {
-            showProgressDialog(context, "检查更新", "正在连接到服务器...", 0);
+            showProgressDialog(context, g(R.string.term_install_check), g(R.string.term_install_connecting), 0);
         }
 
         new AsyncTask<Void, Void, UpdateInfo>() {
@@ -156,7 +159,7 @@ public class TerminalInstaller {
                     
                     return new UpdateInfo(version, releaseNotes, publishedAt);
                 } catch (Exception e) {
-                    Log.e(TAG, "检查更新失败", e);
+                    Log.e(TAG, "Failed to check for updates", e);
                     return null;
                 } finally {
                     if (conn != null) {
@@ -180,7 +183,7 @@ public class TerminalInstaller {
                         showUpdateAvailableDialog(context, updateInfo);
                     } else {
                         if (!silent) {
-                            Toast.makeText(context, "已经是最新版本", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, g(R.string.term_install_already), Toast.LENGTH_SHORT).show();
                         }
                         if (silent && currentInstallCallback != null) {
                             currentInstallCallback.onInstallFinished();
@@ -189,7 +192,7 @@ public class TerminalInstaller {
                 } else {
                     Log.e(TAG, "Failed to get update info");
                     if (!silent) {
-                        Toast.makeText(context, "检查更新失败，请检查网络连接", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, g(R.string.term_install_network), Toast.LENGTH_SHORT).show();
                     }
                     if (silent && currentInstallCallback != null) {
                         currentInstallCallback.onInstallFinished();
@@ -211,15 +214,15 @@ public class TerminalInstaller {
         Activity activity = (Activity) context;
         activity.runOnUiThread(() -> {
             new MaterialAlertDialogBuilder(context)
-                .setTitle("环境安装")
-                .setMessage("需要安装POSIX环境才能使用终端功能")
-                .setPositiveButton("自动下载安装", (d, w) -> 
+                .setTitle(g(R.string.term_install_title))
+                .setMessage(g(R.string.term_install_msg))
+                .setPositiveButton(g(R.string.term_install_auto), (d, w) -> 
                     checkLatestVersionAndInstall(context))
-                .setNegativeButton("手动安装", (d, w) -> 
+                .setNegativeButton(g(R.string.term_install_file), (d, w) -> 
                     showFilePathInputDialog(context))
-                .setNeutralButton("取消", (d, w) -> {
+                .setNeutralButton(g(R.string.cancel), (d, w) -> {
                     if (currentInstallCallback != null) {
-                        currentInstallCallback.onInstallFailed("用户取消安装");
+                        currentInstallCallback.onInstallFailed(g(R.string.term_install_failed));
                     }
                 })
                 .show();
@@ -227,7 +230,7 @@ public class TerminalInstaller {
     }
 
     private static void checkLatestVersionAndInstall(Context context) {
-        showProgressDialog(context, "获取版本信息", "正在连接至 GitHub...", 0);
+        showProgressDialog(context, g(R.string.term_install_get_ver), g(R.string.term_install_get_ver2), 0);
         
         new AsyncTask<Void, Void, UpdateInfo>() {
             @Override
@@ -267,7 +270,7 @@ public class TerminalInstaller {
                     
                     return new UpdateInfo(version, releaseNotes, publishedAt);
                 } catch (Exception e) {
-                    Log.e(TAG, "获取版本信息失败", e);
+                    Log.e(TAG, "Failed to get version information", e);
                     return null;
                 } finally {
                     if (conn != null) {
@@ -283,7 +286,7 @@ public class TerminalInstaller {
                 if (updateInfo != null) {
                     showVersionInfoDialog(context, updateInfo);
                 } else {
-                    showErrorDialog(context, "无法获取版本信息，是否继续下载？", 
+                    showErrorDialog(context, g(R.string.term_install_failed2), 
                         (dialog, which) -> installFromNetwork(context));
                 }
             }
@@ -297,12 +300,12 @@ public class TerminalInstaller {
                 updateInfo.releaseNotes.substring(0, 200) + "..." : updateInfo.releaseNotes;
                 
             new MaterialAlertDialogBuilder(context)
-                .setTitle("版本 " + updateInfo.version)
-                .setMessage("发布日期: " + updateInfo.publishedAt + "\n\n" + shortNotes)
-                .setPositiveButton("下载安装", (d, w) -> installFromNetwork(context))
-                .setNegativeButton("取消", (d, w) -> {
+                .setTitle(g(R.string.ver) + " " + updateInfo.version)
+                .setMessage(g(R.string.term_install_date) + updateInfo.publishedAt + "\n\n" + shortNotes)
+                .setPositiveButton(g(R.string.term_install_download), (d, w) -> installFromNetwork(context))
+                .setNegativeButton(g(R.string.cancel), (d, w) -> {
                     if (currentInstallCallback != null) {
-                        currentInstallCallback.onInstallFailed("用户取消安装");
+                        currentInstallCallback.onInstallFailed(g(R.string.term_install_failed));
                     }
                 })
                 .show();
@@ -316,10 +319,10 @@ public class TerminalInstaller {
                 updateInfo.releaseNotes.substring(0, 150) + "..." : updateInfo.releaseNotes;
                 
             new MaterialAlertDialogBuilder(context)
-                .setTitle("发现新版本 " + updateInfo.version)
+                .setTitle(g(R.string.term_install_found_new) + updateInfo.version)
                 .setMessage(shortNotes)
-                .setPositiveButton("更新", (d, w) -> installFromNetwork(context))
-                .setNegativeButton("忽略", (d, w) -> {
+                .setPositiveButton(g(R.string.term_install_update), (d, w) -> installFromNetwork(context))
+                .setNegativeButton(g(R.string.term_install_ignore), (d, w) -> {
                     if (currentInstallCallback != null) {
                         currentInstallCallback.onInstallFinished();
                     }
@@ -333,12 +336,12 @@ public class TerminalInstaller {
         Activity activity = (Activity) context;
         activity.runOnUiThread(() -> {
             new MaterialAlertDialogBuilder(context)
-                .setTitle("提示")
+                .setTitle(g(R.string.term_install_tip))
                 .setMessage(message)
-                .setPositiveButton("继续", positiveListener)
-                .setNegativeButton("取消", (d, w) -> {
+                .setPositiveButton(g(R.string.term_install_continue), positiveListener)
+                .setNegativeButton(g(R.string.cancel), (d, w) -> {
                     if (currentInstallCallback != null) {
-                        currentInstallCallback.onInstallFailed("用户取消操作");
+                        currentInstallCallback.onInstallFailed(g(R.string.term_install_failed));
                     }
                 })
                 .show();
@@ -355,26 +358,25 @@ public class TerminalInstaller {
         activity.runOnUiThread(() -> {
             TextInputLayout textInputLayout = new TextInputLayout(context);
             TextInputEditText editText = new TextInputEditText(textInputLayout.getContext());
-            editText.setHint("请输入ZIP文件完整路径");
+            editText.setHint(g(R.string.term_install_file_hint));
             textInputLayout.addView(editText);
             
             new MaterialAlertDialogBuilder(context)
-                .setTitle("手动安装")
+                .setTitle(g(R.string.term_install_file))
                 .setView(textInputLayout)
-                .setPositiveButton("安装", (d, w) -> {
+                .setPositiveButton(g(R.string.installing), (d, w) -> {
                     String path = editText.getText().toString().trim();
                     if (!path.isEmpty()) {
                         installFromFile(context, path);
                     } else {
-                        Toast.makeText(context, "路径不能为空", Toast.LENGTH_SHORT).show();
                         if (currentInstallCallback != null) {
-                            currentInstallCallback.onInstallFailed("文件路径为空");
+                            currentInstallCallback.onInstallFailed(g(R.string.term_install_empty));
                         }
                     }
                 })
-                .setNegativeButton("取消", (d, w) -> {
+                .setNegativeButton(g(R.string.cancel), (d, w) -> {
                     if (currentInstallCallback != null) {
-                        currentInstallCallback.onInstallFailed("用户取消安装");
+                        currentInstallCallback.onInstallFailed(g(R.string.term_install_failed));
                     }
                 })
                 .show();
@@ -397,7 +399,7 @@ public class TerminalInstaller {
 
         @Override
         protected void onPreExecute() {
-            showProgressDialog(context, "安装环境", "正在准备解压文件...", 0);
+            showProgressDialog(context, g(R.string.installing), g(R.string.term_install_pree), 0);
         }
 
         @Override
@@ -408,7 +410,7 @@ public class TerminalInstaller {
                     return false;
                 }
                 
-                updateProgress("正在解压文件...", 10);
+                updateProgress(g(R.string.term_install_e), 10);
                 Log.d(TAG, "Starting extraction from: " + zipFile.getAbsolutePath());
                 
                 boolean result = extractZip(new FileInputStream(zipFile), 
@@ -418,7 +420,7 @@ public class TerminalInstaller {
                 Log.d(TAG, "Extraction result: " + result);
                 return result;
             } catch (Exception e) {
-                Log.e(TAG, "文件安装失败", e);
+                Log.e(TAG, "File installation failed", e);
                 return false;
             }
         }
@@ -431,11 +433,11 @@ public class TerminalInstaller {
         @Override
         protected void onPostExecute(Boolean success) {
             if (success) {
-                updateProgress("正在设置权限...", 90);
+                updateProgress(g(R.string.term_install_setting_permissions), 90);
                 boolean permSuccess = grantExecutePermissions();
                 Log.d(TAG, "Permission grant result: " + permSuccess);
                 setInstalledVersion("manual");
-                updateProgress("安装完成", 100);
+                updateProgress(g(R.string.term_install_complete), 100);
                 // 延迟关闭对话框，让用户看到完成状态
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     dismissProgressDialog();
@@ -443,7 +445,7 @@ public class TerminalInstaller {
                 }, 500);
             } else {
                 dismissProgressDialog();
-                notifyFailure("文件解压失败，请检查文件路径和权限");
+                notifyFailure(g(R.string.term_install_failed3));
             }
         }
 
@@ -464,7 +466,7 @@ public class TerminalInstaller {
                 }
                 return false;
             } catch (Exception e) {
-                Log.e(TAG, "设置权限失败", e);
+                Log.e(TAG, "Failed to set permission", e);
                 return false;
             }
         }
@@ -487,14 +489,14 @@ public class TerminalInstaller {
 
         @Override
         protected void onPreExecute() {
-            showProgressDialog(context, "安装环境", "正在准备下载...", 0);
+            showProgressDialog(context, g(R.string.installing), g(R.string.term_install_pred), 0);
         }
 
         @Override
         protected String doInBackground(Void... params) {
             HttpURLConnection conn = null;
             try {
-                updateProgress("正在连接服务器...", 5);
+                updateProgress(g(R.string.term_install_connecting), 5);
                 
                 Log.d(TAG, "Starting download from: " + url);
                 conn = (HttpURLConnection) new URL(url).openConnection();
@@ -514,7 +516,7 @@ public class TerminalInstaller {
                 int contentLength = conn.getContentLength();
                 Log.d(TAG, "Content length: " + contentLength);
                 if (contentLength <= 0) {
-                    Log.e(TAG, "无法获取文件大小");
+                    Log.e(TAG, "Unable to get file sizes");
                     return "INVALID_SIZE";
                 }
 
@@ -541,7 +543,7 @@ public class TerminalInstaller {
                         int progress = 5 + (int) (downloaded * 85 / contentLength);
                         
                         if (currentTime - lastUpdateTime > PROGRESS_UPDATE_INTERVAL || progress - lastProgress >= 5) {
-                            updateProgress("正在下载环境文件...", progress);
+                            updateProgress(g(R.string.term_install_d), progress);
                             lastUpdateTime = currentTime;
                             lastProgress = progress;
                         }
@@ -549,7 +551,7 @@ public class TerminalInstaller {
                 }
                 
                 Log.d(TAG, "Download completed, file size: " + tempFile.length());
-                updateProgress("正在解压文件...", 90);
+                updateProgress(g(R.string.term_install_e), 90);
                 
                 // 解压文件 - 使用新的解压方法，不传递进度更新器
                 boolean success = extractZip(new FileInputStream(tempFile), 
@@ -559,7 +561,7 @@ public class TerminalInstaller {
                 Log.d(TAG, "Extraction result: " + success);
                 return success ? "SUCCESS" : "EXTRACTION_FAILED";
             } catch (Exception e) {
-                Log.e(TAG, "网络安装失败", e);
+                Log.e(TAG, "Network installation failed", e);
                 return "EXCEPTION: " + e.getMessage();
             } finally {
                 if (conn != null) {
@@ -584,7 +586,7 @@ public class TerminalInstaller {
             }
             
             if ("SUCCESS".equals(result)) {
-                updateProgress("正在设置权限...", 95);
+                updateProgress(g(R.string.term_install_setting_permissions), 95);
                 boolean permSuccess = grantExecutePermissions();
                 Log.d(TAG, "Permission grant result: " + permSuccess);
                 
@@ -594,7 +596,7 @@ public class TerminalInstaller {
                 } else {
                     setInstalledVersion("auto_unknown");
                 }
-                updateProgress("安装完成", 100);
+                updateProgress(g(R.string.term_install_complete), 100);
                 
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     dismissProgressDialog();
@@ -602,11 +604,11 @@ public class TerminalInstaller {
                 }, 800);
             } else {
                 dismissProgressDialog();
-                String errorMsg = "安装失败: ";
+                String errorMsg = g(R.string.term_install_failed4);
                 if (result.startsWith("HTTP_ERROR")) {
-                    errorMsg += "网络连接错误";
+                    errorMsg += g(R.string.term_install_failed5);
                 } else if (result.startsWith("EXTRACTION_FAILED")) {
-                    errorMsg += "文件解压失败";
+                    errorMsg += g(R.string.term_install_failed6);
                 } else {
                     errorMsg += result;
                 }
@@ -630,7 +632,7 @@ public class TerminalInstaller {
                 }
                 return false;
             } catch (Exception e) {
-                Log.e(TAG, "设置权限失败", e);
+                Log.e(TAG, "Failed to set permission", e);
                 return false;
             }
         }
@@ -705,7 +707,7 @@ public class TerminalInstaller {
             Log.d(TAG, "Extraction completed successfully, total files: " + fileCount);
             return true;
         } catch (Exception e) {
-            Log.e(TAG, "解压失败", e);
+            Log.e(TAG, "Decompression failed", e);
             return false;
         }
     }
@@ -861,12 +863,12 @@ public class TerminalInstaller {
     }
 
     private static String getInstalledVersion() {
-        return Config.get("term.version", "v1.0.0");
+        return Config.get("term.version", "v0.0.0");
     }
 
     private static void setInstalledVersion(String version) {
         Config.set("term.version", version);
-        Log.i(TAG, "设置安装版本: " + version);
+        Log.i(TAG, "Set the installation version: " + version);
     }
 
     private static long getLastUpdateCheck() {
@@ -892,7 +894,7 @@ public class TerminalInstaller {
             
             return !cleanNew.equals(cleanCurrent);
         } catch (Exception e) {
-            Log.e(TAG, "版本比较失败", e);
+            Log.e(TAG, "Version comparison failed", e);
             return true;
         }
     }
@@ -905,15 +907,19 @@ public class TerminalInstaller {
     // 获取当前安装版本信息
     public static String getCurrentVersionInfo() {
         String installedVersion = getInstalledVersion();
-        if (installedVersion == null) {
-            return "未安装";
+        if (installedVersion == "v0.0.0") {
+            return g(R.string.term_install_not);
         } else if ("manual".equals(installedVersion)) {
-            return "手动安装";
+            return g(R.string.term_install_file);
         } else if ("auto_unknown".equals(installedVersion)) {
-            return "自动安装（版本未知）";
+            return g(R.string.term_install_auto_unknow);
         } else {
-            return installedVersion;
+            return g(R.string.term_install_auto_version) + installedVersion;
         }
+    }
+    
+    private static String g(@StringRes int stringRes) {
+        return Application.g(stringRes);
     }
     
     private static void deleteRecursive(File fileOrDirectory) {

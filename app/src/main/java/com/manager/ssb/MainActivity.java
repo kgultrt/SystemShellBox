@@ -693,7 +693,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onInstallFailed(String reason) {
                 runOnUiThread(() -> 
-                    Toast.makeText(MainActivity.this, "安装失败: " + reason, Toast.LENGTH_LONG).show()
+                    Toast.makeText(MainActivity.this, reason, Toast.LENGTH_LONG).show()
                 );
             }
         });
@@ -811,6 +811,10 @@ public class MainActivity extends AppCompatActivity {
                          buildType.contains("release") ? "Release" : "Unknown";
             sb.append(getString(R.string.build_type)).append(": ").append(type).append("\n");
         } catch (Exception e) { sb.append("(Unknown Build Type)\n"); }
+        
+        try { sb.append(getString(R.string.term_install_status)).append(": ")
+                .append(TerminalInstaller.getCurrentVersionInfo()).append("\n"); } 
+        catch (Exception e) { /* 忽略 */ }
 
         // Git信息
         try { sb.append(getString(R.string.git_commit_short_hash)).append(": ")

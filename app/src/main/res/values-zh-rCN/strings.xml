@@ -18,6 +18,7 @@
     <string name="build_debug">调试版</string>
     <string name="build_release">发行版</string>
     <string name="build_unknown">未知</string>
+    <string name="term_install_status">终端安装状态</string>
     <string name="git_commit_short_hash">Git提交短哈希</string>
     <string name="git_commit_author">Git提交作者</string>
     <string name="git_branch_name">Git分支名称</string>
@@ -49,12 +50,47 @@
     <string name="wip">即将推出...</string>
     <string name="wip_back">回炉重造中...</string>
 
-    <string name="installing">安装环境</string>
+    <string name="installing">安装...</string>
     <string name="preparing">正在准备...</string>
     <string name="downloading">正在下载...</string>
     <string name="extracting">正在解压...</string>
     <string name="setting_permissions">正在设置权限...</string>
-    <string name="completed">安装完成</string>
+    <string name="completed">完成</string>
+    
+    <string name="term_install_title">环境安装</string>
+    <string name="term_install_msg">需要安装POSIX环境才能使用终端功能</string>
+    <string name="term_install_auto">自动下载安装</string>
+    <string name="term_install_file">手动安装</string>
+    <string name="term_install_failed">用户取消安装</string>
+    <string name="term_install_get_ver">获取版本信息</string>
+    <string name="term_install_get_ver2">正在连接至 GitHub...</string>
+    <string name="term_install_failed2">无法获取版本信息，是否继续下载？</string>
+    <string name="term_install_date">发布日期: </string>
+    <string name="term_install_download">下载安装</string>
+    <string name="term_install_found_new">发现新版本 </string>
+    <string name="term_install_update">更新</string>
+    <string name="term_install_ignore">忽略</string>
+    <string name="term_install_tip">提示</string>
+    <string name="term_install_continue">继续</string>
+    <string name="term_install_file_hint">请输入ZIP文件完整路径</string>
+    <string name="term_install_empty">文件路径为空</string>
+    <string name="term_install_pree">正在准备解压文件...</string>
+    <string name="term_install_e">正在解压文件...</string>
+    <string name="term_install_setting_permissions">正在设置权限...</string>
+    <string name="term_install_complete">安装完成</string>
+    <string name="term_install_failed3">文件解压失败，请检查文件路径和权限</string>
+    <string name="term_install_pred">正在准备下载...</string>
+    <string name="term_install_connecting">正在连接服务器...</string>
+    <string name="term_install_d">正在下载环境文件...</string>
+    <string name="term_install_failed4">安装失败: </string>
+    <string name="term_install_failed5">网络连接错误</string>
+    <string name="term_install_failed6">文件解压失败</string>
+    <string name="term_install_not">未安装</string>
+    <string name="term_install_auto_unknow">自动安装，版本未知</string>
+    <string name="term_install_auto_version">自动安装，版本</string>
+    <string name="term_install_check">检查更新</string>
+    <string name="term_install_already">已经是最新版本</string>
+    <string name="term_install_network">检查更新失败，请检查网络连接</string>
 
 
     <string name="high_android_permission_request">请您授予管理所有文件的权限!</string>

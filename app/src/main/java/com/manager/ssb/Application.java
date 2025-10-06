@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.preference.PreferenceManager;
+import androidx.annotation.StringRes;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -23,6 +24,14 @@ public class Application extends android.app.Application {
 
     public static Context getAppContext() {
         return instance;
+    }
+    
+    public static String g(@StringRes int stringRes) {
+        return instance.getString(stringRes);
+    }
+    
+    public static String g(@StringRes int stringRes, Object... formatArgs) {
+        return instance.getString(stringRes, formatArgs);
     }
 
     @Override

@@ -5,7 +5,7 @@ import java.io.File;
 public class NativeFileOperation {
     
     public static final int STATUS_SUCCESS = 0;
-    public static final int STATUS_ERROR = -1;
+    public static final int STATUS_ERROR = 1;
     public static final int STATUS_CONFLICT = -100;
     public static final int STATUS_SKIPPED = -101;
     public static final int STATUS_RETRYING = -102;
@@ -23,7 +23,7 @@ public class NativeFileOperation {
     }
     
     static {
-        System.loadLibrary("ssb_daemon");
+        System.loadLibrary("file_utils");
     }
     
     // 修改后的JNI方法签名
