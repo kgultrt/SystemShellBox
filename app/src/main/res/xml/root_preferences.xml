@@ -1,0 +1,52 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/settings_general">
+
+        <ListPreference
+            app:key="general.language"
+            app:title="@string/settings_lang"
+            app:summary="@string/settings_lang_summary"
+            app:entries="@array/language_entries"
+            app:entryValues="@array/language_values"
+            app:defaultValue="system" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_appearance">
+
+        <ListPreference
+            app:key="appearance.theme"
+            app:title="@string/settings_appearance_theme"
+            app:summary="@string/settings_appearance_summary"
+            app:entries="@array/theme_entries"
+            app:entryValues="@array/theme_values"
+            app:defaultValue="system" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_notification">
+
+        <SwitchPreferenceCompat
+            app:key="notifications.enabled"
+            app:title="@string/settings_notification_enable"
+            app:summary="@string/settings_notification_enable_summary"
+            app:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            app:key="notifications.vibration"
+            app:title="@string/settings_notification_vibration"
+            app:summary="@string/settings_notification_vibration_summary"
+            app:dependency="notifications.enabled"
+            app:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            app:key="notifications.sound"
+            app:title="@string/settings_notification_sound"
+            app:summary="@string/settings_notification_sound_summary"
+            app:dependency="notifications.enabled"
+            app:defaultValue="true" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

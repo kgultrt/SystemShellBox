@@ -47,6 +47,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <activity
+            android:name="com.manager.ssb.core.settings.SettingsActivity"
+            android:exported="true"
+            android:screenOrientation="locked" />
 
         <activity
             android:name="com.manager.ssb.core.editor.MainActivity"

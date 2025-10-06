@@ -27,8 +27,35 @@
     <string name="signature_API">From API md5</string>
     <string name="signature_SVC">From SVC md5</string>
 
+    <string name="settings_follow">Follow System</string>
+    <string name="settings_enable">Enable</string>
+    <string name="settings_disable">Disadle</string>
+
+    <string name="settings_general">General Settings</string>
+    <string name="settings_lang">Language</string>
+    <string name="settings_lang_summary">Select Application Language</string>
+
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_appearance_theme">Theme</string>
+    <string name="settings_appearance_summary">Select Application Theme</string>
+
+    <string name="settings_notification">Notification</string>
+    <string name="settings_notification_enable">Enable Notification</string>
+    <string name="settings_notification_enable_summary">Receive application notification</string>
+    <string name="settings_notification_vibration">Vibration</string>
+    <string name="settings_notification_vibration_summary">Vibrate on notification</string>
+    <string name="settings_notification_sound">Sound</string>
+    <string name="settings_notification_sound_summary">Play sound on notification</string>
+
     <string name="wip">Coming Soon...</string>
     <string name="wip_back">In the process of remaking...</string>
+
+    <string name="installing">安装环境</string>
+    <string name="preparing">正在准备...</string>
+    <string name="downloading">正在下载...</string>
+    <string name="extracting">正在解压...</string>
+    <string name="setting_permissions">正在设置权限...</string>
+    <string name="completed">安装完成</string>
 
     <string name="high_android_permission_request">Please grant permission to manage all files!</string>
     <string name="request_appect_android_permission_request">Please grant permission!</string>

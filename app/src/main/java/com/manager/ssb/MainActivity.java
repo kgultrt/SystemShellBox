@@ -65,7 +65,7 @@ import com.manager.ssb.core.function.FileLongClickHandler;
 import com.manager.ssb.core.function.BottomMenuClickListener;
 import com.manager.ssb.databinding.ActivityMainBinding;
 import com.manager.ssb.model.FileItem;
-import com.manager.ssb.core.dialog.SettingsDialogFragment;
+import com.manager.ssb.core.settings.SettingsActivity;
 import com.manager.ssb.core.term.TerminalInstaller;
 
 import java.io.File;
@@ -511,9 +511,8 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void updatePathDisplay() {
-        boolean isMultiSelect = adapterLeft.isMultiSelectMode() || adapterRight.isMultiSelectMode();
-        
-        String displayText = getCurrentDirectory().getAbsolutePath() + " " + isMultiSelect;
+        // boolean isMultiSelect = adapterLeft.isMultiSelectMode() || adapterRight.isMultiSelectMode();
+        String displayText = getCurrentDirectory().getAbsolutePath();
         binding.tvCurrentPath.setText(displayText);
     }
 
@@ -674,8 +673,8 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void openSettings() {
-        SettingsDialogFragment settingsDialog = new SettingsDialogFragment();
-        settingsDialog.show(getSupportFragmentManager(), "SettingsDialog");
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     private void startTerminal() {
@@ -932,9 +931,8 @@ public class MainActivity extends AppCompatActivity {
     }
     
     public void exitTheApp() {
-        notificationManager.clearAll();
-        
-        finish();
+        notificationManager.clearAll(); //清除通知
+        finish(); //完成退出
     }
 
     @Override

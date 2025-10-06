@@ -43,6 +43,9 @@ public class Config {
     private static volatile CompletableFuture<Void> loadFuture = CompletableFuture.completedFuture(null);
     
     private static File configFile;
+    
+    // 添加同步锁来解决并发问题
+    private static final Object configLock = new Object();
 
     static {
         initialize();
@@ -66,52 +69,56 @@ public class Config {
         }
         
         loadFuture = CompletableFuture.runAsync(() -> {
-            try {
-                if (!configFile.exists()) {
-                    createDefaultConfig();
-                    return;
-                }
-
-                // 读取配置文件
-                String jsonContent;
-                try (FileInputStream fis = new FileInputStream(configFile);
-                     InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-                     BufferedReader reader = new BufferedReader(isr)) {
-                    
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        sb.append(line);
+            synchronized (configLock) {
+                try {
+                    if (!configFile.exists()) {
+                        createDefaultConfig();
+                        return;
                     }
-                    jsonContent = sb.toString();
-                }
 
-                JsonObject newConfig = gson.fromJson(jsonContent, JsonObject.class);
-                if (newConfig != null) {
-                    rootConfig.set(newConfig);
-                    configCache.clear();
-                    Log.d(TAG, "Config loaded successfully");
-                } else {
-                    Log.e(TAG, "Failed to parse config file");
+                    // 读取配置文件
+                    String jsonContent;
+                    try (FileInputStream fis = new FileInputStream(configFile);
+                         InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+                         BufferedReader reader = new BufferedReader(isr)) {
+                        
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            sb.append(line);
+                        }
+                        jsonContent = sb.toString();
+                    }
+
+                    JsonObject newConfig = gson.fromJson(jsonContent, JsonObject.class);
+                    if (newConfig != null) {
+                        rootConfig.set(newConfig);
+                        configCache.clear();
+                        Log.d(TAG, "Config loaded successfully");
+                    } else {
+                        Log.e(TAG, "Failed to parse config file");
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to load config", e);
                 }
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to load config", e);
             }
         }, executor);
     }
 
     private static void createDefaultConfig() {
-        try {
-            JsonObject defaultConfig = new JsonObject();
-            defaultConfig.addProperty("appName", "System Shell Box");
-            defaultConfig.addProperty("isFirst", true);
+        synchronized (configLock) {
+            try {
+                JsonObject defaultConfig = new JsonObject();
+                defaultConfig.addProperty("appName", "System Shell Box");
+                defaultConfig.addProperty("isFirst", true);
 
-            // 直接保存默认配置
-            saveConfigInternal(gson.toJson(defaultConfig));
-            rootConfig.set(defaultConfig);
-            configCache.clear();
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to create default config", e);
+                // 直接保存默认配置
+                saveConfigInternal(gson.toJson(defaultConfig));
+                rootConfig.set(defaultConfig);
+                configCache.clear();
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to create default config", e);
+            }
         }
     }
 
@@ -139,10 +146,14 @@ public class Config {
         }
         
         executor.execute(() -> {
-            try {
-                saveConfigInternal(gson.toJson(config));
-            } catch (IOException e) {
-                Log.e(TAG, "Failed to save config", e);
+            synchronized (configLock) {
+                try {
+                    // 创建配置的深拷贝来避免并发修改问题
+                    JsonObject configCopy = gson.fromJson(gson.toJson(config), JsonObject.class);
+                    saveConfigInternal(gson.toJson(configCopy));
+                } catch (IOException e) {
+                    Log.e(TAG, "Failed to save config", e);
+                }
             }
         });
     }
@@ -255,44 +266,46 @@ public class Config {
                 loadFuture.get();
             }
             
-            JsonObject config = rootConfig.get();
-            if (config == null) {
-                config = new JsonObject();
-                rootConfig.set(config);
-            }
-
-            String[] keys = key.split("\\.");
-            JsonObject current = config;
-
-            // 遍历路径，创建不存在的对象
-            for (int i = 0; i < keys.length - 1; i++) {
-                String k = keys[i];
-                JsonElement next = current.get(k);
-                
-                if (next == null || !next.isJsonObject()) {
-                    JsonObject newObj = new JsonObject();
-                    current.add(k, newObj);
-                    current = newObj;
-                } else {
-                    current = next.getAsJsonObject();
+            synchronized (configLock) {
+                JsonObject config = rootConfig.get();
+                if (config == null) {
+                    config = new JsonObject();
+                    rootConfig.set(config);
                 }
-            }
 
-            // 设置值
-            String lastKey = keys[keys.length - 1];
-            JsonElement jsonValue = convertToJsonElement(value);
-            
-            if (jsonValue == null) {
-                current.remove(lastKey);
-            } else {
-                current.add(lastKey, jsonValue);
-            }
+                String[] keys = key.split("\\.");
+                JsonObject current = config;
 
-            // 清除相关的缓存项
-            configCache.remove(key);
-            
-            // 异步保存配置
-            saveConfigAsync();
+                // 遍历路径，创建不存在的对象
+                for (int i = 0; i < keys.length - 1; i++) {
+                    String k = keys[i];
+                    JsonElement next = current.get(k);
+                    
+                    if (next == null || !next.isJsonObject()) {
+                        JsonObject newObj = new JsonObject();
+                        current.add(k, newObj);
+                        current = newObj;
+                    } else {
+                        current = next.getAsJsonObject();
+                    }
+                }
+
+                // 设置值
+                String lastKey = keys[keys.length - 1];
+                JsonElement jsonValue = convertToJsonElement(value);
+                
+                if (jsonValue == null) {
+                    current.remove(lastKey);
+                } else {
+                    current.add(lastKey, jsonValue);
+                }
+
+                // 清除相关的缓存项
+                configCache.remove(key);
+                
+                // 异步保存配置
+                saveConfigAsync();
+            }
         } catch (Exception e) {
             Log.e(TAG, "Error setting config for key: " + key, e);
         }

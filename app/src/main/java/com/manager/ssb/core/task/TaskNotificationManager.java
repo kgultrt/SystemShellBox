@@ -119,7 +119,7 @@ public class TaskNotificationManager implements TaskListener {
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
-            .setContentIntent(getDefaultPendingIntent())
+            .setContentIntent(null)
             .setPriority(NotificationCompat.PRIORITY_LOW);
 
         // 如果有活动任务，添加进度条
