@@ -919,7 +919,7 @@ public class TerminalInstaller {
     }
     
     private static String g(@StringRes int stringRes) {
-        return Application.g(stringRes);
+        return Application.get(stringRes);
     }
     
     private static void deleteRecursive(File fileOrDirectory) {

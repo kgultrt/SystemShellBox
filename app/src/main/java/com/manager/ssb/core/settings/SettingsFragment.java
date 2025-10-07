@@ -1,3 +1,21 @@
+/*
+ * System Shell Box
+ * Copyright (C) 2025 kgultrt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 // SettingsFragment.java
 package com.manager.ssb.core.settings;
 
@@ -19,17 +37,11 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
     private void setupPreferences() {
         // 绑定所有设置项的值和监听器
-        bindPreferenceSummaryToValue(findPreference(SettingsKeys.KEY_APP_NAME));
         bindPreferenceSummaryToValue(findPreference(SettingsKeys.KEY_THEME));
-        bindPreferenceSummaryToValue(findPreference(SettingsKeys.KEY_DARK_MODE));
         bindPreferenceSummaryToValue(findPreference(SettingsKeys.KEY_LANGUAGE));
-        bindPreferenceSummaryToValue(findPreference(SettingsKeys.KEY_TIMEOUT));
-        bindPreferenceSummaryToValue(findPreference(SettingsKeys.KEY_CACHE_SIZE));
         
         // 使用辅助方法设置开关监听器
         setupSwitchPreference(SettingsKeys.KEY_NOTIFICATIONS);
-        setupSwitchPreference(SettingsKeys.KEY_AUTO_START);
-        setupSwitchPreference(SettingsKeys.KEY_SHOW_TIPS);
     }
 
     /**
@@ -37,6 +49,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
      */
     private void setupSwitchPreference(String key) {
         Preference preference = findPreference(key);
+        
         if (preference instanceof SwitchPreferenceCompat) {
             SwitchPreferenceCompat switchPreference = (SwitchPreferenceCompat) preference;
             switchPreference.setOnPreferenceChangeListener(this);
@@ -56,16 +69,16 @@ public class SettingsFragment extends PreferenceFragmentCompat
         String key = preference.getKey();
         
         if (preference instanceof ListPreference) {
-            String value = Config.get(key, "");
+            String value = Config.get(key, getDefaultValueForKey(key));
             onPreferenceChange(preference, value);
         } else if (preference instanceof EditTextPreference) {
-            String value = Config.get(key, "");
+            String value = Config.get(key, getDefaultValueForKey(key));
             onPreferenceChange(preference, value);
         } else if (preference instanceof SeekBarPreference) {
             int value = Config.get(key, 0);
             onPreferenceChange(preference, value);
         } else if (preference instanceof SwitchPreferenceCompat) {
-            boolean value = Config.get(key, false);
+            boolean value = Config.get(key, true);
             onPreferenceChange(preference, value);
         }
     }
@@ -89,7 +102,19 @@ public class SettingsFragment extends PreferenceFragmentCompat
         
         return true;
     }
-
+    
+    private String getDefaultValueForKey(String key) {
+        switch (key) {
+            case SettingsKeys.KEY_APP_NAME:
+                return SettingsKeys.DEFAULT_APP_NAME;
+            case SettingsKeys.KEY_THEME:
+                return SettingsKeys.DEFAULT_THEME;
+            case SettingsKeys.KEY_LANGUAGE:
+                return SettingsKeys.DEFAULT_LANGUAGE;
+            default:
+                return "";
+        }
+    }
     /**
      * 更新偏好设置摘要的辅助方法
      */
