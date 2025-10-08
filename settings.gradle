@@ -41,6 +41,7 @@ dependencyResolutionManagement {
     }
 }
 
+// Wow, this is the old name of this project, and I'm too lazy to change it, so I'll leave a souvenir by the way.
 rootProject.name = "System Shell Forge"
 
 include ":app"
