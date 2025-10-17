@@ -70,6 +70,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import com.manager.ssb.core.term.TerminalInstaller;
+
 /**
  * A terminal emulator activity.
  * <p/>
@@ -487,17 +489,32 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         if (mTermService.getSessions().isEmpty()) {
             if (mIsVisible) {
-                    if (mTermService == null) return; // Activity might have been destroyed.
-                    try {
-                        Bundle bundle = getIntent().getExtras();
-                        boolean launchFailsafe = false;
-                        if (bundle != null) {
-                            launchFailsafe = bundle.getBoolean(TERMUX_FAILSAFE_SESSION_ACTION, false);
+                    TerminalInstaller.installCheck(TermuxActivity.this, new TerminalInstaller.InstallCallback() {
+                        @Override
+                        public void onInstallFinished(Boolean isFirst) {
+                            // 启动终端逻辑
+                            if (isFirst) finish();
+                            if (mTermService == null) return; // Activity might have been destroyed.
+                            try {
+                                Bundle bundle = getIntent().getExtras();
+                                boolean launchFailsafe = false;
+                                if (bundle != null) {
+                                    launchFailsafe = bundle.getBoolean(TERMUX_FAILSAFE_SESSION_ACTION, false);
+                                }
+                                addNewSession(launchFailsafe, null);
+                            } catch (WindowManager.BadTokenException e) {
+                                // Activity finished - ignore.
+                            }
                         }
-                        addNewSession(launchFailsafe, null);
-                    } catch (WindowManager.BadTokenException e) {
-                        // Activity finished - ignore.
-                    }
+
+                        @Override
+                        public void onInstallFailed(String reason) {
+                            runOnUiThread(() -> 
+                                Toast.makeText(TermuxActivity.this, reason, Toast.LENGTH_LONG).show()
+                            );
+                            finish();
+                        }
+                    });
             } else {
                 // The service connected while not in foreground - just bail out.
                 finish();

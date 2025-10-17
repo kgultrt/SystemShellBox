@@ -61,7 +61,7 @@ import java.util.zip.ZipInputStream;
 public class TerminalInstaller {
     private static final String TAG = "TerminalInstaller";
     private static final String GITHUB_RELEASE_URL = "https://api.github.com/repos/kgultrt/SystemShellBox-Package/releases/latest";
-    private static final String DOWNLOAD_URL = "https://github.com/kgultrt/SystemShellBox-Package/releases/latest/download/base.zip";
+    private static final String DOWNLOAD_URL = "https://github.com/kgultrt/SystemShellBox-Package/releases/latest/download/";
     
     private static AlertDialog progressDialog;
     private static LinearProgressIndicator progressIndicator;
@@ -78,7 +78,7 @@ public class TerminalInstaller {
     private static final AtomicBoolean isUpdatingProgress = new AtomicBoolean(false);
 
     public interface InstallCallback {
-        void onInstallFinished();
+        void onInstallFinished(Boolean isFirst);
         void onInstallFailed(String reason);
     }
 
@@ -94,8 +94,19 @@ public class TerminalInstaller {
         
         if (isEnvironmentInstalled(context)) {
             Log.i(TAG, "Environment already installed");
+            
             // 环境已安装，检查更新
-            checkForUpdates(context, true);
+            long lastCheck = getLastUpdateCheck();
+            long currentTime = System.currentTimeMillis();
+            // 24小时内不重复检查
+            if (currentTime - lastCheck < 24 * 60 * 60 * 1000) {
+                if (currentInstallCallback != null) {
+                    currentInstallCallback.onInstallFinished(false);
+                }
+                return;
+            }
+            
+            checkForUpdates(context, false);
         } else {
             // 环境未安装，显示安装选项
             showInstallOptionsDialog(context);
@@ -104,16 +115,6 @@ public class TerminalInstaller {
 
     // 检查更新
     private static void checkForUpdates(Context context, boolean silent) {
-        long lastCheck = getLastUpdateCheck();
-        long currentTime = System.currentTimeMillis();
-        // 24小时内不重复检查
-        if (silent && (currentTime - lastCheck < 24 * 60 * 60 * 1000)) {
-            if (currentInstallCallback != null) {
-                currentInstallCallback.onInstallFinished();
-            }
-            return;
-        }
-
         if (!silent) {
             showProgressDialog(context, g(R.string.term_install_check), g(R.string.term_install_connecting), 0);
         }
@@ -185,8 +186,8 @@ public class TerminalInstaller {
                         if (!silent) {
                             Toast.makeText(context, g(R.string.term_install_already), Toast.LENGTH_SHORT).show();
                         }
-                        if (silent && currentInstallCallback != null) {
-                            currentInstallCallback.onInstallFinished();
+                        if (currentInstallCallback != null) {
+                            currentInstallCallback.onInstallFinished(false);
                         }
                     }
                 } else {
@@ -194,8 +195,8 @@ public class TerminalInstaller {
                     if (!silent) {
                         Toast.makeText(context, g(R.string.term_install_network), Toast.LENGTH_SHORT).show();
                     }
-                    if (silent && currentInstallCallback != null) {
-                        currentInstallCallback.onInstallFinished();
+                    if (currentInstallCallback != null) {
+                        currentInstallCallback.onInstallFinished(false);
                     }
                 }
             }
@@ -324,7 +325,7 @@ public class TerminalInstaller {
                 .setPositiveButton(g(R.string.term_install_update), (d, w) -> installFromNetwork(context))
                 .setNegativeButton(g(R.string.term_install_ignore), (d, w) -> {
                     if (currentInstallCallback != null) {
-                        currentInstallCallback.onInstallFinished();
+                        currentInstallCallback.onInstallFinished(false);
                     }
                 })
                 .show();
@@ -441,7 +442,7 @@ public class TerminalInstaller {
                 // 延迟关闭对话框，让用户看到完成状态
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     dismissProgressDialog();
-                    notifySuccess();
+                    currentInstallCallback.onInstallFinished(true);
                 }, 500);
             } else {
                 dismissProgressDialog();
@@ -474,7 +475,30 @@ public class TerminalInstaller {
 
     // ================== 网络安装 ================== 
     private static void installFromNetwork(Context context) {
-        new NetworkInstallerTask(context, DOWNLOAD_URL).execute();
+        String arch = getDeviceArchitecture();
+        String downloadFile;
+    
+        switch (arch) {
+            case "arm64-v8a":
+                downloadFile = "base.zip";
+                break;
+            case "armeabi-v7a":
+                downloadFile = "base_arm.zip";
+                break;
+            case "x86_64":
+                downloadFile = "base_x86_64.zip";
+                break;
+            case "x86":
+                downloadFile = "base_x86.zip";
+                break;
+            default:
+                // 使用默认的base.zip
+                downloadFile = "base.zip";
+                break;
+        }
+    
+        String fullDownloadUrl = DOWNLOAD_URL + downloadFile;
+        new NetworkInstallerTask(context, fullDownloadUrl).execute();
     }
 
     private static class NetworkInstallerTask extends AsyncTask<Void, Integer, String> {
@@ -600,7 +624,7 @@ public class TerminalInstaller {
                 
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     dismissProgressDialog();
-                    notifySuccess();
+                    currentInstallCallback.onInstallFinished(true);
                 }, 800);
             } else {
                 dismissProgressDialog();
@@ -837,12 +861,6 @@ public class TerminalInstaller {
         }
     }
 
-    private static void notifySuccess() {
-        if (currentInstallCallback != null) {
-            currentInstallCallback.onInstallFinished();
-        }
-    }
-
     private static void notifyFailure(String reason) {
         if (currentInstallCallback != null) {
             currentInstallCallback.onInstallFailed(reason);
@@ -937,5 +955,42 @@ public class TerminalInstaller {
     // 进度更新接口（保持向后兼容）
     private interface ProgressUpdater {
         void update(int progress);
+    }
+    
+    // 使用Android的Build类进行架构检测
+    private static String getDeviceArchitecture() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            String[] supportedAbis = android.os.Build.SUPPORTED_ABIS;
+            if (supportedAbis != null && supportedAbis.length > 0) {
+                String primaryAbi = supportedAbis[0];
+                switch (primaryAbi) {
+                    case "arm64-v8a":
+                    case "aarch64":
+                        return "arm64-v8a";
+                    case "armeabi-v7a":
+                    case "armeabi":
+                        return "armeabi-v7a";
+                    case "x86_64":
+                        return "x86_64";
+                    case "x86":
+                        return "x86";
+                }
+            }
+        }
+    
+        // 回退到基于CPU架构的检测
+        String arch = System.getProperty("os.arch", "").toLowerCase();
+        if (arch.contains("aarch64") || arch.contains("arm64")) {
+            return "arm64-v8a";
+        } else if (arch.contains("arm")) {
+            return "armeabi-v7a";
+        } else if (arch.contains("x86_64") || arch.contains("amd64")) {
+            return "x86_64";
+        } else if (arch.contains("x86")) {
+            return "x86";
+        }
+    
+        // 默认返回arm64架构
+        return "arm64-v8a";
     }
 }
