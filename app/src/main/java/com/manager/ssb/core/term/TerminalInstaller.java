@@ -98,6 +98,7 @@ public class TerminalInstaller {
             // 环境已安装，检查更新
             long lastCheck = getLastUpdateCheck();
             long currentTime = System.currentTimeMillis();
+            
             // 24小时内不重复检查
             if (currentTime - lastCheck < 24 * 60 * 60 * 1000) {
                 if (currentInstallCallback != null) {
@@ -890,7 +891,7 @@ public class TerminalInstaller {
     }
 
     private static long getLastUpdateCheck() {
-        return Config.get("term.lastUpdateCheck", 0);
+        return Config.get("term.lastUpdateCheck", 0L);
     }
 
     private static void setLastUpdateCheck(long time) {
