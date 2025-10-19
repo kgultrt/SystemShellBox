@@ -26,6 +26,7 @@ import com.manager.ssb.R;
 import com.manager.ssb.core.task.NotifyingExecutorService;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.task.TaskTypes;
+import com.manager.ssb.util.NativeFileOperation;
 import java.io.File;
 
 public class DeleteDialog {
@@ -46,7 +47,9 @@ public class DeleteDialog {
                 progressDialog.show();
 
                 executorService.execute(() -> {
-                    boolean success = deleteRecursive(fileItem.getFile());
+                    boolean success = NativeFileOperation.delete(
+                        fileItem.getPath()
+                    );
 
                     ((android.app.Activity) context).runOnUiThread(() -> {
                         progressDialog.dismiss();
@@ -61,17 +64,5 @@ public class DeleteDialog {
             })
             .setNegativeButton(R.string.cancel, null)
             .show();
-    }
-
-    private static boolean deleteRecursive(File file) {
-        if (file.isDirectory()) {
-            File[] files = file.listFiles();
-            if (files != null) {
-                for (File child : files) {
-                    if (!deleteRecursive(child)) return false;
-                }
-            }
-        }
-        return file.delete();
     }
 }

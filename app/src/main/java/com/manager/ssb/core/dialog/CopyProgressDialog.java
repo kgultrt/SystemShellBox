@@ -91,7 +91,7 @@ public class CopyProgressDialog {
         progressBar.setProgress(0);
         progressBar.setIndeterminate(false);
         progressText.setText(context.getString(R.string.copy_progress_message) + ": 0%");
-        etaText.setText(context.getString(R.string.eta) + ": 计算中...");
+        etaText.setText(context.getString(R.string.eta) + ": ...");
 
         dialog = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.copy_progress_title)
@@ -114,7 +114,6 @@ public class CopyProgressDialog {
         new Handler(Looper.getMainLooper()).post(() -> {
             switch (status) {
                 case NativeFileOperation.STATUS_CONFLICT:
-                    showConflictState();
                     break;
                     
                 case NativeFileOperation.STATUS_RETRYING:
@@ -126,12 +125,6 @@ public class CopyProgressDialog {
                     break;
             }
         });
-    }
-    
-    private void showConflictState() {
-        // progressBar.setIndeterminate(true);
-        // progressText.setText(context.getString(R.string.file_conflict_detected));
-        // etaText.setText(context.getString(R.string.waiting_for_user));
     }
     
     private void showRetryState() {

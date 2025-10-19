@@ -27,6 +27,7 @@ import com.manager.ssb.R;
 import com.manager.ssb.core.task.NotifyingExecutorService;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.task.TaskTypes;
+import com.manager.ssb.util.NativeFileOperation;
 import com.manager.ssb.enums.ActivePanel;
 import com.manager.ssb.MainActivity;
 
@@ -96,7 +97,10 @@ public class MoveDialog {
                     progressDialog.show();
 
                     executorService.execute(() -> {
-                        boolean success = srcFile.renameTo(targetFile);
+                        boolean success = NativeFileOperation.move(
+                            srcFile.getAbsolutePath(), 
+                            targetFile.getAbsolutePath()
+                        );
 
                         ((android.app.Activity) context).runOnUiThread(() -> {
                             progressDialog.dismiss();

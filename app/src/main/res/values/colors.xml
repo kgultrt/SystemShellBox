@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="panel_highlight">#22009688</color>
-    <color name="item_hover">#334D4DFF</color>
-    <color name="te_background">#FFFFFF</color>
-    <color name="te_title">#0F172A</color>
-    <color name="te_divid">#E2E8F0</color>
-    <color name="te_top">#D8ECFF</color>
+    <color name="te_primary">#1976D2</color>
+    <color name="te_primary_dark">#1565C0</color>
+    <color name="te_primary_light">#42A5F5</color>
+    
+    <color name="te_background">#FAFAFA</color>
+    
+    <color name="te_top">#1976D2</color>
+    
+    <color name="te_title">#FFFFFF</color>
+    <color name="te_text_primary">#212121</color>
+    <color name="te_text_secondary">#757575</color>
+    
+    <color name="te_divid">#E0E0E0</color>
+    <color name="te_border">#BDBDBD</color>
+    
+    <color name="te_success">#4CAF50</color>
+    <color name="te_warning">#FF9800</color>
+    <color name="te_error">#F44336</color>
+    
+    <color name="panel_highlight">#1AFFFFFF</color>
+    <color name="item_hover">#0A000000</color>
 </resources>
