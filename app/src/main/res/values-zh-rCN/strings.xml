@@ -27,6 +27,26 @@
     <string name="signature_API">From API md5</string>
     <string name="signature_SVC">From SVC md5</string>
 
+    <!-- Welcome Activity -->
+    <string name="welcome_title_1">欢迎使用 System Shell Box</string>
+    <string name="welcome_desc_1">一个强大的文件管理和系统工具应用，让您在 Android 设备上获得完整的控制权。</string>
+
+    <string name="welcome_title_2">权限说明</string>
+    <string name="welcome_desc_2">为了正常使用文件管理功能，我们需要以下权限：\n• 存储权限：访问和管理文件\n• 通知权限：显示操作进度</string>
+
+    <string name="welcome_title_3">主要功能</string>
+    <string name="welcome_desc_3">• 双面板文件管理器\n• 终端模拟器集成\n• 批量文件操作\n• 书签和历史记录\n• 系统信息查看</string>
+
+    <string name="welcome_title_4">权限请求</string>
+    <string name="welcome_desc_4">请允许应用访问设备存储，这是文件管理功能的基础。您可以在系统设置中随时修改这些权限。</string>
+
+    <string name="previous">上一步</string>
+    <string name="next">下一步</string>
+    <string name="get_started">开始使用</string>
+    <string name="step_info">步骤 %1$d/%2$d</string>
+    <string name="permission_rationale_detail">某些功能需要存储权限才能正常工作。请授予权限以获得完整体验。</string>
+    <string name="skip_for_now">暂时跳过</string>
+
     <string name="settings_follow">跟随系统</string>
     <string name="settings_enable">启用</string>
     <string name="settings_disable">禁用</string>
@@ -56,7 +76,7 @@
     <string name="extracting">正在解压...</string>
     <string name="setting_permissions">正在设置权限...</string>
     <string name="completed">完成</string>
-    
+
     <string name="term_install_title">环境安装</string>
     <string name="term_install_msg">需要安装POSIX环境才能使用终端功能</string>
     <string name="term_install_auto">自动下载安装</string>
@@ -98,6 +118,7 @@
     <string name="permission_desc_dialog1">权限说明</string>
     <string name="permission_desc_dialog2">需要存储权限以读取文件列表</string>
     <string name="retry_request_android_permission">重新申请</string>
+    <string name="retry">重试</string>
     <string name="exit">退出</string>
     <string name="reject_permanently_android_permission_request">权限被永久拒绝</string>
     <string name="go_to_setting_open">请在设置中手动开启权限</string>
@@ -325,94 +346,53 @@
 
 
     <string name="shared_user_label">Termux 用户</string>
-    <!-- Termux 用户 -->
     <string name="new_session">新建会话</string>
-    <!-- 新建会话 -->
     <string name="new_session_failsafe">安全模式</string>
-    <!-- 安全模式 -->
     <string name="toggle_soft_keyboard">键盘</string>
-    <!-- 键盘 -->
     <string name="reset_terminal">重置</string>
-    <!-- 重置 -->
     <string name="style_terminal">样式</string>
-    <!-- 样式 -->
     <string name="share_transcript_title">终端记录</string>
-    <!-- 终端记录 -->
     <string name="help">帮助</string>
-    <!-- 帮助 -->
     <string name="toggle_keep_screen_on">保持屏幕常亮</string>
-    <!-- 保持屏幕常亮 -->
-
     <string name="bootstrap_installer_body">正在安装…</string>
-    <!-- 正在安装… -->
     <string name="bootstrap_error_title">无法安装</string>
-    <!-- 无法安装 -->
     <string name="bootstrap_error_body">Termux 无法安装引导程序包。\n\n请检查您的网络连接并重试。</string>
-    <!-- Termux 无法安装引导程序包。\n\n请检查您的网络连接并重试。 -->
     <string name="bootstrap_error_abort">中止</string>
-    <!-- 中止 -->
     <string name="bootstrap_error_try_again">重试</string>
-    <!-- 重试 -->
     <string name="bootstrap_error_not_primary_user_message">Termux 只能安装在主用户帐户上。</string>
-    <!-- Termux 只能安装在主用户帐户上。 -->
-
     <string name="max_terminals_reached_title">已达到最大终端数</string>
-    <!-- 已达到最大终端数 -->
     <string name="max_terminals_reached_message">请关闭现有终端后再创建新的终端。</string>
-    <!-- 请关闭现有终端后再创建新的终端。 -->
-
     <string name="reset_toast_notification">终端已重置。</string>
-    <!-- 终端已重置。 -->
-
     <string name="select_url">选择 URL</string>
-    <!-- 选择 URL -->
     <string name="select_url_dialog_title">点击 URL 复制，长按打开</string>
-    <!-- 点击 URL 复制，长按打开 -->
     <string name="select_all_and_share">分享记录</string>
-    <!-- 分享记录 -->
     <string name="select_url_no_found">终端中未找到 URL。</string>
-    <!-- 终端中未找到 URL。 -->
     <string name="select_url_copied_to_clipboard">URL 已复制到剪贴板</string>
-    <!-- URL 已复制到剪贴板 -->
     <string name="share_transcript_chooser_title">发送文本到：</string>
-    <!-- 发送文本到： -->
-
     <string name="kill_process">结束进程 (%d)</string>
-    <!-- 结束进程 (%d) -->
     <string name="confirm_kill_process">确定要结束此会话吗？</string>
-    <!-- 确定要结束此会话吗？ -->
+
 
     <string name="session_rename_title">设置会话名称</string>
-    <!-- 设置会话名称 -->
     <string name="session_rename_positive_button">设置</string>
-    <!-- 设置 -->
     <string name="session_new_named_title">新建命名会话</string>
-    <!-- 新建命名会话 -->
     <string name="session_new_named_positive_button">创建</string>
-    <!-- 创建 -->
+
     <string name="session">会话</string>
     <string name="session_lock">(保持唤醒锁)</string>
     <string name="task">任务</string>
-
     <string name="styling_not_installed">Termux:Style 附加组件未安装。</string>
-    <!-- Termux:Style 附加组件未安装。 -->
     <string name="styling_install">安装</string>
-    <!-- 安装 -->
+
 
     <string name="notification_action_exit">退出</string>
-    <!-- 退出 -->
     <string name="notification_action_wake_lock">获取唤醒锁</string>
-    <!-- 获取唤醒锁 -->
     <string name="notification_action_wake_unlock">释放唤醒锁</string>
-    <!-- 释放唤醒锁 -->
+
 
     <string name="file_received_title">将文件保存到 ~/downloads/</string>
-    <!-- 将文件保存到 ~/downloads/ -->
     <string name="file_received_edit_button">编辑</string>
-    <!-- 编辑 -->
     <string name="file_received_open_folder_button">打开文件夹</string>
-    <!-- 打开文件夹 -->
-
     <string name="format">格式化</string>
 
 </resources>

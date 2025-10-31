@@ -25,9 +25,15 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme">
 
-        <!-- 主入口 Activity -->
+        <!-- 主 Activity -->
         <activity
             android:name="com.manager.ssb.MainActivity"
+            android:exported="true"
+            android:screenOrientation="locked">
+        </activity>
+
+        <activity
+            android:name="com.manager.ssb.WelcomeActivity"
             android:exported="true"
             android:screenOrientation="locked">
             <intent-filter>
@@ -35,7 +41,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
+
         <activity
             android:name="com.manager.ssb.apkpatch.MainActivity"
             android:exported="true"
@@ -47,7 +53,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
+
         <activity
             android:name="com.manager.ssb.core.settings.SettingsActivity"
             android:exported="true"
@@ -57,13 +63,13 @@
             android:name="com.manager.ssb.core.editor.MainActivity"
             android:exported="false"
             android:screenOrientation="locked" />
-        
+
         <activity
             android:name="com.manager.ssb.CrashActivity"
             android:exported="false"
-            android:screenOrientation="locked" >
+            android:screenOrientation="locked">
         </activity>
-        
+
         <activity
             android:name="com.manager.ssb.core.browser.HtmlActivity"
             android:exported="false"
@@ -99,7 +105,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-        
+
         <receiver android:name="com.manager.ssb.core.task.NotificationDismissReceiver" />
 
     </application>

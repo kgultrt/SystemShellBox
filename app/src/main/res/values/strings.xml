@@ -28,6 +28,27 @@
     <string name="signature_API">From API md5</string>
     <string name="signature_SVC">From SVC md5</string>
 
+    <!-- Welcome Activity -->
+    <string name="welcome_title_1">Welcome to System Shell Box!</string>
+    <string name="welcome_desc_1">A powerful file management and system tool app that gives you complete control on your Android device.</string>
+
+    <string name="welcome_title_2">Authority description</string>
+    <string name="welcome_desc_2">In order to use the file management features properly, we need the following permissions:\n• Storage permissions: accessing and managing films\n• Notification rights: displaying the progress of an operation</string>
+
+    <string name="welcome_title_3">主要功能</string>
+    <string name="welcome_desc_3">• 双面板文件管理器\n• 终端模拟器集成\n• 批量文件操作\n• 书签和历史记录\n• 系统信息查看</string>
+
+    <string name="welcome_title_4">权限请求</string>
+    <string name="welcome_desc_4">请允许应用访问设备存储，这是文件管理功能的基础。您可以在系统设置中随时修改这些权限。</string>
+
+    <string name="previous">上一步</string>
+    <string name="next">下一步</string>
+    <string name="get_started">开始使用</string>
+    <string name="step_info">步骤 %1$d/%2$d</string>
+    <string name="permission_required">需要权限</string>
+    <string name="permission_rationale_detail">某些功能需要存储权限才能正常工作。请授予权限以获得完整体验。</string>
+    <string name="skip_for_now">暂时跳过</string>
+
     <string name="settings_follow">Follow System</string>
     <string name="settings_enable">Enable</string>
     <string name="settings_disable">Disadle</string>
@@ -98,6 +119,7 @@
     <string name="permission_desc_dialog1">Permission Description</string>
     <string name="permission_desc_dialog2">Storage permission is required to read the file list</string>
     <string name="retry_request_android_permission">Retry Request</string>
+    <string name="retry">Retry</string>
     <string name="exit">Exit</string>
     <string name="reject_permanently_android_permission_request">Permission has been permanently denied</string>
     <string name="go_to_setting_open">Please manually enable the permission in Settings</string>
@@ -106,7 +128,6 @@
     <string name="notification_permission_rationale">Notification permission is required to display file operation progress and results, which you can enable in System Settings</string>
     <string name="notifications_denied">You have denied notification rights and some functionality may be limited</string>
     <string name="go_to_settings">Go to Settings</string>
-    <string name="permission_required">Necessary permission requirement</string>
     <string name="cancel">Cancel</string>
 
     <string name="notification_channel_name">Background task</string>
