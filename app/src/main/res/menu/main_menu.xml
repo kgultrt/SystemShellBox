@@ -6,7 +6,9 @@
     <item
         android:id="@+id/action_storage_info"
         android:title="@string/storage_info" />
-
+    <item
+        android:id="@+id/action_jump_to_directory"
+        android:title="@string/jump_to_directory" />
     <item
         android:id="@+id/action_terminal"
         android:title="@string/term_name" />

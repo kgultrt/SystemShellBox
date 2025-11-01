@@ -153,10 +153,10 @@ public class MainActivity extends AppCompatActivity {
         int lastBuildNumber = Config.get("lastBuildNumber", 0);
         int currentBuildNumber = extractBuildNumber(getCurrentVersion());
 
-        if (isFirst) {
-            // 设置当前版本号
-            Config.set("lastBuildNumber", currentBuildNumber);
-        } else if (currentBuildNumber > lastBuildNumber) {
+        // 设置当前版本号
+        Config.set("lastBuildNumber", currentBuildNumber);
+        
+        if (currentBuildNumber > lastBuildNumber) {
             // 检测到新版本显示更新日志
             showUpdateDialog(currentBuildNumber);
             Config.set("lastBuildNumber", currentBuildNumber);
@@ -206,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
     private void initMenuActions() {
         menuActionMap.put(R.id.action_refresh, this::refreshCurrentDirectory);
         menuActionMap.put(R.id.action_settings, this::openSettings);
+        menuActionMap.put(R.id.action_jump_to_directory, this::showDirectoryInputDialog);
         menuActionMap.put(R.id.action_storage_info, this::showStorageDetails);
         menuActionMap.put(R.id.action_about, this::showAboutDialog);
         menuActionMap.put(R.id.action_terminal, this::startTerminal);
