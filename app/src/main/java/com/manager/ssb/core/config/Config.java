@@ -29,8 +29,8 @@ import com.manager.ssb.Application;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Config {
     private static final String TAG = "Config";
@@ -40,7 +40,10 @@ public class Config {
     private static final ConcurrentHashMap<String, Object> configCache = new ConcurrentHashMap<>();
     private static final Gson gson = new Gson();
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private static volatile CompletableFuture<Void> loadFuture = CompletableFuture.completedFuture(null);
+    
+    // 替换 CompletableFuture 为 Future + 状态标志
+    private static volatile Future<?> loadFuture = null;
+    private static volatile boolean isLoaded = false;
     
     private static File configFile;
     
@@ -56,6 +59,7 @@ public class Config {
         File configDir = new File(context.getFilesDir(), "config");
         if (!configDir.exists() && !configDir.mkdirs()) {
             Log.e(TAG, "Failed to create config directory");
+            isLoaded = true; // 标记为已加载，避免阻塞
             return;
         }
         configFile = new File(configDir, "config.json");
@@ -63,46 +67,52 @@ public class Config {
     }
 
     public static void refresh() {
-        // 如果正在加载，直接返回
-        if (!loadFuture.isDone()) {
-            return;
+        // 如果正在加载，取消之前的任务
+        if (loadFuture != null && !loadFuture.isDone()) {
+            loadFuture.cancel(true);
         }
         
-        loadFuture = CompletableFuture.runAsync(() -> {
-            synchronized (configLock) {
-                try {
-                    if (!configFile.exists()) {
-                        createDefaultConfig();
-                        return;
-                    }
-
-                    // 读取配置文件
-                    String jsonContent;
-                    try (FileInputStream fis = new FileInputStream(configFile);
-                         InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-                         BufferedReader reader = new BufferedReader(isr)) {
-                        
-                        StringBuilder sb = new StringBuilder();
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            sb.append(line);
+        isLoaded = false;
+        loadFuture = executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (configLock) {
+                    try {
+                        if (!configFile.exists()) {
+                            createDefaultConfig();
+                            return;
                         }
-                        jsonContent = sb.toString();
-                    }
 
-                    JsonObject newConfig = gson.fromJson(jsonContent, JsonObject.class);
-                    if (newConfig != null) {
-                        rootConfig.set(newConfig);
-                        configCache.clear();
-                        Log.d(TAG, "Config loaded successfully");
-                    } else {
-                        Log.e(TAG, "Failed to parse config file");
+                        // 读取配置文件
+                        String jsonContent;
+                        try (FileInputStream fis = new FileInputStream(configFile);
+                             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+                             BufferedReader reader = new BufferedReader(isr)) {
+                            
+                            StringBuilder sb = new StringBuilder();
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                sb.append(line);
+                            }
+                            jsonContent = sb.toString();
+                        }
+
+                        JsonObject newConfig = gson.fromJson(jsonContent, JsonObject.class);
+                        if (newConfig != null) {
+                            rootConfig.set(newConfig);
+                            configCache.clear();
+                            Log.d(TAG, "Config loaded successfully");
+                        } else {
+                            Log.e(TAG, "Failed to parse config file");
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed to load config", e);
+                    } finally {
+                        isLoaded = true; // 标记加载完成
                     }
-                } catch (Exception e) {
-                    Log.e(TAG, "Failed to load config", e);
                 }
             }
-        }, executor);
+        });
     }
 
     private static void createDefaultConfig() {
@@ -118,6 +128,8 @@ public class Config {
                 configCache.clear();
             } catch (Exception e) {
                 Log.e(TAG, "Failed to create default config", e);
+            } finally {
+                isLoaded = true; // 标记加载完成
             }
         }
     }
@@ -145,14 +157,17 @@ public class Config {
             return;
         }
         
-        executor.execute(() -> {
-            synchronized (configLock) {
-                try {
-                    // 创建配置的深拷贝来避免并发修改问题
-                    JsonObject configCopy = gson.fromJson(gson.toJson(config), JsonObject.class);
-                    saveConfigInternal(gson.toJson(configCopy));
-                } catch (IOException e) {
-                    Log.e(TAG, "Failed to save config", e);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (configLock) {
+                    try {
+                        // 创建配置的深拷贝来避免并发修改问题
+                        JsonObject configCopy = gson.fromJson(gson.toJson(config), JsonObject.class);
+                        saveConfigInternal(gson.toJson(configCopy));
+                    } catch (IOException e) {
+                        Log.e(TAG, "Failed to save config", e);
+                    }
                 }
             }
         });
@@ -165,9 +180,15 @@ public class Config {
     @SuppressWarnings("unchecked")
     public static <T> T get(String key, T defaultValue) {
         try {
-            // 确保配置已加载
-            if (loadFuture != null && !loadFuture.isDone()) {
-                loadFuture.get();
+            // 确保配置已加载 - 等待加载完成
+            if (!isLoaded && loadFuture != null) {
+                try {
+                    loadFuture.get(5, TimeUnit.SECONDS); // 最多等待5秒
+                } catch (TimeoutException e) {
+                    Log.w(TAG, "Config loading timeout, using default value for key: " + key);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error waiting for config load", e);
+                }
             }
             
             // 先从缓存中获取
@@ -262,8 +283,14 @@ public class Config {
     public static void set(String key, Object value) {
         try {
             // 确保配置已加载
-            if (loadFuture != null && !loadFuture.isDone()) {
-                loadFuture.get();
+            if (!isLoaded && loadFuture != null) {
+                try {
+                    loadFuture.get(5, TimeUnit.SECONDS);
+                } catch (TimeoutException e) {
+                    Log.w(TAG, "Config loading timeout, proceeding with set operation for key: " + key);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error waiting for config load", e);
+                }
             }
             
             synchronized (configLock) {

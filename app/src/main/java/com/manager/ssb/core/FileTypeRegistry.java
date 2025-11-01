@@ -16,94 +16,102 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-// FileTypeRegistry.java
 package com.manager.ssb.core;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class FileTypeRegistry {
     private static final Map<String, FileType> EXTENSION_MAP = new HashMap<>();
+    
+    // 文件类型配置
+    private static final String[][] FILE_TYPE_CONFIG = {
+        // {扩展名, 文件类型名称}
+        {".mp3", "AUDIO"}, {".wav", "AUDIO"}, {".ogg", "AUDIO"}, 
+        {".m4a", "AUDIO"}, {".mid", "AUDIO"}, {".flac", "AUDIO"},
+        
+        {".txt", "TEXT"}, {".java", "TEXT"}, {".c", "TEXT"}, 
+        {".cpp", "TEXT"}, {".cs", "TEXT"}, {".py", "TEXT"},
+        {".cxx", "TEXT"}, {".js", "TEXT"}, {".css", "TEXT"},
+        {".md", "TEXT"}, {".go", "TEXT"}, {".log", "TEXT"},
+        {".sh", "TEXT"}, {".rs", "TEXT"}, {".bat", "TEXT"},
+        {".kt", "TEXT"}, {".h", "TEXT"}, {".lua", "TEXT"},
+        {".json", "TEXT"}, {".properties", "TEXT"},
+        
+        {".zip", "COMPRESS"}, {".tar", "COMPRESS"}, {".gz", "COMPRESS"},
+        {".bz2", "COMPRESS"}, {".7z", "COMPRESS"}, {".rar", "COMPRESS"},
+        
+        {".html", "HTML"}, {".htm", "HTML"},
+        
+        {".apk", "APK"}
+    };
 
     static {
-        registerAudioExtension(".mp3");
-        registerAudioExtension(".wav");
-        registerAudioExtension(".ogg");
-        registerAudioExtension(".m4a");
-        registerAudioExtension(".mid");
-        registerAudioExtension(".flac");
-
-        registerTextExtension(".txt");
-        registerTextExtension(".java");
-        registerTextExtension(".c");
-        registerTextExtension(".cpp");
-        registerTextExtension(".cs");
-        registerTextExtension(".py");
-        registerTextExtension(".cxx");
-        registerTextExtension(".js");
-        registerTextExtension(".css");
-        registerTextExtension(".md");
-        registerTextExtension(".go");
-        registerTextExtension(".log");
-        registerTextExtension(".sh");
-        registerTextExtension(".rs");
-        registerTextExtension(".bat");
-        registerTextExtension(".kt");
-        registerTextExtension(".h");
-        registerTextExtension(".lua");
-        registerTextExtension(".json");
-        registerTextExtension(".properties");
-        
-        registerCompressExtension(".zip");
-        registerCompressExtension(".tar"); 
-        registerCompressExtension(".gz");
-        registerCompressExtension(".bz2");
-        registerCompressExtension(".7z");
-        registerCompressExtension(".rar");
-        
-        registerHtmlExtension(".html");
-        registerHtmlExtension(".htm");
-        
-        registerAndroidAppExtension(".apk");
+        initializeFileTypes();
     }
 
-    public static void registerAudioExtension(String extension) {
-        registerExtension(extension, FileType.AUDIO);
+    private static void initializeFileTypes() {
+        for (String[] config : FILE_TYPE_CONFIG) {
+            if (config.length == 2) {
+                String extension = config[0].toLowerCase();
+                FileType fileType = parseFileType(config[1]);
+                if (fileType != null) {
+                    EXTENSION_MAP.put(extension, fileType);
+                }
+            }
+        }
     }
 
-    public static void registerTextExtension(String extension) {
-        registerExtension(extension, FileType.TEXT);
-    }
-    
-    public static void registerCompressExtension(String extension) {
-        registerExtension(extension, FileType.COMPRESS);
-    }
-    
-    public static void registerHtmlExtension(String extension) {
-        registerExtension(extension, FileType.HTML);
-    }
-    
-    public static void registerAndroidAppExtension(String extension) {
-        registerExtension(extension, FileType.APK);
+    private static FileType parseFileType(String typeName) {
+        try {
+            return FileType.valueOf(typeName);
+        } catch (IllegalArgumentException e) {
+            return FileType.UNKNOWN;
+        }
     }
 
     public static void registerExtension(String extension, FileType fileType) {
-        if (extension == null || fileType == null) return;
-        EXTENSION_MAP.put(extension.toLowerCase(), fileType);
+        if (extension != null && fileType != null) {
+            EXTENSION_MAP.put(extension.toLowerCase(), fileType);
+        }
+    }
+
+    public static void unregisterExtension(String extension) {
+        if (extension != null) {
+            EXTENSION_MAP.remove(extension.toLowerCase());
+        }
     }
 
     public static FileType getFileType(String filePath) {
+        if (filePath == null) {
+            return FileType.UNKNOWN;
+        }
+        
         String ext = getFileExtension(filePath);
-        return EXTENSION_MAP.getOrDefault(ext, FileType.UNKNOWN);
+        FileType fileType = EXTENSION_MAP.get(ext);
+        
+        // 兼容低版本 Android
+        return fileType != null ? fileType : FileType.UNKNOWN;
     }
 
     public static String getFileExtension(String filePath) {
-        if (filePath == null) return "";
+        if (filePath == null || filePath.isEmpty()) {
+            return "";
+        }
+        
         int lastDotIndex = filePath.lastIndexOf('.');
         if (lastDotIndex == -1 || lastDotIndex == filePath.length() - 1) {
             return "";
         }
+        
         return filePath.substring(lastDotIndex).toLowerCase();
+    }
+    
+    public static boolean isRegisteredExtension(String extension) {
+        return extension != null && EXTENSION_MAP.containsKey(extension.toLowerCase());
+    }
+    
+    public static void clearAllExtensions() {
+        EXTENSION_MAP.clear();
     }
 }

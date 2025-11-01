@@ -59,8 +59,14 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     private final String panel;
     private final ExecutorService executorService;
     private final Handler mainHandler;
-    private static final ThreadLocal<SimpleDateFormat> dateFormat =
-            ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()));
+    
+    // 修复：替换 lambda 表达式为匿名内部类
+    private static final ThreadLocal<SimpleDateFormat> dateFormat = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+        }
+    };
     
     // 新增防抖控制
     private long lastClickTime = 0;
@@ -164,7 +170,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         this.executorService = executorService;
         this.mainHandler = mainHandler;
         
-        // 初始化长按检测
+        // 修复：替换 lambda 表达式为匿名内部类
         longPressRunnable = new Runnable() {
             @Override
             public void run() {
@@ -228,72 +234,82 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         holder.ivIcon.setImageResource(item.isDirectory() ?
                 R.drawable.ic_folder : R.drawable.ic_file);
 
-        executorService.submit(() -> {
-            // 一次性获取文件类型枚举，避免多次调用判断方法
-            FileType fileType = item.resolveFileType();
-    
-            final int iconResId;
-            switch (fileType) {
-                case AUDIO:
-                    iconResId = R.drawable.ic_music;
-                    break;
-                case TEXT:
-                    iconResId = R.drawable.ic_text;
-                    break;
-                case COMPRESS:
-                    iconResId = R.drawable.ic_zip;
-                    break;
-                case HTML:
-                    iconResId = R.drawable.ic_web;
-                    break;
-                case APK:
-                    iconResId = R.drawable.ic_android;
-                    break;
-                case DIRECTORY:
-                    iconResId = R.drawable.ic_folder;
-                    break;
-                default:
-                    iconResId = R.drawable.ic_file;
+        // 修复：替换 lambda 表达式为匿名内部类
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                // 一次性获取文件类型枚举，避免多次调用判断方法
+                FileType fileType = item.resolveFileType();
+        
+                final int iconResId;
+                switch (fileType) {
+                    case AUDIO:
+                        iconResId = R.drawable.ic_music;
+                        break;
+                    case TEXT:
+                        iconResId = R.drawable.ic_text;
+                        break;
+                    case COMPRESS:
+                        iconResId = R.drawable.ic_zip;
+                        break;
+                    case HTML:
+                        iconResId = R.drawable.ic_web;
+                        break;
+                    case APK:
+                        iconResId = R.drawable.ic_android;
+                        break;
+                    case DIRECTORY:
+                        iconResId = R.drawable.ic_folder;
+                        break;
+                    default:
+                        iconResId = R.drawable.ic_file;
+                }
+
+                final String sizeText = item.isDirectory() ? "" : formatSize(context, item.getSize());
+                final String timeText = formatDate(item.getLastModified());
+
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        holder.ivIcon.setImageResource(iconResId);
+                        holder.tvName.setText(item.getName());
+                        holder.tvSize.setText(sizeText);
+                        holder.tvTime.setText(timeText);
+                    }
+                });
             }
-
-            final String sizeText = item.isDirectory() ? "" : formatSize(context, item.getSize());
-            final String timeText = formatDate(item.getLastModified());
-
-            mainHandler.post(() -> {
-                holder.ivIcon.setImageResource(iconResId);
-                holder.tvName.setText(item.getName());
-                holder.tvSize.setText(sizeText);
-                holder.tvTime.setText(timeText);
-            });
         });
 
         // 修改后的点击监听器
-        holder.itemView.setOnClickListener(v -> {
-            if (isMultiSelectMode) {
-                // 多选模式下的点击：切换选中状态
-                toggleSelection(item);
-                return;
-            }
-            
-            // 禁用切换
-            ((MainActivity) context).canSwichActivePanel = false;
-            
-            if (!clickEnabled) return;
-            
-            // 防抖检查
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - lastClickTime < CLICK_DEBOUNCE_INTERVAL) {
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isMultiSelectMode) {
+                    // 多选模式下的点击：切换选中状态
+                    toggleSelection(item);
+                    return;
+                }
+                
+                // 禁用切换
                 ((MainActivity) context).canSwichActivePanel = false;
-                return;
+                
+                if (!clickEnabled) return;
+                
+                // 防抖检查
+                long currentTime = System.currentTimeMillis();
+                if (currentTime - lastClickTime < CLICK_DEBOUNCE_INTERVAL) {
+                    ((MainActivity) context).canSwichActivePanel = false;
+                    return;
+                }
+                lastClickTime = currentTime;
+                
+                if (listener != null) {
+                    listener.onItemClick(item);
+                }
+                
+                // 启用切换
+                ((MainActivity) context).canSwichActivePanel = true;
             }
-            lastClickTime = currentTime;
-            
-            if (listener != null) {
-                listener.onItemClick(item);
-            }
-            
-            // 启用切换
-            ((MainActivity) context).canSwichActivePanel = true;
         });
     }
 
