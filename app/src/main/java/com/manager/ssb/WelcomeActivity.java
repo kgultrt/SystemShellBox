@@ -1,3 +1,21 @@
+/*
+ * System Shell Box
+ * Copyright (C) 2025 kgultrt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 package com.manager.ssb;
 
 import android.Manifest;
@@ -25,6 +43,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.manager.ssb.adapter.WelcomePagerAdapter;
 import com.manager.ssb.core.config.Config;
 import com.manager.ssb.model.WelcomePage;
+import com.manager.ssb.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +68,8 @@ public class WelcomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
+        
+        Config.initialize();
         
         // 检查是否已经完成向导
         if (isWelcomeCompleted()) {
@@ -102,7 +123,7 @@ public class WelcomeActivity extends AppCompatActivity {
         
         // 欢迎页面
         pages.add(new WelcomePage(
-            android.R.drawable.ic_dialog_info,
+            R.drawable.ic_emoji_people,
             getString(R.string.welcome_title_1),
             getString(R.string.welcome_desc_1),
             false
@@ -110,7 +131,7 @@ public class WelcomeActivity extends AppCompatActivity {
         
         // 权限说明页面
         pages.add(new WelcomePage(
-            android.R.drawable.ic_dialog_info,
+            R.drawable.ic_info,
             getString(R.string.welcome_title_2),
             getString(R.string.welcome_desc_2),
             false
@@ -118,7 +139,7 @@ public class WelcomeActivity extends AppCompatActivity {
         
         // 功能特性页面
         pages.add(new WelcomePage(
-            android.R.drawable.ic_dialog_info,
+            R.drawable.ic_info,
             getString(R.string.welcome_title_3),
             getString(R.string.welcome_desc_3),
             false
@@ -126,7 +147,7 @@ public class WelcomeActivity extends AppCompatActivity {
         
         // 权限请求页面
         pages.add(new WelcomePage(
-            android.R.drawable.ic_dialog_info,
+            R.drawable.ic_info,
             getString(R.string.welcome_title_4),
             getString(R.string.welcome_desc_4),
             true
@@ -272,7 +293,7 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private void onGetStartedClicked() {
-        markWelcomeCompleted();
+        Config.set("isWelcomeCompleted", true);
         startMainActivity();
     }
 
@@ -284,14 +305,6 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private boolean isWelcomeCompleted() {
-        return getSharedPreferences("app_prefs", MODE_PRIVATE)
-                .getBoolean("welcome_completed", false);
-    }
-
-    private void markWelcomeCompleted() {
-        getSharedPreferences("app_prefs", MODE_PRIVATE)
-                .edit()
-                .putBoolean("welcome_completed", true)
-                .apply();
+        return Config.get("isWelcomeCompleted", false);
     }
 }

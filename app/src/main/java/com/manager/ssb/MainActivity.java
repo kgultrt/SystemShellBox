@@ -154,9 +154,7 @@ public class MainActivity extends AppCompatActivity {
         int currentBuildNumber = extractBuildNumber(getCurrentVersion());
 
         if (isFirst) {
-            // 首次启动显示欢迎对话框
-            showWelcomeDialog();
-            Config.set("isFirst", false);
+            // 设置当前版本号
             Config.set("lastBuildNumber", currentBuildNumber);
         } else if (currentBuildNumber > lastBuildNumber) {
             // 检测到新版本显示更新日志
@@ -185,16 +183,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             return "0.0.0-build0";
         }
-    }
-
-    // 显示欢迎对话框
-    private void showWelcomeDialog() {
-        new MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.welcome_title)
-            .setMessage(R.string.welcome_content)
-            .setPositiveButton(android.R.string.ok, null)
-            .setCancelable(false)
-            .show();
     }
     
     // 显示更新日志对话框
