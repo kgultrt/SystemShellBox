@@ -19,20 +19,40 @@
 package com.manager.ssb.model;
 
 public class WelcomePage {
+    public static final int TYPE_STANDARD = 0;
+    public static final int TYPE_LICENSE = 1;
+    public static final int TYPE_PERMISSION = 2;
+    public static final int TYPE_COMPLETE = 3;
+    
     private final int illustrationRes;
     private final String title;
     private final String description;
-    private final boolean requiresAction;
+    private final int pageType;
+    private final String subtitle;
 
-    public WelcomePage(int illustrationRes, String title, String description, boolean requiresAction) {
+    public WelcomePage(int illustrationRes, String title, String description, int pageType) {
         this.illustrationRes = illustrationRes;
         this.title = title;
         this.description = description;
-        this.requiresAction = requiresAction;
+        this.pageType = pageType;
+        this.subtitle = "";
+    }
+
+    public WelcomePage(int illustrationRes, String title, String subtitle, String description, int pageType) {
+        this.illustrationRes = illustrationRes;
+        this.title = title;
+        this.subtitle = subtitle;
+        this.description = description;
+        this.pageType = pageType;
     }
 
     public int getIllustrationRes() { return illustrationRes; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
-    public boolean requiresAction() { return requiresAction; }
+    public int getPageType() { return pageType; }
+    public String getSubtitle() { return subtitle; }
+    public boolean isLicensePage() { return pageType == TYPE_LICENSE; }
+    public boolean isPermissionPage() { return pageType == TYPE_PERMISSION; }
+    public boolean isCompletePage() { return pageType == TYPE_COMPLETE; }
+    public boolean isStandardPage() { return pageType == TYPE_STANDARD; }
 }

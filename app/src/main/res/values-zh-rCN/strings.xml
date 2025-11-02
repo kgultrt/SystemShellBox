@@ -47,6 +47,21 @@
     <string name="permission_rationale_detail">某些功能需要存储权限才能正常工作。请授予权限以获得完整体验。</string>
     <string name="skip_for_now">暂时跳过</string>
 
+    <string name="english">English</string>
+    <string name="chinese">中文</string>
+    <string name="license_title">GNU通用公共许可证 v3.0</string>
+    <string name="permission_title">所需权限</string>
+    <string name="permission_desc">为了正常使用应用功能，需要以下权限：</string>
+    <string name="complete_title">准备就绪</string>
+    <string name="complete_desc">所有设置已完成，您可以开始使用 System Shell Box 了！</string>
+    <string name="storage_permission_title">存储权限</string>
+    <string name="storage_permission_desc">用于访问设备存储，管理文件和文件夹</string>
+    <string name="notification_permission_title">通知权限</string>
+    <string name="notification_permission_desc">用于显示应用状态和操作结果的通知</string>
+    <string name="permission_granted">权限已授予</string>
+    <string name="grant_permissions">授予权限</string>
+    <string name="license_load_error">无法加载许可证文本</string>
+
     <string name="settings_follow">跟随系统</string>
     <string name="settings_enable">启用</string>
     <string name="settings_disable">禁用</string>

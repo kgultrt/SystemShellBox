@@ -21,4 +21,10 @@
     
     <color name="panel_highlight">#1AFFFFFF</color>
     <color name="item_hover">#0A000000</color>
+    
+    <color name="cardBackground">#F5F5F5</color>
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FF9800</color>
+    <color name="textPrimary">#212121</color>
+    <color name="textSecondary">#757575</color>
 </resources>

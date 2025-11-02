@@ -1,0 +1,12 @@
+{
+    "appName": "System Shell Box",
+    "appearance": {
+        "theme": "system"
+    },
+    "general": {
+        "language": "system"
+    },
+    "notifications": {
+        "enabled": true
+    }
+}

@@ -35,6 +35,7 @@ import java.util.concurrent.*;
 public class Config {
     private static final String TAG = "Config";
     private static final String CONFIG_PATH = "config/config.json";
+    private static final String ASSETS_CONFIG_PATH = "config/config.json";
     
     private static final AtomicReference<JsonObject> rootConfig = new AtomicReference<>(new JsonObject());
     private static final ConcurrentHashMap<String, Object> configCache = new ConcurrentHashMap<>();
@@ -79,7 +80,11 @@ public class Config {
                 synchronized (configLock) {
                     try {
                         if (!configFile.exists()) {
-                            createDefaultConfig();
+                            // 先尝试从assets复制默认配置
+                            if (!copyConfigFromAssets()) {
+                                // 如果复制失败，创建默认配置
+                                createDefaultConfig();
+                            }
                             return;
                         }
 
@@ -115,6 +120,59 @@ public class Config {
         });
     }
 
+    /**
+     * 从assets目录复制配置文件
+     */
+    private static boolean copyConfigFromAssets() {
+        Context context = Application.getAppContext();
+        try {
+            // 检查assets中是否存在配置文件
+            InputStream assetsStream = null;
+            try {
+                assetsStream = context.getAssets().open(ASSETS_CONFIG_PATH);
+            } catch (FileNotFoundException e) {
+                Log.w(TAG, "No config file found in assets: " + ASSETS_CONFIG_PATH);
+                return false;
+            }
+            
+            // 从assets复制配置文件
+            try (InputStream is = assetsStream;
+                 FileOutputStream fos = new FileOutputStream(configFile);
+                 OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+                 BufferedWriter writer = new BufferedWriter(osw)) {
+                
+                // 读取assets中的配置文件内容
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+                
+                // 写入到应用配置目录
+                writer.write(sb.toString());
+                writer.flush();
+                
+                Log.i(TAG, "Config file copied from assets successfully");
+                
+                // 重新加载配置
+                String jsonContent = sb.toString();
+                JsonObject newConfig = gson.fromJson(jsonContent, JsonObject.class);
+                if (newConfig != null) {
+                    rootConfig.set(newConfig);
+                    configCache.clear();
+                    return true;
+                } else {
+                    Log.e(TAG, "Failed to parse config from assets");
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to copy config from assets", e);
+            return false;
+        }
+    }
+
     private static void createDefaultConfig() {
         synchronized (configLock) {
             try {
@@ -126,6 +184,7 @@ public class Config {
                 saveConfigInternal(gson.toJson(defaultConfig));
                 rootConfig.set(defaultConfig);
                 configCache.clear();
+                Log.i(TAG, "Default config created successfully");
             } catch (Exception e) {
                 Log.e(TAG, "Failed to create default config", e);
             } finally {

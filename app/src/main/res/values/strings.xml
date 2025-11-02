@@ -49,6 +49,22 @@
     <string name="permission_rationale_detail">Some features require storage permissions to work properly. Please grant permissions for the full experience.</string>
     <string name="skip_for_now">Skip for Now</string>
 
+    <string name="english">English</string>
+    <string name="chinese">中文</string>
+    
+    <string name="license_title">GNU General Public License v3.0</string>
+    <string name="permission_title">Required Permissions</string>
+    <string name="permission_desc">In order to use the application function normally, the following permissions are required:</string>
+    <string name="complete_title">Be Ready</string>
+    <string name="complete_desc">Everything is set up and you are ready to start using the System Shell Box!</string>
+    <string name="storage_permission_title">Storage Permission</string>
+    <string name="storage_permission_desc">Used to access device storage and manage files and folder</string>
+    <string name="notification_permission_title">Notification Permission</string>
+    <string name="notification_permission_desc">Notification for displaying application status and operation result</string>
+    <string name="permission_granted">Permission granted</string>
+    <string name="grant_permissions">Grant Permission</string>
+    <string name="license_load_error">Unable to load license text</string>
+
     <string name="settings_follow">Follow System</string>
     <string name="settings_enable">Enable</string>
     <string name="settings_disable">Disadle</string>
