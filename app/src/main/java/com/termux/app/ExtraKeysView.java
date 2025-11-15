@@ -22,7 +22,7 @@ import android.widget.GridLayout;
 import android.widget.PopupWindow;
 import android.widget.ToggleButton;
 
-import com.termux.app.R;
+import com.manager.ssb.R;
 import com.termux.terminal.TerminalSession;
 import com.termux.view.TerminalView;
 
