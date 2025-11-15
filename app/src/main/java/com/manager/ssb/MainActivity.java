@@ -56,6 +56,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.manager.ssb.Application;
 import com.manager.ssb.adapter.FileAdapter;
 import com.manager.ssb.enums.ActivePanel;
+import com.manager.ssb.enums.Sence;
 import com.manager.ssb.core.FileOpener;
 import com.manager.ssb.core.task.NotifyingExecutorService;
 import com.manager.ssb.core.task.TaskNotificationManager;
@@ -63,6 +64,7 @@ import com.manager.ssb.core.task.TaskTypes;
 import com.manager.ssb.core.config.Config;
 import com.manager.ssb.core.function.FileLongClickHandler;
 import com.manager.ssb.core.function.BottomMenuClickListener;
+import com.manager.ssb.core.compress.CompressFileManager;
 import com.manager.ssb.databinding.ActivityMainBinding;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.settings.SettingsActivity;
@@ -99,8 +101,11 @@ public class MainActivity extends AppCompatActivity {
     private static final int MANAGE_EXTERNAL_STORAGE_REQUEST_CODE = 1002;
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1003;
     private final Map<Integer, Runnable> menuActionMap = new HashMap<>();
+    private CompressFileManager compressFileManager;
     
     public ActivePanel activePanel = ActivePanel.LEFT;
+    public Sence leftPanelSence = Sence.FILE;
+    public Sence rightPanelSence = Sence.FILE;
     public FileAdapter adapterLeft;
     public FileAdapter adapterRight;
     public boolean canSwichActivePanel = true;
@@ -129,6 +134,8 @@ public class MainActivity extends AppCompatActivity {
             notificationManager,
             TaskTypes.MONITORED_TASKS
         );
+        
+        compressFileManager = new CompressFileManager(this, executorService);
 
         initApp();
     }
@@ -223,6 +230,7 @@ public class MainActivity extends AppCompatActivity {
             item -> handleItemClick(item, ActivePanel.LEFT),
             (item, view) -> longClickHandler.handle(item, view, ActivePanel.LEFT),
             "left",
+            Sence.FILE,
             executorService,
             mainHandler
         );
@@ -236,6 +244,7 @@ public class MainActivity extends AppCompatActivity {
             item -> handleItemClick(item, ActivePanel.RIGHT),
             (item, view) -> longClickHandler.handle(item, view, ActivePanel.RIGHT),
             "right",
+            Sence.FILE,
             executorService,
             mainHandler
         );
@@ -284,9 +293,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     
-    private void updatePathDisplay() {
-        // boolean isMultiSelect = adapterLeft.isMultiSelectMode() || adapterRight.isMultiSelectMode();
-        String displayText = getCurrentDirectory().getAbsolutePath();
+    public void updatePathDisplay() {
+        String displayText;
+        
+        // 检查是否在压缩文件浏览模式
+        if (compressFileManager.isInCompressMode(activePanel)) {
+            String compressPath = compressFileManager.getCurrentCompressPath(activePanel);
+            String compressFile = compressFileManager.getCurrentCompressFilePath(activePanel);
+            displayText = "zip:" + compressFile + (compressPath.isEmpty() ? "" : "/" + compressPath);
+        } else {
+            displayText = getCurrentDirectory().getAbsolutePath();
+        }
+        
         binding.tvCurrentPath.setText(displayText);
     }
 
@@ -311,7 +329,7 @@ public class MainActivity extends AppCompatActivity {
         if (panel == activePanel) updatePathDisplay();
     }
 
-    private void updateFileList(List<FileItem> newItems, ActivePanel panel) {
+    public void updateFileList(List<FileItem> newItems, ActivePanel panel) {
         switch (panel) {
             case LEFT:
                 updateSingleList(fileListLeft, newItems, adapterLeft);
@@ -330,6 +348,12 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void handleItemClick(FileItem item, ActivePanel panel) {
+        // 检查是否在压缩文件浏览模式
+        if (compressFileManager.isInCompressMode(panel)) {
+            compressFileManager.handleCompressItemClick(item, panel);
+            return;
+        }
+        
         if (item.isDirectory()) {
             File newDir = item.getFile();
             loadDirectory(newDir, panel);
@@ -627,6 +651,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     
+    public Sence getCurrentSence() {
+        if (activePanel == ActivePanel.LEFT) {
+            return adapterLeft.getSence();
+        } else {
+            return adapterRight.getSence();
+        }
+    }
+    
+    public CompressFileManager getCompressFileManager() {
+        return compressFileManager;
+    }
+    
     public void loadDirectory(File directory, ActivePanel panel) {
         executorService.submit(() -> {
             List<FileItem> newItems = new ArrayList<>();
@@ -665,8 +701,13 @@ public class MainActivity extends AppCompatActivity {
     }
     
     public void onBackPressedCall() {
+        // 如果当前在压缩文件浏览模式，先退出压缩文件
+        if (compressFileManager.isInCompressMode(activePanel)) {
+            compressFileManager.exitCompressFile(activePanel);
+            return;
+        }
+        
         File willLoad;
-
         switch (activePanel) {
             case LEFT:
                 willLoad = currentDirectoryLeft.getParentFile();

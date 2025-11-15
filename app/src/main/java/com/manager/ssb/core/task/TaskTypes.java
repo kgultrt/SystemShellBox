@@ -30,6 +30,7 @@ public final class TaskTypes {
     public static final String DELETE_FILE = "task_DeleteFile";
     public static final String MOVE_FILE = "task_MoveFile";
     public static final String COPY_FILE = "task_CopyFile";
+    public static final String FILE_OPERATION = "task_FileOperation";
 
     // 监控任务白名单
     public static final Set<String> MONITORED_TASKS = Set.of(
@@ -39,7 +40,8 @@ public final class TaskTypes {
         RENAME_FILE,
         DELETE_FILE,
         MOVE_FILE,
-        COPY_FILE
+        COPY_FILE,
+        FILE_OPERATION
     );
 
     private TaskTypes() {

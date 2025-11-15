@@ -41,6 +41,7 @@ import com.manager.ssb.R;
 import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.FileType;
 import com.manager.ssb.MainActivity;
+import com.manager.ssb.enums.Sence;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -89,6 +90,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     private Handler longPressHandler = new Handler();
     private Runnable longPressRunnable;
     private boolean isLongPressTriggered = false;
+    private Sence sence;
 
     public void setClickEnabled(boolean enabled) {
         this.clickEnabled = enabled;
@@ -156,17 +158,28 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
     public int getSelectedCount() {
         return selectedItems.size();
     }
+    
+    public Sence getSence() {
+        return sence;
+    }
+    
+    public void setSence(Sence sence) {
+        this.sence = sence;
+        notifyDataSetChanged();
+    }
 
     public FileAdapter(List<FileItem> fileList, 
                        OnItemClickListener listener,
                        OnItemLongClickListener longClickListener,
                        String panel,
+                       Sence sence,
                        ExecutorService executorService, 
                        Handler mainHandler) {
         this.fileList = fileList;
         this.listener = listener;
         this.longClickListener = longClickListener;
         this.panel = panel;
+        this.sence = sence;
         this.executorService = executorService;
         this.mainHandler = mainHandler;
         

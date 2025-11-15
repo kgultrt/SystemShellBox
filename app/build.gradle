@@ -1,6 +1,6 @@
 plugins {
     id 'com.android.application'
-    alias(libs.plugins.compose.compiler)
+    id 'org.jetbrains.kotlin.plugin.compose' version '2.1.10'
 }
 
 android {
@@ -231,15 +231,24 @@ android {
 }
 
 dependencies {
+    // AndroidX 核心库
     implementation 'androidx.activity:activity:1.6.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation libs.preference
-    implementation libs.annotation
+    implementation 'androidx.preference:preference:1.0.0'
+    implementation 'androidx.annotation:annotation:1.9.1'
     
-    implementation("com.google.android.material:material:1.9.0")
-    implementation("com.google.code.gson:gson:2.8.8")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    // Google Material 设计
+    implementation 'com.google.android.material:material:1.9.0'
+    
+    // JSON 处理
+    implementation 'com.google.code.gson:gson:2.8.8'
+    
+    // 布局
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    
+    // WebView
     implementation 'androidx.webkit:webkit:1.7.0'
     
+    // 项目模块
     api project(":terminal-view")
 }
