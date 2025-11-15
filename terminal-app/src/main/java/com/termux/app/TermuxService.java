@@ -21,8 +21,8 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
-import com.manager.ssb.R;
-import com.manager.ssb.Application;
+import com.termux.app.R;
+import com.termux.app.Application;
 
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalSession;

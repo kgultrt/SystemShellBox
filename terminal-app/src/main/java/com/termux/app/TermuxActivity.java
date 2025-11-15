@@ -45,7 +45,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.manager.ssb.R;
+import com.termux.app.R;
 import com.termux.terminal.EmulatorDebug;
 import com.termux.terminal.TerminalColors;
 import com.termux.terminal.TerminalSession;
@@ -69,8 +69,6 @@ import androidx.annotation.Nullable;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
-
-import com.manager.ssb.core.term.TerminalInstaller;
 
 /**
  * A terminal emulator activity.
@@ -489,32 +487,17 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
         if (mTermService.getSessions().isEmpty()) {
             if (mIsVisible) {
-                    TerminalInstaller.installCheck(TermuxActivity.this, new TerminalInstaller.InstallCallback() {
-                        @Override
-                        public void onInstallFinished(Boolean isFirst) {
-                            // 启动终端逻辑
-                            if (isFirst) finish();
-                            if (mTermService == null) return; // Activity might have been destroyed.
-                            try {
-                                Bundle bundle = getIntent().getExtras();
-                                boolean launchFailsafe = false;
-                                if (bundle != null) {
-                                    launchFailsafe = bundle.getBoolean(TERMUX_FAILSAFE_SESSION_ACTION, false);
-                                }
-                                addNewSession(launchFailsafe, null);
-                            } catch (WindowManager.BadTokenException e) {
-                                // Activity finished - ignore.
-                            }
-                        }
-
-                        @Override
-                        public void onInstallFailed(String reason) {
-                            runOnUiThread(() -> 
-                                Toast.makeText(TermuxActivity.this, reason, Toast.LENGTH_LONG).show()
-                            );
-                            finish();
-                        }
-                    });
+                if (mTermService == null) return; // Activity might have been destroyed.
+                try {
+                    Bundle bundle = getIntent().getExtras();
+                    boolean launchFailsafe = false;
+                    if (bundle != null) {
+                        launchFailsafe = bundle.getBoolean(TERMUX_FAILSAFE_SESSION_ACTION, false);
+                    }
+                    addNewSession(launchFailsafe, null);
+                } catch (WindowManager.BadTokenException e) {
+                    // Activity finished - ignore.
+                }
             } else {
                 // The service connected while not in foreground - just bail out.
                 finish();
