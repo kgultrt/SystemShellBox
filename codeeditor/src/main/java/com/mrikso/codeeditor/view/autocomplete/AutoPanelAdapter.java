@@ -18,7 +18,7 @@ import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.manager.ssb.R;
+import com.mrikso.codeeditor.R;
 import com.mrikso.codeeditor.util.Flag;
 import com.mrikso.codeeditor.view.FreeScrollingTextField;
 

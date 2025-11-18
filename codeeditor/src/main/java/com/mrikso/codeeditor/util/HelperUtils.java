@@ -9,7 +9,7 @@ import android.util.TypedValue;
 
 import androidx.core.content.ContextCompat;
 
-import com.manager.ssb.R;
+import com.mrikso.codeeditor.R;
 
 public class HelperUtils {
 

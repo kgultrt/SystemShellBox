@@ -251,4 +251,5 @@ dependencies {
     
     // 项目模块
     api project(":terminal-view")
+    api project(":codeeditor")
 }

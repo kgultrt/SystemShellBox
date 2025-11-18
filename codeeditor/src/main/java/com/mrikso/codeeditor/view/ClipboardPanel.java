@@ -11,7 +11,7 @@ import android.view.View;
 
 import androidx.annotation.RequiresApi;
 
-import com.manager.ssb.R;
+import com.mrikso.codeeditor.R;
 
 public class ClipboardPanel {
     protected FreeScrollingTextField _textField;

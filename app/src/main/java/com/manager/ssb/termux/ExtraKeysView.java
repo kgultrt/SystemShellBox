@@ -1,4 +1,4 @@
-package com.termux.app;
+package com.manager.ssb.termux;
 
 import android.content.Context;
 import android.os.Build;

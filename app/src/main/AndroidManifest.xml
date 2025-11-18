@@ -79,7 +79,7 @@
 
         <!-- termux -->
         <activity
-            android:name="com.termux.app.TermuxActivity"
+            android:name="com.manager.ssb.termux.TermuxActivity"
             android:label="@string/application_name"
             android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
             android:launchMode="singleTask"
@@ -93,7 +93,7 @@
         </activity>
 
         <service
-            android:name="com.termux.app.TermuxService"
+            android:name="com.manager.ssb.termux.TermuxService"
             android:exported="false" />
 
         <provider

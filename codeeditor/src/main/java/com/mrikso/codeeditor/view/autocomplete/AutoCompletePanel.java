@@ -11,7 +11,7 @@ import android.widget.Filter;
 import android.widget.ListPopupWindow;
 import android.widget.TextView;
 
-import com.manager.ssb.R;
+import com.mrikso.codeeditor.R;
 import com.mrikso.codeeditor.lang.Language;
 import com.mrikso.codeeditor.lang.LanguageNonProg;
 import com.mrikso.codeeditor.view.FreeScrollingTextField;

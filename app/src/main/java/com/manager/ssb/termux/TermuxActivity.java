@@ -1,4 +1,4 @@
-package com.termux.app;
+package com.manager.ssb.termux;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -84,7 +84,7 @@ import com.manager.ssb.core.term.TerminalInstaller;
  */
 public final class TermuxActivity extends Activity implements ServiceConnection {
 
-    public static final String TERMUX_FAILSAFE_SESSION_ACTION = "com.termux.app.failsafe_session";
+    public static final String TERMUX_FAILSAFE_SESSION_ACTION = "com.manager.ssb.termux.failsafe_session";
 
     private static final int CONTEXTMENU_SELECT_URL_ID = 0;
     private static final int CONTEXTMENU_SHARE_TRANSCRIPT_ID = 1;
@@ -99,7 +99,7 @@ public final class TermuxActivity extends Activity implements ServiceConnection 
 
     private static final int REQUESTCODE_PERMISSION_STORAGE = 1234;
 
-    private static final String RELOAD_STYLE_ACTION = "com.termux.app.reload_style";
+    private static final String RELOAD_STYLE_ACTION = "com.manager.ssb.termux.reload_style";
 
     /** The main view of the activity showing the terminal. Initialized in onCreate(). */
     @SuppressWarnings("NullableProblems")

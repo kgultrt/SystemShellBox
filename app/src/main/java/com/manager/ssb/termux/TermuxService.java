@@ -1,4 +1,4 @@
-package com.termux.app;
+package com.manager.ssb.termux;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;

@@ -478,7 +478,7 @@ public class MainActivity extends AppCompatActivity {
     private void startTerminal() {
         // 启动终端逻辑
         try {
-            Intent intent = new Intent(MainActivity.this, Class.forName("com.termux.app.TermuxActivity"));
+            Intent intent = new Intent(MainActivity.this, Class.forName("com.manager.ssb.termux.TermuxActivity"));
             startActivity(intent);
         } catch (ClassNotFoundException e) {
             showToast(getString(R.string.error));
