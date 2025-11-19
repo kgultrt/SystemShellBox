@@ -141,15 +141,29 @@ public final class BackgroundJob {
         environment.add("TERM=xterm-256color");
         environment.add("HOME=" + TermuxService.HOME_PATH);
         environment.add("PREFIX=" + TermuxService.PREFIX_PATH);
-        environment.add("BOOTCLASSPATH=" + System.getenv("BOOTCLASSPATH"));
-        environment.add("ANDROID_ROOT=" + System.getenv("ANDROID_ROOT"));
-        environment.add("ANDROID_DATA=" + System.getenv("ANDROID_DATA"));
-        // EXTERNAL_STORAGE is needed for /system/bin/am to work on at least
-        // Samsung S7 - see https://plus.google.com/110070148244138185604/posts/gp8Lk3aCGp3.
-        environment.add("EXTERNAL_STORAGE=" + System.getenv("EXTERNAL_STORAGE"));
-        // ANDROID_RUNTIME_ROOT and ANDROID_TZDATA_ROOT are required for `am` to run on Android Q
+        
         addToEnvIfPresent(environment, "ANDROID_RUNTIME_ROOT");
         addToEnvIfPresent(environment, "ANDROID_TZDATA_ROOT");
+        
+        addToEnvIfPresent(environment, "ANDROID_ASSETS");
+        addToEnvIfPresent(environment, "ANDROID_DATA");
+        addToEnvIfPresent(environment, "ANDROID_ROOT");
+        addToEnvIfPresent(environment, "ANDROID_STORAGE");
+
+        addToEnvIfPresent(environment, "EXTERNAL_STORAGE");
+        addToEnvIfPresent(environment, "ASEC_MOUNTPOINT");
+        addToEnvIfPresent(environment, "LOOP_MOUNTPOINT");
+
+        addToEnvIfPresent(environment, "ANDROID_RUNTIME_ROOT");
+        addToEnvIfPresent(environment, "ANDROID_ART_ROOT");
+        addToEnvIfPresent(environment, "ANDROID_I18N_ROOT");
+        addToEnvIfPresent(environment, "ANDROID_TZDATA_ROOT");
+
+        addToEnvIfPresent(environment, "BOOTCLASSPATH");
+        addToEnvIfPresent(environment, "DEX2OATBOOTCLASSPATH");
+        addToEnvIfPresent(environment, "SYSTEMSERVERCLASSPATH");
+        
+        
         if (failSafe) {
             // Keep the default path so that system binaries can be used in the failsafe session.
             environment.add("PATH= " + System.getenv("PATH"));
