@@ -159,14 +159,16 @@ public class MainActivity extends AppCompatActivity {
         boolean isFirst = Config.get("isFirst", true);
         int lastBuildNumber = Config.get("lastBuildNumber", 0);
         int currentBuildNumber = extractBuildNumber(getCurrentVersion());
-
-        // 设置当前版本号
-        Config.set("lastBuildNumber", currentBuildNumber);
         
         if (currentBuildNumber > lastBuildNumber) {
-            // 检测到新版本显示更新日志
-            showUpdateDialog(currentBuildNumber);
-            Config.set("lastBuildNumber", currentBuildNumber);
+            if (lastBuildNumber == 0) {
+                //do nothing
+            } else {
+                // 检测到新版本显示更新日志
+                showUpdateDialog(currentBuildNumber);
+                // 设置当前版本号
+                Config.set("lastBuildNumber", currentBuildNumber);
+            }
         }
     }
     
@@ -361,6 +363,8 @@ public class MainActivity extends AppCompatActivity {
             hs.addToHistory(newDir.getAbsolutePath());
         } else {
             FileOpener.openFile(this, item.getPath(), item.getName());
+            BottomMenuClickListener hs = new BottomMenuClickListener(this);
+            hs.addToHistory(item.getPath());
         }
     }
 
