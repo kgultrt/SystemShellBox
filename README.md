@@ -1,77 +1,72 @@
-[View the English version of this document](README_EN.md)
+[查看此文档的中文版本](README_CN.md)
 
 # System Shell Box
 
-## 这是什么？
+## What is this?
 
-**System Shell Box (SSB)** 是一个免费开源的文件管理工具，设计灵感来源于MT管理器，但完全基于终端模拟器实现核心功能。  
-📦 本项目旨在为用户提供一个**轻量、可扩展**的MT管理器付费功能替代解决方案，无需依赖闭源功能。
-在此声明: 本应用立志于成为一个开发工具，反编译也许会支持，但不会太多
+**System Shell Box (SSB)** is a free and open-source file management tool inspired by MT Manager, but with core functionalities fully implemented via a terminal emulator.  
+📦 This project aims to provide users with a **lightweight and extensible** alternative to MT Manager's paid features, without relying on closed-source components.
 
-**注意**: 此应用目前还处于早期，功能相当不完善
+**Note**: This app is currently in early development and lacks many features.
 
-🎓 低维护状态警告：目前维护者马上快高中住校了，预计更新频率较低（约每学期1-2次）。但只要抽空，一定会积极维护，感谢您的理解与耐心！
+🎓 Low Maintenance Status Warning: The maintainer is will in high school residence and is expected to be updated less frequently (about 1-2 times per semester). But as long as time, I will actively maintain, thank you for your understanding and patience!
 
-## 项目演示
+## Project Presentation
 
-![项目演示](./demo.gif)
+![Project Presentation](./demo.gif)
 
-## 如何构建？
+## How to Build?
 
-### 步骤
-1. 克隆仓库：
+### Steps
+1. Clone the repository:
    ```bash
    git clone https://github.com/kgultrt/SystemShellBox
    ```
+2. Open keystore.properties.sample, modify its contents, configure your signature file, and change the file name to keystore.properties
 
-2. 打开 keystore.properties.sample，修改其内容，并配置你的签名文件，并把文件名更改为keystore.properties
-
-3. 使用 Android Studio 或命令行构建：
+3. Build using Android Studio or command line (do NOT use b.sh):
    ```bash
    ./gradlew assembleDebug
    ```
 
-## 如何贡献？
+## How to Contribute?
 
-若您发现了一个bug，您可以创建一个PR/开启一个Issets
+If you find a bug, you can create a PR/open an Issets
+Thank you very much for your contribution.
 
-十分感谢你的贡献
+Give me the money: Not required, but greatly appreciated if you'd like to support the project. (Donation methods not yet available)
 
-打钱: 不是必要的，但非常感谢你能捐赠支持。 (捐赠方式暂时不提供)
+## License
 
-## 开源协议
+This project is licensed under the [GNU General Public License v3.0](LICENSE.txt) (GPLv3).
 
-本项目自首次公开发布起，采用 [GNU 通用公共许可证第 3 版](LICENSE.txt)（GPLv3）进行授权。
+You are free to use, modify, and distribute this software, provided that:
+- You must make the source code of any distributed version (original or modified) available under the same GPLv3 license;
+- You must retain proper attribution to the original author;
+- You may not impose additional restrictions, nor use the code in any proprietary or closed-source form;
+- Any derivative work must also be licensed under GPLv3.
 
-您可以自由使用、修改和分发本项目的全部或部分代码，但必须遵守以下条件：
+Important context:  
+This project was originally developed under the MIT License during its private development stage, but it was never publicly released under that license. As the project has not been previously published, the current and all future public releases are fully licensed under GPLv3. All previous commits are retroactively re-licensed under GPLv3.
 
-- 必须在分发时同时提供源代码；
-- 必须保留原作者的署名与本许可证文本；
-- 所有基于本项目的修改版本，亦必须在相同许可证下发布（即必须同样采用 GPLv3）；
-- 不得将本项目或其衍生版本闭源、商业化或以任何形式添加专有条款进行再分发。
+I take this licensing choice seriously to protect the project’s integrity and to prevent abuse through repackaging, commercialization, or the addition of advertisements behind paywalls.
 
-本项目原始开发阶段采用 MIT 协议进行标注，但在正式公开源代码前，项目始终处于私有状态，并**未以 MIT 协议形式发布过任何版本**。因此，自首个公开版本起，整个代码库（包括历史提交）视为统一在 GPLv3 协议下授权，并不再适用于 MIT 协议。
+Please respect this license when using or distributing this project. Forks, modified versions, or redistributed binaries must also comply with GPLv3 and be released with full source code.
 
-特别说明：
+I appreciate contributions from the open-source community and welcome any questions or discussions regarding licensing via GitHub Issues.
 
-- 任何从本项目 Fork 的代码、发布的衍生应用或修改版本，必须同样在 GPLv3 下公开其完整源代码；
-- 本项目明确反对将其用于魔改、闭源、插入广告或付费墙的再发布行为；
-- 本项目的发布目的是服务开发者社群，不欢迎任何企图将其转为牟利产品的行为。
-
-我感谢开源社区的贡献，并希望您在遵守协议的前提下，充分使用并贡献本项目。如果您有任何有关许可证的问题，欢迎通过 Issues 联系我进行探讨。
-
-## 使用的项目
+## Used Projects
 [termux-app - GPLv3 and Apache 2.0](https://github.com/termux/termux-app)
 
 [ApkSignatureKillerEx - No LICENSE](https://github.com/L-JINBIN/ApkSignatureKillerEx)
 
 [CodeEditor - GPLv3](https://github.com/MrIkso/CodeEditor)
 
-因为使用项目的方式有点特殊，在此明确一下这些项目的代码到底在哪里:
+Because the way projects are used is a bit special, let's clarify where the code for these projects is:
 
 termux-app:
 
-app/src/main/java/com/termux/app/\* (GPLv3)
+app/src/main/java/com/manager/ssb/termux/\* (GPLv3)
 
 terminal-view/\* (Apache 2.0)
 
@@ -87,31 +82,31 @@ app/src/main/java/com/manager/ssb/util/SignatureVerify.java (No LICENSE)
 
 CodeEditor:
 
-app/src/main/java/com/mrikso/codeeditor/\* (GPLv3)
+codeeditor/src/main/java/com/mrikso/codeeditor/\* (GPLv3)
 
 
-期间为了适配性对代码做了些许的更改，请自行查阅。
+Some changes have been made to the code during this period for the sake of adaptability. Please check it yourself.
 
-## 提醒
-**本项目完全免费，**若您是**付费**购买的此软件，**请退款。**
+## Important Notice
+**This project is completely free.** If you **paid** for this software, **request a refund immediately.**
 
-并且从发行版页面**免费**下载此应用。
+Download the app for **free** from the Releases page.
 
-## 版本号管理
+## Version number management
 
-项目使用本地构建号文件 (`buildNumber.txt`) 来跟踪调试版本的构建次数。
+The project uses a local build number file (`buildNumber.txt`) to track the number of builds of the debug version.
 
-此文件不会提交到版本控制，每个开发者有自己的构建计数。
+This file is not committed to version control and each developer has their own build count.
 
-## 常见问题
-1. 为什么这么多 auto commit?
+## FAQ
+1. Why so many auto-commits?
 
-这是我使用 b.sh 的结果，请放心，项目之后就会有详细的提交信息了，不会这样
+This is a result of using b.sh. Rest assured, future commits will have proper messages.
 
-2. 为什么提交人github没有头像？
+2. Why do some committers lack GitHub avatars?
 
-这是我的 git 配置问题，之后不会再有了
+This was due to a git configuration issue and will not happen again.
 
-3. 我想要新功能！
+3. I want a new feature!
 
-请在 Issues 提交一个问题，我会看到的
+Please open an Issue to request features. I'll review them.
