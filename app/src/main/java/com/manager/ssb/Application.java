@@ -1,3 +1,20 @@
+/*
+ * System Shell Box
+ * Copyright (C) 2025-2026 kgultrt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
 package com.manager.ssb;
 
 import android.content.Context;
@@ -26,11 +43,11 @@ public class Application extends android.app.Application {
         return instance;
     }
     
-    public static String get(@StringRes int stringRes) {
+    public static String getStringQuick(@StringRes int stringRes) {
         return instance.getString(stringRes);
     }
     
-    public static String get(@StringRes int stringRes, Object... formatArgs) {
+    public static String getStringQuick(@StringRes int stringRes, Object... formatArgs) {
         return instance.getString(stringRes, formatArgs);
     }
 

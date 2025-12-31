@@ -1,6 +1,6 @@
 /*
  * System Shell Box
- * Copyright (C) 2025 kgultrt
+ * Copyright (C) 2025-2026 kgultrt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -163,28 +163,28 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void setLightTheme() {
-        textEditor.setTextColor(Color.BLACK);
-        textEditor.setBackgroundColor(Color.WHITE);
-        textEditor.setCommentColor(Color.GRAY);
-        textEditor.setKeywordColor(Color.BLUE);
-        textEditor.setBaseWordColor(Color.DKGRAY);
-        textEditor.setStringColor(Color.RED);
-        textEditor.setTextHighlightColor(Color.argb(255, 0, 120, 215));
+        // textEditor.setTextColor(Color.BLACK);
+        // textEditor.setBackgroundColor(Color.WHITE);
+        // textEditor.setCommentColor(Color.GRAY);
+        // textEditor.setKeywordColor(Color.BLUE);
+        // textEditor.setBaseWordColor(Color.DKGRAY);
+        // textEditor.setStringColor(Color.RED);
+        // textEditor.setTextHighlightColor(Color.argb(255, 0, 120, 215));
     }
     
     private void setDarkTheme() {
-        textEditor.setTextColor(Color.WHITE);
-        textEditor.setBackgroundColor(Color.BLACK);
-        textEditor.setCommentColor(Color.LTGRAY);
-        textEditor.setKeywordColor(Color.CYAN);
-        textEditor.setBaseWordColor(Color.LTGRAY);
-        textEditor.setStringColor(Color.MAGENTA);
-        textEditor.setTextHighlightColor(Color.argb(255, 100, 180, 255));
+        // textEditor.setTextColor(Color.WHITE);
+        // textEditor.setBackgroundColor(Color.BLACK);
+        // textEditor.setCommentColor(Color.LTGRAY);
+        // textEditor.setKeywordColor(Color.CYAN);
+        // textEditor.setBaseWordColor(Color.LTGRAY);
+        // textEditor.setStringColor(Color.MAGENTA);
+        // textEditor.setTextHighlightColor(Color.argb(255, 100, 180, 255));
     }
     
     private void applyFontSize() {
-        int fontSize = Config.get(KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
-        textEditor.setTextSize(fontSize);
+        // int fontSize = Config.get(KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+        // textEditor.setTextSize(fontSize);
     }
     
     private void applyKeyBindings() {

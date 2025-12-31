@@ -1,6 +1,6 @@
 /*
  * System Shell Box
- * Copyright (C) 2025 kgultrt
+ * Copyright (C) 2025-2026 kgultrt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -415,9 +415,18 @@ public class TerminalInstaller {
                 updateProgress(g(R.string.term_install_e), 10);
                 Log.d(TAG, "Starting extraction from: " + zipFile.getAbsolutePath());
                 
+                // 创建ProgressUpdater来显示解压的文件名
+                ProgressUpdater progressUpdater = new ProgressUpdater() {
+                    @Override
+                    public void update(int progress, String status) {
+                        updateProgress(status, progress);
+                    }
+                };
+                
                 boolean result = extractZip(new FileInputStream(zipFile), 
                     new File(context.getFilesDir(), "usr"), 
-                    zipFile.length());
+                    zipFile.length(),
+                    progressUpdater);
                 
                 Log.d(TAG, "Extraction result: " + result);
                 return result;
@@ -568,7 +577,10 @@ public class TerminalInstaller {
                         int progress = 5 + (int) (downloaded * 85 / contentLength);
                         
                         if (currentTime - lastUpdateTime > PROGRESS_UPDATE_INTERVAL || progress - lastProgress >= 5) {
-                            updateProgress(g(R.string.term_install_d), progress);
+                            // 添加文件大小显示
+                            String downloadedStr = formatFileSize(downloaded);
+                            String totalStr = formatFileSize(contentLength);
+                            updateProgress(g(R.string.term_install_d) + " (" + downloadedStr + "/" + totalStr + ")", progress);
                             lastUpdateTime = currentTime;
                             lastProgress = progress;
                         }
@@ -578,10 +590,19 @@ public class TerminalInstaller {
                 Log.d(TAG, "Download completed, file size: " + tempFile.length());
                 updateProgress(g(R.string.term_install_e), 90);
                 
-                // 解压文件 - 使用新的解压方法，不传递进度更新器
+                // 创建ProgressUpdater来显示解压的文件名
+                ProgressUpdater progressUpdater = new ProgressUpdater() {
+                    @Override
+                    public void update(int progress, String status) {
+                        updateProgress(status, progress);
+                    }
+                };
+                
+                // 解压文件
                 boolean success = extractZip(new FileInputStream(tempFile), 
                     new File(context.getFilesDir(), "usr"), 
-                    tempFile.length());
+                    tempFile.length(),
+                    progressUpdater);
                 
                 Log.d(TAG, "Extraction result: " + success);
                 return success ? "SUCCESS" : "EXTRACTION_FAILED";
@@ -691,6 +712,16 @@ public class TerminalInstaller {
                     continue;
                 }
 
+                // 更新状态显示当前正在解压的文件名
+                if (progressUpdater != null) {
+                    String fileName = entry.getName();
+                    // 只显示文件名，不显示完整路径
+                    if (fileName.contains("/")) {
+                        fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
+                    }
+                    progressUpdater.update((int) (extracted * 100 / totalSize), fileName);
+                }
+
                 File parent = file.getParentFile();
                 if (!parent.exists()) {
                     parent.mkdirs();
@@ -712,7 +743,7 @@ public class TerminalInstaller {
                             // 限制更新频率，避免过于频繁
                             long currentTime = System.currentTimeMillis();
                             if (currentTime - lastProgressUpdate > PROGRESS_UPDATE_INTERVAL) {
-                                progressUpdater.update(progress);
+                                progressUpdater.update(progress, null); // 只更新进度，不更新状态
                                 lastProgressUpdate = currentTime;
                             }
                         }
@@ -818,7 +849,7 @@ public class TerminalInstaller {
             new Handler(Looper.getMainLooper()).post(() -> {
                 try {
                     if (progressDialog != null && progressDialog.isShowing()) {
-                        if (progressStatus != null) {
+                        if (progressStatus != null && finalStatus != null) {
                             progressStatus.setText(finalStatus);
                         }
                         if (progressIndicator != null) {
@@ -938,7 +969,7 @@ public class TerminalInstaller {
     }
     
     private static String g(@StringRes int stringRes) {
-        return Application.get(stringRes);
+        return Application.getStringQuick(stringRes);
     }
     
     private static void deleteRecursive(File fileOrDirectory) {
@@ -953,9 +984,20 @@ public class TerminalInstaller {
         fileOrDirectory.delete();
     }
 
-    // 进度更新接口（保持向后兼容）
+    // 格式化文件大小
+    private static String formatFileSize(long size) {
+        if (size < 1024) {
+            return size + "B";
+        } else if (size < 1024 * 1024) {
+            return String.format("%.1fKB", size / 1024.0);
+        } else {
+            return String.format("%.1fMB", size / (1024.0 * 1024.0));
+        }
+    }
+
+    // 进度更新接口（支持同时更新进度和状态）
     private interface ProgressUpdater {
-        void update(int progress);
+        void update(int progress, String status);
     }
     
     // 使用Android的Build类进行架构检测
