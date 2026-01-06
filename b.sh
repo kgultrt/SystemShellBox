@@ -78,7 +78,7 @@ echo ""
 
 # 执行构建任务
 echo "正在构建 ${TASK#*:} 版本..."
-bash gradlew "$TASK" || { echo "构建失败"; exit 1; }
+bash gradlew "$TASK" --console=verbose || { echo "构建失败"; exit 1; }
 
 # 定义APK路径
 APK_PATH="app/build/outputs/apk/${APK_DIR}/${APK_PREFIX}.apk"
