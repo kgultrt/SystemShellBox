@@ -27,6 +27,9 @@
     <string name="signature_APK">From APK md5</string>
     <string name="signature_API">From API md5</string>
     <string name="signature_SVC">From SVC md5</string>
+    
+    <string name="root_directory">Root Directory</string>
+    <string name="internal_storage">Internal Storage</string>
 
     <!-- Welcome Activity -->
     <string name="welcome_title_1">Welcome to System Shell Box</string>

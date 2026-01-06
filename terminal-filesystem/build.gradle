@@ -1,0 +1,144 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.manager.ssb.term'
+    compileSdk 34
+    
+    defaultConfig {
+        applicationId "com.manager.ssb.term"
+        minSdk 21
+        targetSdk 28
+        versionCode 1
+        versionName "1.0.0"
+        
+        vectorDrawables { 
+            useSupportLibrary true
+        }
+    }
+    
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+    
+    signingConfigs {
+        release {
+            storeFile null
+            keyAlias null
+        }
+        
+        debug {
+            storeFile null
+            keyAlias null
+        }
+    }
+    
+    // 从外部文件加载签名配置（如果存在）
+    def keystorePropertiesFile = rootProject.file('keystore.properties')
+    if (keystorePropertiesFile.exists()) {
+        def keystoreProperties = new Properties()
+        keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+        
+        signingConfigs.release.storeFile = file(keystoreProperties['storeFile'])
+        signingConfigs.release.storePassword = keystoreProperties['storePassword']
+        signingConfigs.release.keyAlias = keystoreProperties['keyAlias']
+        signingConfigs.release.keyPassword = keystoreProperties['keyPassword']
+        
+        signingConfigs.debug.storeFile = file(keystoreProperties['storeFile'])
+        signingConfigs.debug.storePassword = keystoreProperties['storePassword']
+        signingConfigs.debug.keyAlias = keystoreProperties['keyAlias']
+        signingConfigs.debug.keyPassword = keystoreProperties['keyPassword']
+    }
+
+    buildTypes {
+        debug {
+            def getGitInfo = { commandParts ->
+                def proc = commandParts.execute([], project.rootDir)
+                def output = new ByteArrayOutputStream()
+                def error = new ByteArrayOutputStream()
+                proc.waitForProcessOutput(output, error)
+                if (proc.exitValue() != 0) {
+                    logger.error("Git command failed: ${commandParts.join(' ')}\nError: ${error.toString()}")
+                    return "unknown"
+                }
+                return output.toString().trim()
+            }
+            
+            def gitCommitShortHash = getGitInfo(['git', 'rev-parse', '--short', 'HEAD'])
+            
+            // 动态生成版本名称，追加 Build 号
+            def buildNumberFile = file("${project.rootDir}/buildNumber.txt")
+            def buildNumber = 0 // 默认构建号
+
+            // 如果 buildNumber 文件存在，读取其中的值
+            if (buildNumberFile.exists()) {
+                buildNumber = Integer.parseInt(buildNumberFile.text.trim())
+            } else {
+                // 如果文件不存在，初始化为0
+                buildNumberFile.text = "0"
+            }
+            
+
+            // 组合版本后缀
+            versionNameSuffix "-termbuild${buildNumber + 1}.${gitCommitShortHash}"
+        }
+        
+        release {
+            def getGitInfo = { commandParts ->
+                def proc = commandParts.execute([], project.rootDir)
+                def output = new ByteArrayOutputStream()
+                def error = new ByteArrayOutputStream()
+                proc.waitForProcessOutput(output, error)
+                if (proc.exitValue() != 0) {
+                    logger.error("Git command failed: ${commandParts.join(' ')}\nError: ${error.toString()}")
+                    return "unknown"
+                }
+                return output.toString().trim()
+            }
+            
+            def gitCommitShortHash = getGitInfo(['git', 'rev-parse', '--short', 'HEAD'])
+            
+            // 动态生成版本名称，追加 Build 号
+            def buildNumberFile = file("${project.rootDir}/buildNumber.txt")
+            def buildNumber = 0 // 默认构建号
+
+            // 如果 buildNumber 文件存在，读取其中的值
+            if (buildNumberFile.exists()) {
+                buildNumber = Integer.parseInt(buildNumberFile.text.trim())
+            } else {
+                // 如果文件不存在，初始化为0
+                buildNumberFile.text = "0"
+            }
+            
+            def releaseNumberFile = file("${project.rootDir}/releaseNumber.txt")
+            def releaseNumber = 0 // 默认构建号
+
+            // 如果 buildNumber 文件存在，读取其中的值
+            if (releaseNumberFile.exists()) {
+                releaseNumber = Integer.parseInt(releaseNumberFile.text.trim())
+            } else {
+                // 如果文件不存在，初始化为0
+                releaseNumberFile.text = "0"
+            }
+            
+            versionNameSuffix "-release${releaseNumber + 1}-termbuild${buildNumber + 1}.${gitCommitShortHash}"
+            
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+    
+}
+
+

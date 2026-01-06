@@ -46,5 +46,6 @@ rootProject.name = "System Shell Forge"
 
 include ":app"
 include ":terminal-emulator"
+include ":terminal-filesystem"
 include ":terminal-view"
 include ":codeeditor"

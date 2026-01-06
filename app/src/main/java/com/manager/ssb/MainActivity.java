@@ -44,12 +44,15 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -102,6 +105,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1003;
     private final Map<Integer, Runnable> menuActionMap = new HashMap<>();
     private CompressFileManager compressFileManager;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
     
     public ActivePanel activePanel = ActivePanel.LEFT;
     public Sence leftPanelSence = Sence.FILE;
@@ -286,6 +291,39 @@ public class MainActivity extends AppCompatActivity {
         binding.btnCreate.setOnClickListener(bottomMenuClickListener);
         binding.btnBookmarkHistory.setOnClickListener(bottomMenuClickListener);
         binding.btnBack.setOnClickListener(bottomMenuClickListener);
+        
+        // 设置侧边栏按钮点击事件
+        binding.btnDrawer.setOnClickListener(v -> {
+            if (drawerLayout != null) {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+        
+        // 初始化侧边栏
+        initDrawer();
+    }
+    
+    private void initDrawer() {
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        
+        if (navigationView != null) {
+            navigationView.setNavigationItemSelectedListener(item -> {
+                int id = item.getItemId();
+                
+                if (id == R.id.nav_root) {
+                    // 跳转到根目录
+                    loadDirectory(new File("/"), activePanel);
+                } else if (id == R.id.nav_storage) {
+                    // 跳转到内部存储
+                    loadDirectory(Environment.getExternalStorageDirectory(), activePanel);
+                }
+                
+                // 关闭侧边栏
+                drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+            });
+        }
     }
     
     private void setActivePanel(ActivePanel panel) {
@@ -708,6 +746,12 @@ public class MainActivity extends AppCompatActivity {
         // 如果当前在压缩文件浏览模式，先退出压缩文件
         if (compressFileManager.isInCompressMode(activePanel)) {
             compressFileManager.exitCompressFile(activePanel);
+            return;
+        }
+        
+        // 如果侧边栏是打开的，先关闭侧边栏
+        if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
             return;
         }
         

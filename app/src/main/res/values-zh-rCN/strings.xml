@@ -27,6 +27,9 @@
     <string name="signature_API">From API md5</string>
     <string name="signature_SVC">From SVC md5</string>
 
+    <string name="root_directory">根目录</string>
+    <string name="internal_storage">内部存储</string>
+
     <!-- Welcome Activity -->
     <string name="welcome_title_1">欢迎使用 System Shell Box</string>
     <string name="welcome_desc_1">一个强大的文件管理和系统工具应用，让您在 Android 设备上获得完整的控制权。</string>

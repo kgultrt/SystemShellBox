@@ -12,6 +12,7 @@ usage() {
 
 # 默认配置
 TASK="app:assembleDebug"
+APK_MAIN_DIR="app"
 APK_DIR="debug"
 APK_PREFIX="app-debug"
 NO_COMMIT=1
@@ -30,6 +31,20 @@ while [[ $# -gt 0 ]]; do
             ;;
         -c|--commit)
             NO_COMMIT=0
+            shift
+            ;;
+        terminal-filesystem-release|tfr)
+            TASK="terminal-filesystem:assembleRelease"
+            APK_DIR="release"
+            APK_PREFIX="terminal-filesystem-release"
+            APK_MAIN_DIR="terminal-filesystem"
+            shift
+            ;;
+        terminal-filesystem|tf)
+            TASK="terminal-filesystem:assembleDebug"
+            APK_DIR="debug"
+            APK_PREFIX="terminal-filesystem-debug"
+            APK_MAIN_DIR="terminal-filesystem"
             shift
             ;;
         *)
@@ -78,10 +93,10 @@ echo ""
 
 # 执行构建任务
 echo "正在构建 ${TASK#*:} 版本..."
-bash gradlew "$TASK" --console=verbose || { echo "构建失败"; exit 1; }
+bash gradlew "$TASK" --console=rich || { echo "构建失败"; exit 1; }
 
 # 定义APK路径
-APK_PATH="app/build/outputs/apk/${APK_DIR}/${APK_PREFIX}.apk"
+APK_PATH="${APK_MAIN_DIR}/build/outputs/apk/${APK_DIR}/${APK_PREFIX}.apk"
 
 # 验证APK文件
 if [ ! -f "$APK_PATH" ]; then
@@ -90,8 +105,8 @@ if [ ! -f "$APK_PATH" ]; then
 fi
 
 # 安装到设备
-echo "部署到设备..."
+echo "启动安装进程..."
 termux-open "$APK_PATH"
-#adb -s 192.168.10.3 install "$APK_PATH"
+# adb -s 192.168.10.3 install "$APK_PATH"
 
 echo "构建成功!"
