@@ -208,6 +208,9 @@ android {
     
 
     compileOptions {
+        // 启用核心库脱糖
+        coreLibraryDesugaringEnabled true
+        
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
@@ -231,6 +234,9 @@ android {
 }
 
 dependencies {
+    // 核心库脱糖依赖
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+    
     // AndroidX 核心库
     implementation 'androidx.activity:activity:1.6.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -249,7 +255,12 @@ dependencies {
     // WebView
     implementation 'androidx.webkit:webkit:1.7.0'
     
+    // Sora Editor
+    implementation 'io.github.Rosemoe.sora-editor:editor:0.23.4'
+    implementation 'io.github.Rosemoe.sora-editor:language-textmate:0.23.4'
+    implementation 'io.github.Rosemoe.sora-editor:language-java:0.23.4'
+    
     // 项目模块
     api project(":terminal-view")
-    api project(":codeeditor")
 }
+
