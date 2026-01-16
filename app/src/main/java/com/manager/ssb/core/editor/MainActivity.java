@@ -1,8 +1,25 @@
+/*
+ * System Shell Box
+ * Copyright (C) 2025-2026 kgultrt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 package com.manager.ssb.core.editor;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -54,8 +71,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean isFileModified = false;
     private long lastModifiedTime = 0;
     
-    // 设置相关
-    private SharedPreferences editorPrefs;
     
     // 菜单项
     private MenuItem undoMenuItem;
@@ -103,15 +118,14 @@ public class MainActivity extends AppCompatActivity {
         // textViewLineColumn = findViewById(R.id.text_line_column);
         // textViewFileInfo = findViewById(R.id.text_file_info);
         
-        editorPrefs = getSharedPreferences("editor_settings", MODE_PRIVATE);
     }
     
     private void initializeEditor() {
         // 基本设置
         codeEditor.setEditable(true);
         codeEditor.setLineNumberEnabled(true);
-        codeEditor.setWordwrap(editorPrefs.getBoolean("word_wrap", false));
-        codeEditor.setTextSize(editorPrefs.getInt("font_size", 14));
+        codeEditor.setWordwrap(Config.get("editor.word_wrap", false));
+        codeEditor.setTextSize(Config.get("font_size", 14));
         codeEditor.setTypefaceText(Typeface.MONOSPACE);
         codeEditor.setLineSpacing(2.0f, 1.1f);
         
@@ -172,19 +186,19 @@ public class MainActivity extends AppCompatActivity {
     
     private void applyEditorSettings() {
         // 应用字体大小
-        int fontSize = editorPrefs.getInt("font_size", 14);
+        int fontSize = Config.get("editor.font_size", 14);
         codeEditor.setTextSize(fontSize);
         
         // 应用自动换行
-        boolean wordWrap = editorPrefs.getBoolean("word_wrap", false);
+        boolean wordWrap = Config.get("editor.word_wrap", false);
         codeEditor.setWordwrap(wordWrap);
         
         // 应用显示行号
-        boolean showLineNumbers = editorPrefs.getBoolean("show_line_numbers", true);
+        boolean showLineNumbers = Config.get("editor.show_line_numbers", true);
         codeEditor.setLineNumberEnabled(showLineNumbers);
         
         // 应用代码补全
-        boolean autoComplete = editorPrefs.getBoolean("auto_complete", true);
+        boolean autoComplete = Config.get("editor.auto_complete", true);
         codeEditor.getComponent(io.github.rosemoe.sora.widget.component.EditorAutoCompletion.class)
                   .setEnabled(autoComplete);
     }

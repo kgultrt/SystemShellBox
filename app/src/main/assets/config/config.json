@@ -8,5 +8,8 @@
     },
     "notifications": {
         "enabled": true
+    },
+    "editor": {
+        "isFirst": true
     }
 }

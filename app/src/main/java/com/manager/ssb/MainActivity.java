@@ -615,7 +615,7 @@ public class MainActivity extends AppCompatActivity {
     
     
     private void showAboutDialog() {
-        StringBuilder sb = new StringBuilder("System Shell Box (C) 2025 by kgultrt\n");
+        StringBuilder sb = new StringBuilder("System Shell Box (C) 2025-2026 by kgultrt\n");
         sb.append("Handle all documents.\nDevelop on MT manager Text Editor and Termux.\nmade on android\n\n");
     
         // 应用信息
@@ -743,15 +743,16 @@ public class MainActivity extends AppCompatActivity {
     }
     
     public void onBackPressedCall() {
-        // 如果当前在压缩文件浏览模式，先退出压缩文件
-        if (compressFileManager.isInCompressMode(activePanel)) {
-            compressFileManager.exitCompressFile(activePanel);
-            return;
-        }
         
         // 如果侧边栏是打开的，先关闭侧边栏
         if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
+            return;
+        }
+        
+        // 如果当前在压缩文件浏览模式，先退出压缩文件
+        if (compressFileManager.isInCompressMode(activePanel)) {
+            compressFileManager.exitCompressFile(activePanel);
             return;
         }
         
