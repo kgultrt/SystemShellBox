@@ -103,7 +103,7 @@ public class WelcomeActivity extends AppCompatActivity {
         setupPermissions();
         setupViewPager();
         updateNavigation();
-        applyInitialAnimations();
+        // 移除了 applyInitialAnimations() 调用，关闭初始动画
         
         hasEntrance = true;
     }
@@ -122,6 +122,8 @@ public class WelcomeActivity extends AppCompatActivity {
         btnGetStarted.setOnClickListener(v -> onGetStartedClicked());
     }
 
+    // 删除或注释掉整个 applyInitialAnimations 方法，因为它包含初始动画
+    /*
     private void applyInitialAnimations() {
         // 初始进入动画
         View rootLayout = findViewById(R.id.rootLayout);
@@ -148,6 +150,7 @@ public class WelcomeActivity extends AppCompatActivity {
             }, delay);
         }
     }
+    */
 
     private void setupPermissions() {
         List<String> permissions = new ArrayList<>();
@@ -304,24 +307,8 @@ public class WelcomeActivity extends AppCompatActivity {
         }
         
         btnGrantPermissions.setOnClickListener(v -> {
-            // 按钮点击动画
-            Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.scale_down);
-            Animation scaleUp = AnimationUtils.loadAnimation(this, R.anim.scale_up);
-            
-            btnGrantPermissions.startAnimation(scaleDown);
-            scaleDown.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {}
-                
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    requestPermissions();
-                    btnGrantPermissions.startAnimation(scaleUp);
-                }
-                
-                @Override
-                public void onAnimationRepeat(Animation animation) {}
-            });
+            // 移除按钮点击动画
+            requestPermissions();
         });
         
         // 检查权限状态并更新UI
@@ -384,7 +371,7 @@ public class WelcomeActivity extends AppCompatActivity {
         
         container.addView(cardView);
         
-        // 卡片进入动画
+        // 卡片进入动画（保留这个动画）
         Animation slideInRight = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
         slideInRight.setStartOffset(container.getChildCount() * 100L);
         cardView.startAnimation(slideInRight);
@@ -467,7 +454,7 @@ public class WelcomeActivity extends AppCompatActivity {
             indicator.setBackgroundResource(R.drawable.indicator_dot);
             indicatorLayout.addView(indicator);
             
-            // 指示器进入动画
+            // 保留指示器进入动画
             Animation bounceIn = AnimationUtils.loadAnimation(this, R.anim.bounce_in);
             bounceIn.setStartOffset(i * 150L);
             indicator.startAnimation(bounceIn);
@@ -480,7 +467,7 @@ public class WelcomeActivity extends AppCompatActivity {
             boolean isSelected = i == position;
             indicator.setSelected(isSelected);
             
-            // 选中动画
+            // 保留选中动画
             if (isSelected) {
                 Animation scaleUp = AnimationUtils.loadAnimation(this, R.anim.scale_up);
                 indicator.startAnimation(scaleUp);
@@ -492,11 +479,7 @@ public class WelcomeActivity extends AppCompatActivity {
         boolean isLastPage = currentStep == adapter.getItemCount() - 1;
         boolean isFirstPage = currentStep == 0;
         
-        if (isFirstPage && hasEntrance) {
-            Animation slideOutRight = AnimationUtils.loadAnimation(this, R.anim.slide_out_right);
-            btnPrevious.startAnimation(slideOutRight);
-        }
-        
+        // 移除所有按钮动画，直接设置可见性
         btnPrevious.setVisibility(isFirstPage ? View.INVISIBLE : View.VISIBLE);
         btnNext.setVisibility(isLastPage ? View.GONE : View.VISIBLE);
         btnGetStarted.setVisibility(isLastPage ? View.VISIBLE : View.GONE);
@@ -508,66 +491,19 @@ public class WelcomeActivity extends AppCompatActivity {
         // 更新进度条
         float progress = (float) (currentStep + 1) / adapter.getItemCount() * 100;
         progressBar.setProgress((int) progress);
-        
-        // 按钮动画
-        if (btnPrevious.getVisibility() == View.VISIBLE) {
-            if (currentStep == 1) {
-                Animation slideInLeft = AnimationUtils.loadAnimation(this, R.anim.slide_in_left);
-                btnPrevious.startAnimation(slideInLeft);
-            }
-        }
-        
-        if (btnNext.getVisibility() == View.VISIBLE) {
-            if (isFirstPage && hasEntrance == false) {
-                Animation slideInRight = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
-                btnNext.startAnimation(slideInRight);
-            }
-        }
     }
 
     private void navigateNext() {
         if (currentStep < adapter.getItemCount() - 1) {
-            // 按钮点击动画
-            Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.scale_down);
-            btnNext.startAnimation(scaleDown);
-            
-            scaleDown.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {}
-                
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    viewPager.setCurrentItem(currentStep + 1);
-                    Animation scaleUp = AnimationUtils.loadAnimation(WelcomeActivity.this, R.anim.scale_up);
-                    btnNext.startAnimation(scaleUp);
-                }
-                
-                @Override
-                public void onAnimationRepeat(Animation animation) {}
-            });
+            // 移除按钮点击动画，直接切换页面
+            viewPager.setCurrentItem(currentStep + 1);
         }
     }
 
     private void navigatePrevious() {
         if (currentStep > 0) {
-            // 按钮点击动画
-            Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.scale_down);
-            btnPrevious.startAnimation(scaleDown);
-            
-            scaleDown.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {}
-                
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    viewPager.setCurrentItem(currentStep - 1);
-                    Animation scaleUp = AnimationUtils.loadAnimation(WelcomeActivity.this, R.anim.scale_up);
-                    btnPrevious.startAnimation(scaleUp);
-                }
-                
-                @Override
-                public void onAnimationRepeat(Animation animation) {}
-            });
+            // 移除按钮点击动画，直接切换页面
+            viewPager.setCurrentItem(currentStep - 1);
         }
     }
 
@@ -638,35 +574,20 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private void onGetStartedClicked() {
-        // 最终按钮点击动画
-        Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.scale_down);
-        btnGetStarted.startAnimation(scaleDown);
+        Config.set("isWelcomeCompleted", true);
         
-        scaleDown.setAnimationListener(new Animation.AnimationListener() {
+        // 保留退出动画
+        View rootLayout = findViewById(R.id.rootLayout);
+        Animation fadeOut = AnimationUtils.loadAnimation(this, R.anim.fade_out);
+        rootLayout.startAnimation(fadeOut);
+        
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {}
             
             @Override
             public void onAnimationEnd(Animation animation) {
-                Config.set("isWelcomeCompleted", true);
-                
-                // 退出动画
-                View rootLayout = findViewById(R.id.rootLayout);
-                Animation fadeOut = AnimationUtils.loadAnimation(WelcomeActivity.this, R.anim.fade_out);
-                rootLayout.startAnimation(fadeOut);
-                
-                fadeOut.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {}
-                    
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        startMainActivity();
-                    }
-                    
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {}
-                });
+                startMainActivity();
             }
             
             @Override
@@ -691,7 +612,7 @@ public class WelcomeActivity extends AppCompatActivity {
             TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
     }
 
-    // 自定义页面切换动画
+    // 自定义页面切换动画（保留这些动画）
     private static class SlideForwardTransformer implements ViewPager2.PageTransformer {
         @Override
         public void transformPage(@NonNull View page, float position) {
