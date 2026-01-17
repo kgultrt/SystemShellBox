@@ -94,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
         "~", "^", "`"
     };
     
+    private static int EDITOR_VERSION = 1;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -185,9 +187,23 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void applyEditorSettings() {
+        if (Config.get("editor.isFirst", false) || Config.get("editor.editor_ver", EDITOR_VERSION) < EDITOR_VERSION) {
+            
+            Config.set("editor.font_size", 14);
+            Config.set("editor.word_wrap", false);
+            Config.set("editor.show_line_numbers", true);
+            Config.set("editor.auto_complete", true);
+            Config.set("editor.editor_ver", EDITOR_VERSION);
+            
+            Config.set("editor.isFirst", false);
+        }
+        
         // 应用字体大小
         int fontSize = Config.get("editor.font_size", 14);
         codeEditor.setTextSize(fontSize);
+        
+        // 应用字体
+        codeEditor.setTypefaceText(Typeface.MONOSPACE);
         
         // 应用自动换行
         boolean wordWrap = Config.get("editor.word_wrap", false);
