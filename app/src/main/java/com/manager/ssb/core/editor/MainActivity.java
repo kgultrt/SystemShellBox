@@ -55,6 +55,7 @@ import io.github.rosemoe.sora.widget.SymbolInputView;
 import com.manager.ssb.R;
 import com.manager.ssb.core.settings.SettingsActivity;
 import com.manager.ssb.core.config.Config;
+import com.manager.ssb.Application;
 
 public class MainActivity extends AppCompatActivity {
     
@@ -94,7 +95,8 @@ public class MainActivity extends AppCompatActivity {
         "~", "^", "`"
     };
     
-    private static int EDITOR_VERSION = 1;
+    private static int EDITOR_VERSION = 2;
+    private static Context AppContext = Application.getAppContext();
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -194,6 +196,8 @@ public class MainActivity extends AppCompatActivity {
             Config.set("editor.show_line_numbers", true);
             Config.set("editor.auto_complete", true);
             Config.set("editor.editor_ver", EDITOR_VERSION);
+            Config.set("editor.insidefont", true);
+            Config.set("editor.insidefonttype", 1);
             
             Config.set("editor.isFirst", false);
         }
@@ -203,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
         codeEditor.setTextSize(fontSize);
         
         // 应用字体
-        codeEditor.setTypefaceText(Typeface.MONOSPACE);
+        applyEditorFont();
         
         // 应用自动换行
         boolean wordWrap = Config.get("editor.word_wrap", false);
@@ -217,6 +221,23 @@ public class MainActivity extends AppCompatActivity {
         boolean autoComplete = Config.get("editor.auto_complete", true);
         codeEditor.getComponent(io.github.rosemoe.sora.widget.component.EditorAutoCompletion.class)
                   .setEnabled(autoComplete);
+    }
+    
+    private void applyEditorFont() {
+        Typeface font;
+        
+        switch (Config.get("editor.insidefonttype", 1)) {
+            case 1:
+                font = Typeface.createFromAsset(AppContext.getAssets(), "font/DroidSansMono.ttf");
+                break;
+            case 2:
+                font = Typeface.createFromAsset(AppContext.getAssets(), "font/JetBrainsMonoNL-Medium.ttf");
+                break;
+            default:
+                font = Typeface.createFromAsset(AppContext.getAssets(), "font/DroidSansMono.ttf");
+        }
+        
+        codeEditor.setTypefaceText(font);
     }
     
     private void loadFileFromIntent() {

@@ -7,6 +7,11 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
@@ -32,14 +37,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CompressFileManager {
     private final MainActivity activity;
     private final NotifyingExecutorService executorService;
     
     // 压缩文件状态管理
-    private String currentCompressFile = null;
-    private String currentCompressPath = "";
     private final Map<ActivePanel, CompressPanelState> panelStates = new HashMap<>();
     
     public CompressFileManager(MainActivity activity, NotifyingExecutorService executorService) {
@@ -62,8 +67,8 @@ public class CompressFileManager {
                     CompressPanelState state = panelStates.get(panel);
                     state.compressFilePath = compressFilePath;
                     state.currentPath = "";
-                    state.entries.clear();
-                    state.entries.addAll(entries);
+                    state.allEntries.clear();
+                    state.allEntries.addAll(entries);
                     
                     // 更新场景
                     setPanelSence(panel, Sence.IN_COMPRESS_FILE);
@@ -73,6 +78,7 @@ public class CompressFileManager {
                     Toast.makeText(activity, "已进入压缩文件浏览模式", Toast.LENGTH_SHORT).show();
                 });
             } catch (Exception e) {
+                e.printStackTrace();
                 activity.runOnUiThread(() -> 
                     Toast.makeText(activity, "无法打开压缩文件: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
@@ -87,58 +93,69 @@ public class CompressFileManager {
         CompressPanelState state = panelStates.get(panel);
         state.compressFilePath = null;
         state.currentPath = "";
-        state.entries.clear();
+        state.allEntries.clear();
         
         setPanelSence(panel, Sence.FILE);
         activity.loadDirectory(activity.getCurrentDir(), panel);
     }
     
     /**
-     * 加载压缩文件内容
+     * 加载压缩文件内容（简化版，使用专门的工具方法）
      */
     public void loadCompressContents(ActivePanel panel) {
         CompressPanelState state = panelStates.get(panel);
         if (state.compressFilePath == null) return;
         
         executorService.submit(() -> {
-            List<FileItem> newItems = new ArrayList<>();
-            String internalPath = state.currentPath;
-            
-            // 添加返回上级目录项（如果不是根目录）
-            if (!internalPath.isEmpty()) {
-                newItems.add(createParentDirectoryItem());
-            }
-            
-            // 过滤当前路径下的内容
-            for (String entry : state.entries) {
-                if (entry.startsWith(internalPath) && !entry.equals(internalPath)) {
-                    String relativePath = entry.substring(internalPath.length());
-                    
-                    // 处理目录和文件
-                    int slashIndex = relativePath.indexOf('/');
-                    if (slashIndex > 0) {
-                        String dirName = relativePath.substring(0, slashIndex);
-                        if (!containsName(newItems, dirName)) {
-                            newItems.add(new CompressFileItem(dirName, true, 0, 0, entry));
-                        }
-                    } else if (slashIndex == -1) {
-                        // 文件
-                        newItems.add(new CompressFileItem(relativePath, false, 0, System.currentTimeMillis(), entry));
-                    }
+            try {
+                List<String> directContents = ZipUtils.listZipContents(
+                    state.compressFilePath, 
+                    state.currentPath
+                );
+                
+                List<FileItem> newItems = new ArrayList<>();
+                
+                // 添加返回上级目录项（如果不是根目录）
+                if (!state.currentPath.isEmpty()) {
+                    newItems.add(createParentDirectoryItem());
                 }
+                
+                // 将条目转换为FileItem
+                for (String itemName : directContents) {
+                    boolean isDirectory = itemName.endsWith("/");
+                    String displayName = isDirectory ? 
+                        itemName.substring(0, itemName.length() - 1) : itemName;
+                    
+                    // 构建完整路径
+                    String fullPath = state.currentPath + itemName;
+                    
+                    newItems.add(new CompressFileItem(
+                        displayName,
+                        isDirectory,
+                        0, // 大小暂时设为0
+                        System.currentTimeMillis(),
+                        fullPath
+                    ));
+                }
+                
+                // 排序：目录在前，文件在后，按名称排序
+                Collections.sort(newItems, (a, b) -> {
+                    if (a.isDirectory() && !b.isDirectory()) return -1;
+                    if (!a.isDirectory() && b.isDirectory()) return 1;
+                    return a.getName().compareToIgnoreCase(b.getName());
+                });
+                
+                activity.runOnUiThread(() -> {
+                    activity.updateFileList(newItems, panel);
+                    activity.updatePathDisplay();
+                });
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+                activity.runOnUiThread(() -> 
+                    Toast.makeText(activity, "加载失败: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
             }
-            
-            // 排序
-            Collections.sort(newItems, (a, b) -> {
-                if (a.isDirectory() && !b.isDirectory()) return -1;
-                if (!a.isDirectory() && b.isDirectory()) return 1;
-                return a.getName().compareToIgnoreCase(b.getName());
-            });
-            
-            activity.runOnUiThread(() -> {
-                activity.updateFileList(newItems, panel);
-                activity.updatePathDisplay();
-            });
         }, TaskTypes.LOAD_FILES);
     }
     
@@ -154,7 +171,18 @@ public class CompressFileManager {
             if ("..".equals(item.getName())) {
                 // 返回上级目录
                 int lastSlash = state.currentPath.lastIndexOf('/');
-                newPath = lastSlash > 0 ? state.currentPath.substring(0, lastSlash) : "";
+                if (lastSlash > 0) {
+                    newPath = state.currentPath.substring(0, lastSlash);
+                    // 找到上一个目录分隔符
+                    int prevSlash = newPath.lastIndexOf('/');
+                    if (prevSlash >= 0) {
+                        newPath = newPath.substring(0, prevSlash + 1);
+                    } else {
+                        newPath = "";
+                    }
+                } else {
+                    newPath = "";
+                }
             } else {
                 // 进入子目录
                 newPath = state.currentPath + item.getName() + "/";
@@ -202,6 +230,32 @@ public class CompressFileManager {
     }
     
     /**
+     * 解压选中文件
+     */
+    public void extractSelectedFile(FileItem item, ActivePanel panel, String destPath) {
+        CompressPanelState state = panelStates.get(panel);
+        if (state.compressFilePath == null) {
+            Toast.makeText(activity, "当前不在压缩文件浏览模式", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        executorService.submit(() -> {
+            try {
+                // 这里需要实现单个文件的解压
+                // 由于ZipUtils目前只支持全量解压，需要扩展功能
+                // 暂时先提示用户
+                activity.runOnUiThread(() -> {
+                    Toast.makeText(activity, "单个文件解压功能尚未实现", Toast.LENGTH_SHORT).show();
+                });
+            } catch (Exception e) {
+                activity.runOnUiThread(() -> 
+                    Toast.makeText(activity, "解压失败: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+            }
+        }, TaskTypes.FILE_OPERATION);
+    }
+    
+    /**
      * 获取当前压缩文件路径
      */
     public String getCurrentCompressFilePath(ActivePanel panel) {
@@ -212,7 +266,11 @@ public class CompressFileManager {
      * 获取当前压缩文件内部路径
      */
     public String getCurrentCompressPath(ActivePanel panel) {
-        return panelStates.get(panel).currentPath;
+        CompressPanelState state = panelStates.get(panel);
+        if (state.compressFilePath == null) {
+            return "";
+        }
+        return state.compressFilePath + ":" + state.currentPath;
     }
     
     /**
@@ -220,6 +278,23 @@ public class CompressFileManager {
      */
     public boolean isInCompressMode(ActivePanel panel) {
         return panelStates.get(panel).compressFilePath != null;
+    }
+    
+    /**
+     * 获取当前显示路径（用于界面显示）
+     */
+    public String getDisplayPath(ActivePanel panel) {
+        CompressPanelState state = panelStates.get(panel);
+        if (state.compressFilePath == null) {
+            return "";
+        }
+        
+        String zipName = new File(state.compressFilePath).getName();
+        if (state.currentPath.isEmpty()) {
+            return zipName + ":/";
+        } else {
+            return zipName + ":" + state.currentPath;
+        }
     }
     
     // 私有辅助方法
@@ -239,25 +314,30 @@ public class CompressFileManager {
             public String getPath() {
                 return "..";
             }
-        };
-    }
-    
-    private boolean containsName(List<FileItem> items, String name) {
-        for (FileItem item : items) {
-            if (item.getName().equals(name)) {
-                return true;
+            
+            @Override
+            public long getSize() {
+                return 0;
             }
-        }
-        return false;
+            
+            @Override
+            public long getLastModified() {
+                return 0;
+            }
+        };
     }
     
     private void setPanelSence(ActivePanel panel, Sence sence) {
         if (panel == ActivePanel.LEFT) {
             activity.leftPanelSence = sence;
-            activity.adapterLeft.setSence(sence);
+            if (activity.adapterLeft != null) {
+                activity.adapterLeft.setSence(sence);
+            }
         } else {
             activity.rightPanelSence = sence;
-            activity.adapterRight.setSence(sence);
+            if (activity.adapterRight != null) {
+                activity.adapterRight.setSence(sence);
+            }
         }
     }
     
@@ -267,17 +347,19 @@ public class CompressFileManager {
     private static class CompressPanelState {
         String compressFilePath = null;
         String currentPath = "";
-        List<String> entries = new ArrayList<>();
+        List<String> allEntries = new ArrayList<>();
     }
     
     /**
      * 压缩文件条目类
      */
-    private static class CompressFileItem extends FileItem {
+    public static class CompressFileItem extends FileItem {
+        private final boolean isDirectory;
         private final String entryPath;
         
         public CompressFileItem(String name, boolean isDirectory, long size, long lastModified, String entryPath) {
             super(new File(name));
+            this.isDirectory = isDirectory;
             this.entryPath = entryPath;
         }
         
@@ -288,7 +370,17 @@ public class CompressFileManager {
         
         @Override
         public boolean isDirectory() {
-            return getName().endsWith("/") || super.isDirectory();
+            return isDirectory;
+        }
+        
+        @Override
+        public long getSize() {
+            return 0; // 暂时不显示大小
+        }
+        
+        @Override
+        public long getLastModified() {
+            return super.getLastModified();
         }
     }
 }
