@@ -175,6 +175,9 @@ public class MainActivity extends AppCompatActivity {
                 Config.set("lastBuildNumber", currentBuildNumber);
             }
         }
+        
+        //test
+        locateAndHighlightItem("/storage/emulated/0/aaa_123", ActivePanel.LEFT);
     }
     
     // 提取构建号的核心方法
@@ -775,6 +778,38 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
         }
+    }
+    
+    // 定位并高亮项目
+    public void locateAndHighlightItem(String itemPath, ActivePanel panel) {
+        // 清除之前的高亮
+        clearAllHighlights();
+    
+        // 根据面板设置高亮
+        switch (panel) {
+            case LEFT:
+                adapterLeft.highlightItem(itemPath);
+                break;
+            case RIGHT:
+                adapterRight.highlightItem(itemPath);
+                break;
+        }
+    }
+
+    // 清除所有高亮
+    public void clearAllHighlights() {
+        adapterLeft.clearHighlight();
+        adapterRight.clearHighlight();
+    }
+
+    // 检查项目是否在当前目录中
+    public boolean isItemInCurrentDirectory(String itemPath, ActivePanel panel) {
+        File currentDir = getCurrentDirectory();
+        File itemFile = new File(itemPath);
+    
+        // 检查项目是否在当前目录中
+        return itemFile.getParent() != null && 
+               itemFile.getParent().equals(currentDir.getAbsolutePath());
     }
 
     private void showExitDialog() {

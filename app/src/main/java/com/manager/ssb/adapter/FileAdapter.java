@@ -35,6 +35,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.manager.ssb.R;
@@ -54,127 +55,63 @@ import java.util.concurrent.ExecutorService;
 
 public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
+    // 整理 + 稍微好一点的状态管理！
     private final List<FileItem> fileList;
     private final OnItemClickListener listener;
     private final OnItemLongClickListener longClickListener;
     private final String panel;
     private final ExecutorService executorService;
     private final Handler mainHandler;
-    
-    // 修复：替换 lambda 表达式为匿名内部类
-    private static final ThreadLocal<SimpleDateFormat> dateFormat = new ThreadLocal<SimpleDateFormat>() {
-        @Override
-        protected SimpleDateFormat initialValue() {
-            return new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
-        }
-    };
-    
-    // 新增防抖控制
-    private long lastClickTime = 0;
-    private static final long CLICK_DEBOUNCE_INTERVAL = 300; // 300毫秒防抖间隔
 
     private boolean clickEnabled = true;
     private boolean longClickEnabled = true;
-    
-    // 多选状态相关变量
+
     private boolean isMultiSelectMode = false;
     private final Set<String> selectedItems = new HashSet<>();
-    
-    // 滑动相关变量
+
     private float startX = 0;
     private float startY = 0;
     private boolean isSwiping = false;
     private ViewHolder swipingViewHolder = null;
-    private static final float SWIPE_THRESHOLD = 20; // 滑动阈值(像素)
-    private static final float LONG_PRESS_THRESHOLD = 10; // 长按移动阈值(像素)
-    private Handler longPressHandler = new Handler();
+
+    private static final float SWIPE_THRESHOLD = 20f;
+
+    private final Handler longPressHandler = new Handler();
     private Runnable longPressRunnable;
     private boolean isLongPressTriggered = false;
+
     private Sence sence;
 
-    public void setClickEnabled(boolean enabled) {
-        this.clickEnabled = enabled;
-    }
+    private String highlightedItemPath = null;
+    private boolean shouldScrollToHighlighted = false;
 
-    public void setLongClickEnabled(boolean enabled) {
-        this.longClickEnabled = enabled;
-    }
-    
+    private Drawable defaultBackground;
+
+    private static final ThreadLocal<SimpleDateFormat> dateFormat =
+            new ThreadLocal<SimpleDateFormat>() {
+                @Override
+                protected SimpleDateFormat initialValue() {
+                    return new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+                }
+            };
+
     public interface OnItemClickListener {
         void onItemClick(FileItem item);
     }
-    
-    // 长按功能
+
     public interface OnItemLongClickListener {
         void onItemLongClick(FileItem item, View view);
     }
-    
-    // 多选模式相关方法
-    public boolean isMultiSelectMode() {
-        return isMultiSelectMode;
-    }
-    
-    public void setMultiSelectMode(boolean multiSelectMode) {
-        boolean wasMultiSelectMode = isMultiSelectMode;
-        isMultiSelectMode = multiSelectMode;
-        
-        if (!multiSelectMode) {
-            // 清除所有选中状态
-            selectedItems.clear();
-        }
-        
-        // 只有在模式真正改变时才通知更新
-        if (wasMultiSelectMode != isMultiSelectMode) {
-            notifyDataSetChanged();
-        }
-    }
-    
-    public void toggleSelection(FileItem item) {
-        String path = item.getPath();
-        
-        if (selectedItems.contains(path)) {
-            selectedItems.remove(path);
-            if (getSelectedCount() == 0) {
-                setMultiSelectMode(false);
-            } else {
-                notifyItemChanged(fileList.indexOf(item));
-            }
-        } else {
-            if ("..".equals(item.getName())) return; // 屏蔽返回项
-            selectedItems.add(path);
-            notifyItemChanged(fileList.indexOf(item));
-        }
-    }
-    
-    public void clearSelection() {
-        selectedItems.clear();
-        setMultiSelectMode(false);
-    }
-    
-    public Set<String> getSelectedItems() {
-        return new HashSet<>(selectedItems);
-    }
-    
-    public int getSelectedCount() {
-        return selectedItems.size();
-    }
-    
-    public Sence getSence() {
-        return sence;
-    }
-    
-    public void setSence(Sence sence) {
-        this.sence = sence;
-        notifyDataSetChanged();
-    }
 
-    public FileAdapter(List<FileItem> fileList, 
-                       OnItemClickListener listener,
-                       OnItemLongClickListener longClickListener,
-                       String panel,
-                       Sence sence,
-                       ExecutorService executorService, 
-                       Handler mainHandler) {
+    public FileAdapter(
+            List<FileItem> fileList,
+            OnItemClickListener listener,
+            OnItemLongClickListener longClickListener,
+            String panel,
+            Sence sence,
+            ExecutorService executorService,
+            Handler mainHandler
+    ) {
         this.fileList = fileList;
         this.listener = listener;
         this.longClickListener = longClickListener;
@@ -182,8 +119,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         this.sence = sence;
         this.executorService = executorService;
         this.mainHandler = mainHandler;
-        
-        // 修复：替换 lambda 表达式为匿名内部类
+
         longPressRunnable = new Runnable() {
             @Override
             public void run() {
@@ -193,12 +129,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
                     if (position != RecyclerView.NO_POSITION) {
                         FileItem item = fileList.get(position);
                         if (longClickListener != null && !"..".equals(item.getName())) {
-                            if (!isMultiSelectMode) {
-                                longClickListener.onItemLongClick(item, swipingViewHolder.itemView);
-                            } else {
-                                // 多选模式下的长按
-                                // do nothing (WIP)
-                            }
+                            longClickListener.onItemLongClick(item, swipingViewHolder.itemView);
                         }
                     }
                 }
@@ -206,123 +137,155 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         };
     }
 
+    /* ===================== 对外接口 ===================== */
+
+    public void setClickEnabled(boolean enabled) {
+        this.clickEnabled = enabled;
+    }
+
+    public void setLongClickEnabled(boolean enabled) {
+        this.longClickEnabled = enabled;
+    }
+
+    public boolean isMultiSelectMode() {
+        return isMultiSelectMode;
+    }
+
+    public void setMultiSelectMode(boolean enable) {
+        isMultiSelectMode = enable;
+        if (!enable) selectedItems.clear();
+        notifyDataSetChanged();
+    }
+
+    public void toggleSelection(FileItem item) {
+        String path = item.getPath();
+        if (selectedItems.contains(path)) {
+            selectedItems.remove(path);
+            if (selectedItems.isEmpty()) {
+                setMultiSelectMode(false);
+            }
+        } else {
+            if (!"..".equals(item.getName())) {
+                selectedItems.add(path);
+            }
+        }
+        notifyDataSetChanged();
+    }
+
+    public void clearSelection() {
+        selectedItems.clear();
+        isMultiSelectMode = false;
+        notifyDataSetChanged();
+    }
+
+    public Set<String> getSelectedItems() {
+        return new HashSet<>(selectedItems);
+    }
+
+    public Sence getSence() {
+        return sence;
+    }
+
+    public void setSence(Sence sence) {
+        this.sence = sence;
+        notifyDataSetChanged();
+    }
+
+    public void highlightItem(String itemPath) {
+        highlightedItemPath = itemPath;
+        shouldScrollToHighlighted = true;
+        notifyDataSetChanged();
+    }
+
+    public void clearHighlight() {
+        highlightedItemPath = null;
+        notifyDataSetChanged();
+    }
+
+    /* ===================== RecyclerView ===================== */
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_file, parent, false);
+
+        TypedArray ta = parent.getContext()
+                .obtainStyledAttributes(new int[]{android.R.attr.selectableItemBackground});
+        Drawable bg = ta.getDrawable(0);
+        ta.recycle();
+        defaultBackground = bg != null ? bg.mutate() : null;
+
         return new ViewHolder(view);
+    }
+
+    private void resetViewState(ViewHolder holder) {
+        View v = holder.itemView;
+        v.animate().cancel();
+        v.setTranslationX(0f);
+        v.setAlpha(1f);
+        v.setPressed(false);
+        v.setActivated(false);
+        v.setSelected(false);
+
+        if (defaultBackground != null) {
+            v.setBackground(defaultBackground.getConstantState().newDrawable().mutate());
+        }
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        resetViewState(holder);
+
         FileItem item = fileList.get(position);
         Context context = holder.itemView.getContext();
 
-        // 重置视图状态
-        holder.itemView.setTranslationX(0);
-        holder.itemView.setAlpha(1f);
-        
-        // 清除可能存在的波纹效果
-        if (holder.itemView.getBackground() instanceof RippleDrawable) {
-            holder.itemView.getBackground().setState(new int[0]);
-        }
+        holder.tvName.setText(item.getName());
+        holder.tvSize.setText(item.isDirectory() ? "" : formatSize(context, item.getSize()));
+        holder.tvTime.setText(formatDate(item.getLastModified()));
+        holder.ivIcon.setImageResource(item.isDirectory() ? R.drawable.ic_folder : R.drawable.ic_file);
 
-        // 设置背景色（多选状态）
-        if (isMultiSelectMode && selectedItems.contains(item.getPath())) {
-            // 创建波纹效果的选择背景
-            ColorStateList colorStateList = ColorStateList.valueOf(Color.parseColor("#88888888"));
-            Drawable selectDrawable = new RippleDrawable(colorStateList, 
-                    new ColorDrawable(Color.parseColor("#ADD8E6")), null);
-            holder.itemView.setBackground(selectDrawable);
-        } else {
-            // 恢复默认选择效果（波纹）
-            int[] attrs = new int[]{android.R.attr.selectableItemBackground};
-            TypedArray ta = context.obtainStyledAttributes(attrs);
-            Drawable defaultBackground = ta.getDrawable(0);
-            ta.recycle();
-            holder.itemView.setBackground(defaultBackground);
-        }
-
-        holder.ivIcon.setImageResource(item.isDirectory() ?
-                R.drawable.ic_folder : R.drawable.ic_file);
-
-        // 修复：替换 lambda 表达式为匿名内部类
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                // 一次性获取文件类型枚举，避免多次调用判断方法
-                FileType fileType = item.resolveFileType();
-        
-                final int iconResId;
-                switch (fileType) {
-                    case AUDIO:
-                        iconResId = R.drawable.ic_music;
-                        break;
-                    case TEXT:
-                        iconResId = R.drawable.ic_text;
-                        break;
-                    case COMPRESS:
-                        iconResId = R.drawable.ic_zip;
-                        break;
-                    case HTML:
-                        iconResId = R.drawable.ic_web;
-                        break;
-                    case APK:
-                        iconResId = R.drawable.ic_android;
-                        break;
-                    case DIRECTORY:
-                        iconResId = R.drawable.ic_folder;
-                        break;
-                    default:
-                        iconResId = R.drawable.ic_file;
-                }
-
-                final String sizeText = item.isDirectory() ? "" : formatSize(context, item.getSize());
-                final String timeText = formatDate(item.getLastModified());
-
-                mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        holder.ivIcon.setImageResource(iconResId);
-                        holder.tvName.setText(item.getName());
-                        holder.tvSize.setText(sizeText);
-                        holder.tvTime.setText(timeText);
-                    }
+        if (highlightedItemPath != null && highlightedItemPath.equals(item.getPath())) {
+            holder.itemView.setBackgroundColor(Color.parseColor("#E8F5E9"));
+            if (shouldScrollToHighlighted) {
+                shouldScrollToHighlighted = false;
+                holder.itemView.post(() -> {
+                    RecyclerView rv = (RecyclerView) holder.itemView.getParent();
+                    if (rv != null) rv.smoothScrollToPosition(holder.getAdapterPosition());
                 });
             }
+        } else if (isMultiSelectMode && selectedItems.contains(item.getPath())) {
+            holder.itemView.setBackground(new ColorDrawable(Color.parseColor("#ADD8E6")));
+        }
+
+        executorService.submit(() -> {
+            FileType type = item.resolveFileType();
+            int icon;
+            switch (type) {
+                case AUDIO: icon = R.drawable.ic_music; break;
+                case TEXT: icon = R.drawable.ic_text; break;
+                case COMPRESS: icon = R.drawable.ic_zip; break;
+                case HTML: icon = R.drawable.ic_web; break;
+                case APK: icon = R.drawable.ic_android; break;
+                case DIRECTORY: icon = R.drawable.ic_folder; break;
+                default: icon = R.drawable.ic_file;
+            }
+            mainHandler.post(() -> {
+                int p = holder.getAdapterPosition();
+                if (p != RecyclerView.NO_POSITION &&
+                        fileList.get(p).getPath().equals(item.getPath())) {
+                    holder.ivIcon.setImageResource(icon);
+                }
+            });
         });
 
-        // 修改后的点击监听器
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isMultiSelectMode) {
-                    // 多选模式下的点击：切换选中状态
-                    toggleSelection(item);
-                    return;
-                }
-                
-                // 禁用切换
-                ((MainActivity) context).canSwichActivePanel = false;
-                
-                if (!clickEnabled) return;
-                
-                // 防抖检查
-                long currentTime = System.currentTimeMillis();
-                if (currentTime - lastClickTime < CLICK_DEBOUNCE_INTERVAL) {
-                    ((MainActivity) context).canSwichActivePanel = false;
-                    return;
-                }
-                lastClickTime = currentTime;
-                
-                if (listener != null) {
-                    listener.onItemClick(item);
-                }
-                
-                // 启用切换
-                ((MainActivity) context).canSwichActivePanel = true;
+        holder.itemView.setOnClickListener(v -> {
+            if (!clickEnabled) return;
+            if (isMultiSelectMode) {
+                toggleSelection(item);
+                return;
             }
+            if (listener != null) listener.onItemClick(item);
         });
     }
 
@@ -331,167 +294,88 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         return fileList.size();
     }
 
-    @Override
-    public void onViewRecycled(@NonNull ViewHolder holder) {
-        super.onViewRecycled(holder);
-        holder.ivIcon.setImageDrawable(null);
-        holder.itemView.setBackgroundColor(Color.TRANSPARENT);
-        holder.itemView.setTranslationX(0);
-        holder.itemView.setAlpha(1f);
-        
-        // 清除波纹效果
-        if (holder.itemView.getBackground() instanceof RippleDrawable) {
-            holder.itemView.getBackground().setState(new int[0]);
-        }
-    }
+    /* ===================== ViewHolder ===================== */
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivIcon;
-        TextView tvName;
-        TextView tvSize;
-        TextView tvTime;
 
-        ViewHolder(View itemView) {
+        ImageView ivIcon;
+        TextView tvName, tvSize, tvTime;
+
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
             ivIcon = itemView.findViewById(R.id.iv_icon);
             tvName = itemView.findViewById(R.id.tv_name);
             tvSize = itemView.findViewById(R.id.tv_size);
             tvTime = itemView.findViewById(R.id.tv_time);
-            
-            // 设置触摸监听器来处理滑动
-            itemView.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    int position = getAdapterPosition();
-                    if (position == RecyclerView.NO_POSITION) return false;
-                    
-                    FileItem item = fileList.get(position);
-                    
-                    switch (event.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                            startX = event.getX();
-                            startY = event.getY();
-                            isSwiping = false;
-                            isLongPressTriggered = false;
-                            swipingViewHolder = ViewHolder.this;
-                            
-                            // 清除可能存在的波纹效果
-                            if (v.getBackground() instanceof RippleDrawable) {
-                                v.getBackground().setState(new int[0]);
-                            }
-                            
-                            // 开始长按检测
-                            longPressHandler.postDelayed(longPressRunnable, 500); // 500ms长按阈值
-                            return false;
-                            
-                        case MotionEvent.ACTION_MOVE:
-                            if (isMultiSelectMode) return false;
-                            
-                            float currentX = event.getX();
-                            float currentY = event.getY();
-                            float deltaX = currentX - startX;
-                            float deltaY = currentY - startY;
-                            
-                            // 检查是否是滑动
-                            if (Math.abs(deltaX) > SWIPE_THRESHOLD || Math.abs(deltaY) > SWIPE_THRESHOLD) {
-                                // 取消长按检测
-                                longPressHandler.removeCallbacks(longPressRunnable);
-                                
-                                // 检查是否是水平滑动
-                                if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5f) {
-                                    isSwiping = true;
-                                    
-                                    // 移动项目视图并添加视觉反馈
-                                    v.setTranslationX(deltaX);
-                                    
-                                    // 添加透明度效果，使滑动更明显
-                                    float alpha = 1f - Math.min(0.3f, Math.abs(deltaX) / v.getWidth() * 0.5f);
-                                    v.setAlpha(alpha);
-                                    
-                                    return true; // 消费事件
-                                }
-                            }
-                            return false;
-                            
-                        case MotionEvent.ACTION_UP:
-                        case MotionEvent.ACTION_CANCEL:
-                            // 取消长按检测
+
+            itemView.setOnTouchListener((v, e) -> {
+                int pos = getAdapterPosition();
+                if (pos == RecyclerView.NO_POSITION) return false;
+                FileItem item = fileList.get(pos);
+
+                switch (e.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        if (!longClickEnabled) return false;
+                        swipingViewHolder = this;
+                        startX = e.getX();
+                        startY = e.getY();
+                        isSwiping = false;
+                        isLongPressTriggered = false;
+                        longPressHandler.postDelayed(longPressRunnable, 500);
+                        return false;
+
+                    case MotionEvent.ACTION_MOVE:
+                        float dx = e.getX() - startX;
+                        float dy = e.getY() - startY;
+                        if (Math.abs(dx) > SWIPE_THRESHOLD &&
+                                Math.abs(dx) > Math.abs(dy)) {
                             longPressHandler.removeCallbacks(longPressRunnable);
-                            
-                            if (isSwiping && swipingViewHolder == ViewHolder.this) {
-                                // 滑动结束，恢复位置或触发多选
-                                float endX = event.getX();
-                                float delta = endX - startX;
-                                
-                                // 如果滑动距离足够大，触发多选模式
-                                if (Math.abs(delta) > v.getWidth() * 0.3f && !"..".equals(item.getName())) {
-                                    if (!isMultiSelectMode) {
-                                        setMultiSelectMode(true);
-                                        // 直接选中当前项目
-                                        selectedItems.add(item.getPath());
-                                        notifyItemChanged(position);
-                                    } else {
-                                        toggleSelection(item);
-                                    }
-                                }
-                                
-                                // 平滑恢复位置
-                                v.animate()
-                                        .translationX(0)
-                                        .alpha(1f)
-                                        .setDuration(200)
-                                        .withEndAction(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                // 确保波纹效果被清除
-                                                if (v.getBackground() instanceof RippleDrawable) {
-                                                    v.getBackground().setState(new int[0]);
-                                                }
-                                            }
-                                        })
-                                        .start();
-                                
-                                isSwiping = false;
-                                swipingViewHolder = null;
-                                return true;
+                            isSwiping = true;
+                            v.setTranslationX(dx);
+                            v.setAlpha(1f - Math.min(0.3f,
+                                    Math.abs(dx) / v.getWidth()));
+                            return true;
+                        }
+                        return false;
+
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        longPressHandler.removeCallbacks(longPressRunnable);
+                        if (isSwiping) {
+                            float delta = e.getX() - startX;
+                            if (Math.abs(delta) > v.getWidth() * 0.3f &&
+                                    !"..".equals(item.getName())) {
+                                setMultiSelectMode(true);
+                                selectedItems.add(item.getPath());
                             }
-                            
-                            // 如果是长按后抬起，不触发点击事件
-                            if (isLongPressTriggered) {
-                                isLongPressTriggered = false;
-                                // 清除波纹效果
-                                if (v.getBackground() instanceof RippleDrawable) {
-                                    v.getBackground().setState(new int[0]);
-                                }
-                                return true;
-                            }
-                            
-                            // 清除可能存在的波纹效果
-                            if (v.getBackground() instanceof RippleDrawable) {
-                                v.getBackground().setState(new int[0]);
-                            }
-                            
-                            return false;
-                    }
-                    return false;
+                            v.animate().translationX(0).alpha(1f).setDuration(200).start();
+                        }
+                        isSwiping = false;
+                        swipingViewHolder = null;
+                        isLongPressTriggered = false;
+                        return false;
                 }
+                return false;
             });
         }
     }
 
+    /* ===================== Utils ===================== */
+
     public static String formatSize(Context context, long size) {
         if (size <= 0) return "0B ";
         String[] units = context.getResources().getStringArray(R.array.size_units);
-        int digitGroups = (int) (Math.log(size) / Math.log(1024));
-        if (digitGroups >= units.length) digitGroups = units.length - 1;
-        return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + units[digitGroups] + " ";
+        int group = (int) (Math.log(size) / Math.log(1024));
+        if (group >= units.length) group = units.length - 1;
+        return new DecimalFormat("#,##0.#")
+                .format(size / Math.pow(1024, group)) + units[group] + " ";
     }
 
-    static String formatDate(long timestamp) {
+    static String formatDate(long time) {
         try {
-            return dateFormat.get().format(new Date(timestamp));
+            return dateFormat.get().format(new Date(time));
         } catch (Exception e) {
-            return "(Unknown Date)";
+            return "(Unknown)";
         }
     }
 }
