@@ -240,7 +240,7 @@ dependencies {
     implementation 'androidx.activity:activity:1.12.4'
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.appcompat:appcompat-resources:1.7.1'
-    implementation 'androidx.preference:preference:1.2.1'
+    implementation 'com.github.halifox:androidx.preference.material3:1.2.1-alpha07'
     implementation 'androidx.annotation:annotation:1.9.1'
     implementation 'androidx.fragment:fragment:1.8.9'
     
