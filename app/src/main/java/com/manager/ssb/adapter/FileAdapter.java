@@ -19,14 +19,11 @@
 package com.manager.ssb.adapter;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.RippleDrawable;
 import android.os.Handler;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -35,14 +32,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.manager.ssb.R;
-import com.manager.ssb.model.FileItem;
 import com.manager.ssb.core.FileType;
-import com.manager.ssb.MainActivity;
 import com.manager.ssb.enums.Sence;
+import com.manager.ssb.model.FileItem;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -55,7 +50,6 @@ import java.util.concurrent.ExecutorService;
 
 public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
-    // 整理 + 稍微好一点的状态管理！
     private final List<FileItem> fileList;
     private final OnItemClickListener listener;
     private final OnItemLongClickListener longClickListener;
@@ -245,7 +239,13 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         holder.tvTime.setText(formatDate(item.getLastModified()));
         holder.ivIcon.setImageResource(item.isDirectory() ? R.drawable.ic_folder : R.drawable.ic_file);
 
-        if (highlightedItemPath != null && highlightedItemPath.equals(item.getPath())) {
+        // 设置背景优先级：多选选中 > 高亮（且不是".."） > 默认
+        if (isMultiSelectMode && selectedItems.contains(item.getPath())) {
+            // 多选模式下被选中的项
+            holder.itemView.setBackground(new ColorDrawable(Color.parseColor("#ADD8E6")));
+        } else if (highlightedItemPath != null && !"..".equals(item.getName())
+                && highlightedItemPath.equals(item.getPath())) {
+            // 高亮项（排除".."）
             holder.itemView.setBackgroundColor(Color.parseColor("#E8F5E9"));
             if (shouldScrollToHighlighted) {
                 shouldScrollToHighlighted = false;
@@ -254,21 +254,33 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
                     if (rv != null) rv.smoothScrollToPosition(holder.getAdapterPosition());
                 });
             }
-        } else if (isMultiSelectMode && selectedItems.contains(item.getPath())) {
-            holder.itemView.setBackground(new ColorDrawable(Color.parseColor("#ADD8E6")));
         }
+        // 否则保留 resetViewState 中恢复的默认背景
 
         executorService.submit(() -> {
             FileType type = item.resolveFileType();
             int icon;
             switch (type) {
-                case AUDIO: icon = R.drawable.ic_music; break;
-                case TEXT: icon = R.drawable.ic_text; break;
-                case COMPRESS: icon = R.drawable.ic_zip; break;
-                case HTML: icon = R.drawable.ic_web; break;
-                case APK: icon = R.drawable.ic_android; break;
-                case DIRECTORY: icon = R.drawable.ic_folder; break;
-                default: icon = R.drawable.ic_file;
+                case AUDIO:
+                    icon = R.drawable.ic_music;
+                    break;
+                case TEXT:
+                    icon = R.drawable.ic_text;
+                    break;
+                case COMPRESS:
+                    icon = R.drawable.ic_zip;
+                    break;
+                case HTML:
+                    icon = R.drawable.ic_web;
+                    break;
+                case APK:
+                    icon = R.drawable.ic_android;
+                    break;
+                case DIRECTORY:
+                    icon = R.drawable.ic_folder;
+                    break;
+                default:
+                    icon = R.drawable.ic_file;
             }
             mainHandler.post(() -> {
                 int p = holder.getAdapterPosition();
