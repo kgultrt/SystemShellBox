@@ -19,7 +19,6 @@
 package com.manager.ssb.core.dialog;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
@@ -28,13 +27,13 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.slider.Slider;   // 导入 Slider
 import com.manager.ssb.R;
 
 import java.util.Locale;
@@ -45,12 +44,12 @@ public class AudioPlayerDialog {
     private final Handler progressHandler = new Handler();
     private boolean isPlaying = true;
 
-    // UI
+    // UI 控件
     private TextView tvFileName;
     private TextView tvCurrentTime;
     private TextView tvTotalTime;
     private Button btnPlayPause;
-    private SeekBar seekBar;
+    private Slider slider;   // 替换原来的 SeekBar
 
     public AudioPlayerDialog(@NonNull Context context, String filePath, String fileName) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
@@ -68,8 +67,8 @@ public class AudioPlayerDialog {
         Window window = dialog.getWindow();
         if (window != null) {
             window.setLayout(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.WRAP_CONTENT
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT
             );
         }
     }
@@ -87,7 +86,7 @@ public class AudioPlayerDialog {
         tvCurrentTime = view.findViewById(R.id.tv_current_time);
         tvTotalTime = view.findViewById(R.id.tv_total_time);
         btnPlayPause = view.findViewById(R.id.btn_play_pause);
-        seekBar = view.findViewById(R.id.seek_bar);
+        slider = view.findViewById(R.id.slider);   // 初始化 Slider
 
         tvFileName.setText(fileName);
         btnPlayPause.setOnClickListener(v -> togglePlayPause());
@@ -96,32 +95,36 @@ public class AudioPlayerDialog {
 
     private void initMediaPlayer(Context context, Uri audioUri) {
         mediaPlayer = MediaPlayer.create(context, audioUri);
-        
+
         if (mediaPlayer != null) {
             mediaPlayer.setOnCompletionListener(mp -> {
                 isPlaying = false;
                 btnPlayPause.setText(R.string.dialog_play);
-                seekBar.setProgress(mp.getDuration());
-                tvCurrentTime.setText(formatTime(mp.getDuration()));
+                // 播放完成后滑块停留在末尾，更新时间
+                int duration = mp.getDuration();
+                slider.setValue(duration);
+                tvCurrentTime.setText(formatTime(duration));
                 progressHandler.removeCallbacksAndMessages(null);
             });
 
             int duration = mediaPlayer.getDuration();
             tvTotalTime.setText(formatTime(duration));
-            seekBar.setMax(duration);
 
-            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    if (fromUser) mediaPlayer.seekTo(progress);
+            // 设置 Slider 的范围（从 0 到 音频总时长，单位毫秒）
+            slider.setValueFrom(0f);
+            slider.setValueTo(duration);
+            slider.setValue(0f);
+
+            // 添加 Slider 的监听器（代替 SeekBar 的 setOnSeekBarChangeListener）
+            slider.addOnChangeListener((slider, value, fromUser) -> {
+                if (fromUser && mediaPlayer != null) {
+                    // 将滑块的 float 值转为 int 并跳转
+                    mediaPlayer.seekTo((int) value);
                 }
-
-                @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-                @Override public void onStopTrackingTouch(SeekBar seekBar) {}
             });
         }
     }
-    
+
     private void togglePlayPause() {
         if (isPlaying) pauseAudio();
         else startAudio();
@@ -129,12 +132,13 @@ public class AudioPlayerDialog {
 
     private void startAudio() {
         if (mediaPlayer != null) {
+            // 如果已播放到结尾，重置到开头
             if (mediaPlayer.getCurrentPosition() >= mediaPlayer.getDuration()) {
                 mediaPlayer.seekTo(0);
-                seekBar.setProgress(0);
+                slider.setValue(0f);
                 tvCurrentTime.setText(formatTime(0));
             }
-            
+
             mediaPlayer.start();
             isPlaying = true;
             btnPlayPause.setText(R.string.dialog_pause);
@@ -154,11 +158,12 @@ public class AudioPlayerDialog {
         progressHandler.postDelayed(() -> {
             if (mediaPlayer != null && isPlaying) {
                 int currentPosition = mediaPlayer.getCurrentPosition();
-                seekBar.setProgress(currentPosition);
+                // 更新滑块位置（自动转换为 float）
+                slider.setValue(currentPosition);
                 tvCurrentTime.setText(formatTime(currentPosition));
                 updateProgress();
             }
-        }, 10);
+        }, 10);  // 10ms 刷新一次，与之前一致
     }
 
     private String formatTime(int milliseconds) {

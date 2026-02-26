@@ -60,12 +60,11 @@
                     android:id="@+id/tv_storage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
-                <ProgressBar
+                <com.google.android.material.progressindicator.LinearProgressIndicator
                     android:id="@+id/progressBar_storage"
                     android:layout_width="0.0dip"
                     android:layout_height="2.0dip"
-                    android:layout_weight="1.0"
-                    style="@style/Widget.AppCompat.ProgressBar.Horizontal" />
+                    android:layout_weight="1.0" />
             </LinearLayout>
         </LinearLayout>
 
