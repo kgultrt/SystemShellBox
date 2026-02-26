@@ -53,7 +53,7 @@ LOCAL_LDFLAGS += -nostartfiles -nodefaultlibs -nostdlib
 LOCAL_LDFLAGS += -pie -Wl,-Bsymbolic,--no-undefined,--build-id=none
 LOCAL_LDFLAGS += -Wl,--gc-sections
 
-# 如果你的 loader 需要入口点设置
+# 如果 loader 需要入口点设置
 LOCAL_LDFLAGS += -Wl,-e,z_start
 
 # Android 特定的链接库（只有 log，因为不能用标准库）

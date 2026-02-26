@@ -117,7 +117,7 @@
             android:gravity="center"
             android:layout_marginTop="4dp">
 
-            <com.google.android.material.button.MaterialButton
+            <Button
                 android:id="@+id/btn_sync"
                 android:text="@string/sync"
                 android:layout_width="0dp"
@@ -126,7 +126,7 @@
                 android:icon="@drawable/ic_sync"
                 android:padding="4dp" />
 
-            <com.google.android.material.button.MaterialButton
+            <Button
                 android:id="@+id/btn_create"
                 android:text="@string/create_dialog"
                 android:layout_width="0dp"
@@ -135,16 +135,17 @@
                 android:icon="@drawable/ic_create"
                 android:padding="4dp" />
 
-            <com.google.android.material.button.MaterialButton
+            <Button
                 android:id="@+id/btn_bookmark_history"
                 android:text="@string/bookmark"
+                android:textSize="10.0sp"
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1.0"
                 android:icon="@drawable/ic_bookmark"
                 android:padding="4dp" />
 
-            <com.google.android.material.button.MaterialButton
+            <Button
                 android:id="@+id/btn_back"
                 android:text="@string/back_lastdir"
                 android:layout_width="0dp"

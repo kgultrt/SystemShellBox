@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
   <!-- Base application theme. -->
-  <style name="Base.AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
+  <style name="Base.AppTheme" parent="Theme.Material3Expressive.DynamicColors.DayNight.NoActionBar">
     <!-- Customize your theme here. -->
     <item name="materialAlertDialogTheme">@style/Theme.TransparentDialog</item>
   </style>

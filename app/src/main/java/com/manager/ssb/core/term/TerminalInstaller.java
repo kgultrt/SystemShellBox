@@ -995,7 +995,7 @@ public class TerminalInstaller {
         }
     }
 
-    // 进度更新接口（支持同时更新进度和状态）
+    // 进度更新接口
     private interface ProgressUpdater {
         void update(int progress, String status);
     }

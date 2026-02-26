@@ -21,10 +21,8 @@ package com.manager.ssb.core.settings;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.manager.ssb.R;
-import com.manager.ssb.core.config.Config;
-import com.manager.ssb.core.settings.SettingsKeys;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -45,13 +43,16 @@ public class SettingsActivity extends AppCompatActivity {
     }
     
     private void setupToolbar() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.settings);
         }
+        
+        // MD3风格的工具栏配置
+        toolbar.setTitleCentered(false);
     }
     
     @Override

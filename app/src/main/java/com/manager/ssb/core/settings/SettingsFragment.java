@@ -35,28 +35,36 @@ public class SettingsFragment extends PreferenceFragmentCompat
         setupPreferences();
     }
 
-    private void setupPreferences() {
-        // 绑定所有设置项的值和监听器
-        bindPreferenceSummaryToValue(findPreference(SettingsKeys.KEY_THEME));
-        bindPreferenceSummaryToValue(findPreference(SettingsKeys.KEY_LANGUAGE));
+    @Override
+    public void onViewCreated(android.view.View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         
-        // 使用辅助方法设置开关监听器
-        setupSwitchPreference(SettingsKeys.KEY_NOTIFICATIONS);
+        // 设置列表视图的填充
+        getListView().setPadding(0, 0, 0, 0);
+        getListView().setClipToPadding(false);
     }
 
-    /**
-     * 设置开关类型偏好设置的辅助方法
-     */
+    private void setupPreferences() {
+        bindPreferenceSummaryToValue(findPreference(SettingsKeys.KEY_THEME));
+        bindPreferenceSummaryToValue(findPreference(SettingsKeys.KEY_LANGUAGE));
+        bindPreferenceSummaryToValue(findPreference(SettingsKeys.KEY_TIMEOUT));
+        bindPreferenceSummaryToValue(findPreference(SettingsKeys.KEY_CACHE_SIZE));
+        
+        setupSwitchPreference(SettingsKeys.KEY_NOTIFICATIONS);
+        setupSwitchPreference(SettingsKeys.KEY_VIBRATION);
+        setupSwitchPreference(SettingsKeys.KEY_SOUND);
+        setupSwitchPreference(SettingsKeys.KEY_AUTO_START);
+        setupSwitchPreference(SettingsKeys.KEY_SHOW_TIPS);
+    }
+
     private void setupSwitchPreference(String key) {
         Preference preference = findPreference(key);
         
-        if (preference instanceof SwitchPreferenceCompat) {
-            SwitchPreferenceCompat switchPreference = (SwitchPreferenceCompat) preference;
-            switchPreference.setOnPreferenceChangeListener(this);
+        if (preference != null) {
+            preference.setOnPreferenceChangeListener(this);
             
-            // 初始化摘要
-            boolean value = Config.get(key, false);
-            onPreferenceChange(switchPreference, value);
+            boolean value = Config.get(key, getDefaultBooleanForKey(key));
+            onPreferenceChange(preference, value);
         }
     }
 
@@ -65,73 +73,89 @@ public class SettingsFragment extends PreferenceFragmentCompat
         
         preference.setOnPreferenceChangeListener(this);
         
-        // 立即用当前值更新摘要
         String key = preference.getKey();
         
         if (preference instanceof ListPreference) {
-            String value = Config.get(key, getDefaultValueForKey(key));
+            String value = Config.get(key, getDefaultStringForKey(key));
             onPreferenceChange(preference, value);
         } else if (preference instanceof EditTextPreference) {
-            String value = Config.get(key, getDefaultValueForKey(key));
+            String value = Config.get(key, getDefaultStringForKey(key));
             onPreferenceChange(preference, value);
         } else if (preference instanceof SeekBarPreference) {
-            int value = Config.get(key, 0);
-            onPreferenceChange(preference, value);
-        } else if (preference instanceof SwitchPreferenceCompat) {
-            boolean value = Config.get(key, true);
+            int value = Config.get(key, getDefaultIntForKey(key));
             onPreferenceChange(preference, value);
         }
     }
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        String stringValue = newValue.toString();
         String key = preference.getKey();
 
-        // 保存到配置
         if (newValue instanceof Boolean) {
             Config.set(key, (Boolean) newValue);
         } else if (newValue instanceof String) {
-            Config.set(key, stringValue);
+            Config.set(key, (String) newValue);
         } else if (newValue instanceof Integer) {
             Config.set(key, (Integer) newValue);
         }
 
-        // 更新摘要
         updatePreferenceSummary(preference, newValue);
-        
         return true;
     }
     
-    private String getDefaultValueForKey(String key) {
+    private String getDefaultStringForKey(String key) {
         switch (key) {
-            case SettingsKeys.KEY_APP_NAME:
-                return SettingsKeys.DEFAULT_APP_NAME;
             case SettingsKeys.KEY_THEME:
                 return SettingsKeys.DEFAULT_THEME;
             case SettingsKeys.KEY_LANGUAGE:
                 return SettingsKeys.DEFAULT_LANGUAGE;
+            case SettingsKeys.KEY_CACHE_SIZE:
+                return SettingsKeys.DEFAULT_CACHE_SIZE;
             default:
                 return "";
         }
     }
-    /**
-     * 更新偏好设置摘要的辅助方法
-     */
+    
+    private int getDefaultIntForKey(String key) {
+        switch (key) {
+            case SettingsKeys.KEY_TIMEOUT:
+                return SettingsKeys.DEFAULT_TIMEOUT;
+            default:
+                return 0;
+        }
+    }
+    
+    private boolean getDefaultBooleanForKey(String key) {
+        switch (key) {
+            case SettingsKeys.KEY_NOTIFICATIONS:
+                return SettingsKeys.DEFAULT_NOTIFICATIONS;
+            case SettingsKeys.KEY_VIBRATION:
+                return SettingsKeys.DEFAULT_VIBRATION;
+            case SettingsKeys.KEY_SOUND:
+                return SettingsKeys.DEFAULT_SOUND;
+            case SettingsKeys.KEY_AUTO_START:
+                return SettingsKeys.DEFAULT_AUTO_START;
+            case SettingsKeys.KEY_SHOW_TIPS:
+                return SettingsKeys.DEFAULT_SHOW_TIPS;
+            default:
+                return true;
+        }
+    }
+    
     private void updatePreferenceSummary(Preference preference, Object value) {
-        String stringValue = value.toString();
-        
         if (preference instanceof ListPreference) {
             ListPreference listPreference = (ListPreference) preference;
-            int index = listPreference.findIndexOfValue(stringValue);
+            int index = listPreference.findIndexOfValue(value.toString());
             preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
         } else if (preference instanceof EditTextPreference) {
-            preference.setSummary(stringValue);
+            preference.setSummary(value.toString());
         } else if (preference instanceof SeekBarPreference) {
-            preference.setSummary(stringValue);
+            preference.setSummary(String.valueOf(value));
         } else if (preference instanceof SwitchPreferenceCompat) {
             boolean enabled = (Boolean) value;
-            preference.setSummary(enabled ? Application.getAppContext().getString(R.string.settings_enable) : Application.getAppContext().getString(R.string.settings_disable));
+            preference.setSummary(enabled ? 
+                Application.getAppContext().getString(R.string.settings_enable) : 
+                Application.getAppContext().getString(R.string.settings_disable));
         }
     }
 }
