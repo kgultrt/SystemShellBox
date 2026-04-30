@@ -261,6 +261,9 @@ dependencies {
     // WebView
     implementation 'androidx.webkit:webkit:1.7.0'
     
+    // libarchive
+    implementation 'me.zhanghai.android.libarchive:library:1.1.6'
+    
     // 项目模块
     api project(":terminal-view")
 }
