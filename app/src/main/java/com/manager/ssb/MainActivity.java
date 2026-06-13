@@ -91,7 +91,7 @@ import java.util.regex.Matcher;
 
 public class MainActivity extends AppCompatActivity {
 
-    //整理
+    // 整理
     private ActivityMainBinding binding;
     private File currentDirectoryLeft;
     private File currentDirectoryRight;
@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
     private CompressFileManager compressFileManager;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
-    
+
     public ActivePanel activePanel = ActivePanel.LEFT;
     public Sence leftPanelSence = Sence.FILE;
     public Sence rightPanelSence = Sence.FILE;
@@ -121,26 +121,26 @@ public class MainActivity extends AppCompatActivity {
         adapterLeft.setLongClickEnabled(true);
         adapterRight.setClickEnabled(true);
         adapterRight.setLongClickEnabled(true);
-        
+
         canSwichActivePanel = true;
     };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        
+
         Config.initialize();
-        
+
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        
+
         notificationManager = new TaskNotificationManager(this);
         executorService = new NotifyingExecutorService(
-            Executors.newFixedThreadPool(4),
-            notificationManager,
-            TaskTypes.MONITORED_TASKS
+        Executors.newFixedThreadPool(4),
+        notificationManager,
+        TaskTypes.MONITORED_TASKS
         );
-        
+
         compressFileManager = new CompressFileManager(this, executorService);
 
         initApp();
@@ -148,27 +148,28 @@ public class MainActivity extends AppCompatActivity {
 
     private void initApp() {
         Config.initialize();
-        
+
         currentDirectoryLeft = Environment.getExternalStorageDirectory();
         currentDirectoryRight = Environment.getExternalStorageDirectory();
-        
+
         setupRecyclerViews();
         loadBothPanels();
-        
+
         if (!storageInfoLoaded) {
             updateStorageInfo();
             storageInfoLoaded = true;
         }
-        
+
         initMenuActions();
-        
+        initAppDataFolder();
+
         boolean isFirst = Config.get("isFirst", true);
         int lastBuildNumber = Config.get("lastBuildNumber", 0);
         int currentBuildNumber = extractBuildNumber(getCurrentVersion());
-        
+
         if (currentBuildNumber > lastBuildNumber) {
             if (lastBuildNumber == 0) {
-                //do nothing
+                // do nothing
             } else {
                 // 检测到新版本显示更新日志
                 showUpdateDialog(currentBuildNumber);
@@ -176,11 +177,11 @@ public class MainActivity extends AppCompatActivity {
                 Config.set("lastBuildNumber", currentBuildNumber);
             }
         }
-        
-        //test
+
+        // test
         locateAndHighlightItem("/storage/emulated/0/aaa_123", ActivePanel.LEFT);
     }
-    
+
     // 提取构建号的核心方法
     private int extractBuildNumber(String version) {
         // 使用正则提取末尾的数字
@@ -202,25 +203,25 @@ public class MainActivity extends AppCompatActivity {
             return "0.0.0-build0";
         }
     }
-    
+
     // 显示更新日志对话框
     private void showUpdateDialog(int buildNumber) {
         new MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.update_title, buildNumber))
-            .setMessage(R.string.update_log_content) // 使用单一更新日志资源
-            .setPositiveButton(android.R.string.ok, null)
-            .show();
+                .setTitle(getString(R.string.update_title, buildNumber))
+                .setMessage(R.string.update_log_content) // 使用单一更新日志资源
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
     }
-    
+
     private void showWarningDialog() {
         new MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.warning_title)
-            .setMessage(R.string.warning_content)
-            .setPositiveButton(android.R.string.ok, null)
-            .setCancelable(false)
-            .show();
+                .setTitle(R.string.warning_title)
+                .setMessage(R.string.warning_content)
+                .setPositiveButton(android.R.string.ok, null)
+                .setCancelable(false)
+                .show();
     }
-    
+
     private void initMenuActions() {
         menuActionMap.put(R.id.action_refresh, this::refreshCurrentDirectory);
         menuActionMap.put(R.id.action_settings, this::openSettings);
@@ -231,34 +232,54 @@ public class MainActivity extends AppCompatActivity {
         menuActionMap.put(R.id.action_exit, this::exitTheApp);
     }
 
+    private void initAppDataFolder() {
+        String appDataPath = Environment.getExternalStorageDirectory().getPath() + Config.get("appData.root_folder_name", "SSB");
+        File dataFolder = new File(appDataPath);
+        if (!dataFolder.exists()) {
+            dataFolder.mkdir();
+        }
+    }
+
     private void setupRecyclerViews() {
-        
+
         FileLongClickHandler longClickHandler = new FileLongClickHandler(this, executorService, activePanel);
 
         // 左侧适配器
         adapterLeft = new FileAdapter(
-            fileListLeft,
-            item -> handleItemClick(item, ActivePanel.LEFT),
-            (item, view) -> longClickHandler.handle(item, view, ActivePanel.LEFT),
-            "left",
-            Sence.FILE,
-            executorService,
-            mainHandler
+        fileListLeft,
+        item -> handleItemClick(item, ActivePanel.LEFT),
+        (item, view) -> {
+            if (compressFileManager.isInCompressMode(ActivePanel.LEFT)) {
+                compressFileManager.handleItemLongClick(item, view, ActivePanel.LEFT);
+            } else {
+                longClickHandler.handle(item, view, ActivePanel.LEFT);
+            }
+        },
+        "left",
+        Sence.FILE,
+        executorService,
+        mainHandler
+        );
+
+        // 右侧适配器
+        adapterRight = new FileAdapter(
+        fileListRight,
+        item -> handleItemClick(item, ActivePanel.RIGHT),
+        (item, view) -> {
+            if (compressFileManager.isInCompressMode(ActivePanel.RIGHT)) {
+                compressFileManager.handleItemLongClick(item, view, ActivePanel.RIGHT);
+            } else {
+                longClickHandler.handle(item, view, ActivePanel.RIGHT);
+            }
+        },
+        "right",
+        Sence.FILE,
+        executorService,
+        mainHandler
         );
 
         binding.rvFilesLeft.setLayoutManager(new LinearLayoutManager(this));
         binding.rvFilesLeft.setAdapter(adapterLeft);
-
-        // 右侧适配器
-        adapterRight = new FileAdapter(
-            fileListRight,
-            item -> handleItemClick(item, ActivePanel.RIGHT),
-            (item, view) -> longClickHandler.handle(item, view, ActivePanel.RIGHT),
-            "right",
-            Sence.FILE,
-            executorService,
-            mainHandler
-        );
         binding.rvFilesRight.setLayoutManager(new LinearLayoutManager(this));
         binding.rvFilesRight.setAdapter(adapterRight);
 
@@ -282,11 +303,11 @@ public class MainActivity extends AppCompatActivity {
                 return false; // 不拦截事件，事件继续往下传递
             }
         });
-        
+
         binding.btnMenu.setOnClickListener(v -> showPopupMenu());
         binding.tvCurrentPath.setOnClickListener(v -> showDirectoryInputDialog());
         binding.tvStorage.setOnClickListener(v -> showStorageDetails());
-        
+
         // 创建 BottomMenuClickListener 的实例
         BottomMenuClickListener bottomMenuClickListener = new BottomMenuClickListener(this);
 
@@ -295,26 +316,26 @@ public class MainActivity extends AppCompatActivity {
         binding.btnCreate.setOnClickListener(bottomMenuClickListener);
         binding.btnBookmarkHistory.setOnClickListener(bottomMenuClickListener);
         binding.btnBack.setOnClickListener(bottomMenuClickListener);
-        
+
         // 设置侧边栏按钮点击事件
         binding.btnDrawer.setOnClickListener(v -> {
             if (drawerLayout != null) {
                 drawerLayout.openDrawer(GravityCompat.START);
             }
         });
-        
+
         // 初始化侧边栏
         initDrawer();
     }
-    
+
     private void initDrawer() {
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
-        
+
         if (navigationView != null) {
             navigationView.setNavigationItemSelectedListener(item -> {
                 int id = item.getItemId();
-                
+
                 if (id == R.id.nav_root) {
                     // 跳转到根目录
                     loadDirectory(new File("/"), activePanel);
@@ -322,24 +343,24 @@ public class MainActivity extends AppCompatActivity {
                     // 跳转到内部存储
                     loadDirectory(Environment.getExternalStorageDirectory(), activePanel);
                 }
-                
+
                 // 关闭侧边栏
                 drawerLayout.closeDrawer(GravityCompat.START);
                 return true;
             });
         }
     }
-    
+
     private void setActivePanel(ActivePanel panel) {
         if (canSwichActivePanel) {
             activePanel = panel;
             updatePathDisplay();
         }
     }
-    
+
     public void updatePathDisplay() {
         String displayText;
-        
+
         // 检查是否在压缩文件浏览模式
         if (compressFileManager.isInCompressMode(activePanel)) {
             String compressPath = compressFileManager.getCurrentCompressPath(activePanel);
@@ -348,7 +369,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             displayText = getCurrentDirectory().getAbsolutePath();
         }
-        
+
         binding.tvCurrentPath.setText(displayText);
     }
 
@@ -383,21 +404,22 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
     }
-    
-    private void updateSingleList(List<FileItem> targetList, List<FileItem> newItems, FileAdapter adapter) {
+
+    private void updateSingleList(List<FileItem> targetList, List<
+                    FileItem> newItems, FileAdapter adapter) {
         DiffUtil.DiffResult result = DiffUtil.calculateDiff(new FileDiffCallback(targetList, newItems));
         targetList.clear();
         targetList.addAll(newItems);
         result.dispatchUpdatesTo(adapter);
     }
-    
+
     private void handleItemClick(FileItem item, ActivePanel panel) {
         // 检查是否在压缩文件浏览模式
         if (compressFileManager.isInCompressMode(panel)) {
             compressFileManager.handleCompressItemClick(item, panel);
             return;
         }
-        
+
         if (item.isDirectory()) {
             File newDir = item.getFile();
             loadDirectory(newDir, panel);
@@ -409,7 +431,6 @@ public class MainActivity extends AppCompatActivity {
             hs.addToHistory(item.getPath());
         }
     }
-
 
     private FileItem createParentDirectoryItem(File currentDir) {
         return new FileItem(currentDir.getParentFile()) {
@@ -434,7 +455,7 @@ public class MainActivity extends AppCompatActivity {
                 long free = stat.getFreeBytes();
                 long used = total - free;
 
-                String info = String.format(getString(R.string.disk_info_used) + ": %s / " + 
+                String info = String.format(getString(R.string.disk_info_used) + ": %s / " +
                         getString(R.string.disk_info_all) + ": %s",
                         FileAdapter.formatSize(this, used),
                         FileAdapter.formatSize(this, total));
@@ -502,20 +523,20 @@ public class MainActivity extends AppCompatActivity {
             Runnable action = menuActionMap.get(item.getItemId());
             if (action != null) {
                 action.run(); // 执行对应的操作
-                return true;  // 事件已处理
+                return true; // 事件已处理
             }
             return false; // 未处理的事件
         });
 
         popupMenu.show();
     }
-    
+
     // 相关功能方法
     private void refreshCurrentDirectory() {
         loadBothPanels();
         showToast(getString(R.string.refresh));
     }
-    
+
     private void openSettings() {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
@@ -591,7 +612,7 @@ public class MainActivity extends AppCompatActivity {
                     boolean isValid = targetDir.isDirectory() && targetDir.canRead();
                     mainHandler.post(() -> {
                         BottomMenuClickListener hs = new BottomMenuClickListener(this);
-                        
+
                         if (isValid) {
                             switch (activePanel) {
                                 case LEFT:
@@ -615,59 +636,74 @@ public class MainActivity extends AppCompatActivity {
         });
         dialog.show();
     }
-    
-    
-    
+
     private void showAboutDialog() {
         StringBuilder sb = new StringBuilder("System Shell Box (C) 2025-2026 by kgultrt\n");
         sb.append("Handle all documents.\nDevelop on MT manager Text Editor and Termux.\nmade on android\n\n");
-    
+
         // 应用信息
         try {
             PackageInfo pkg = getPackageManager().getPackageInfo(getPackageName(), 0);
             sb.append(getString(R.string.ver)).append(": ").append(pkg.versionName)
-            .append(" (").append(pkg.versionCode).append(")\n");
-        } catch (Exception e) { sb.append("(Unknown Version)\n"); }
+                    .append(" (").append(pkg.versionCode).append(")\n");
+        } catch (Exception e) {
+            sb.append("(Unknown Version)\n");
+        }
 
         // 构建信息
         try {
             long timestamp = Long.parseLong(BuildConfig.BUILD_TIME);
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
             sb.append(getString(R.string.compilation_time)).append(": ")
-            .append(sdf.format(new Date(timestamp))).append("\n");
-        } catch (Exception e) { sb.append("(Unknown Time)\n"); }
+                    .append(sdf.format(new Date(timestamp))).append("\n");
+        } catch (Exception e) {
+            sb.append("(Unknown Time)\n");
+        }
 
         try {
             String buildType = BuildConfig.BUILD_TYPE.toLowerCase(Locale.US);
-            String type = buildType.contains("debug") ? "Debug" : 
-                         buildType.contains("release") ? "Release" : "Unknown";
+            String type = buildType.contains("debug") ? "Debug" : buildType.contains("release") ? "Release" : "Unknown";
             sb.append(getString(R.string.build_type)).append(": ").append(type).append("\n");
-        } catch (Exception e) { sb.append("(Unknown Build Type)\n"); }
-        
-        try { sb.append(getString(R.string.term_install_status)).append(": ")
-                .append(TerminalInstaller.getCurrentVersionInfo()).append("\n"); } 
-        catch (Exception e) { /* 忽略 */ }
+        } catch (Exception e) {
+            sb.append("(Unknown Build Type)\n");
+        }
+
+        try {
+            sb.append(getString(R.string.term_install_status)).append(": ")
+                    .append(TerminalInstaller.getCurrentVersionInfo()).append("\n");
+        } catch (Exception e) {
+            /* 忽略 */
+        }
 
         // Git信息
-        try { sb.append(getString(R.string.git_commit_short_hash)).append(": ")
-                .append(BuildConfig.GIT_COMMIT_SHORT_HASH).append("\n"); } 
-        catch (Exception e) { /* 忽略 */ }
-    
-        try { sb.append(getString(R.string.git_commit_author)).append(": ")
-                .append(BuildConfig.GIT_COMMIT_AUTHOR).append("\n"); } 
-        catch (Exception e) { /* 忽略 */ }
-    
-        try { sb.append(getString(R.string.git_branch_name)).append(": ")
-                .append(BuildConfig.GIT_BRANCH_NAME); } 
-        catch (Exception e) { /* 忽略 */ }
-        
+        try {
+            sb.append(getString(R.string.git_commit_short_hash)).append(": ")
+                    .append(BuildConfig.GIT_COMMIT_SHORT_HASH).append("\n");
+        } catch (Exception e) {
+            /* 忽略 */
+        }
+
+        try {
+            sb.append(getString(R.string.git_commit_author)).append(": ")
+                    .append(BuildConfig.GIT_COMMIT_AUTHOR).append("\n");
+        } catch (Exception e) {
+            /* 忽略 */
+        }
+
+        try {
+            sb.append(getString(R.string.git_branch_name)).append(": ")
+                    .append(BuildConfig.GIT_BRANCH_NAME);
+        } catch (Exception e) {
+            /* 忽略 */
+        }
+
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.about)
                 .setMessage(sb.toString())
                 .setPositiveButton(android.R.string.ok, null)
                 .show();
     }
-    
+
     // 一些公共方法
     public void refreshAllPanels() {
         loadBothPanels();
@@ -684,11 +720,11 @@ public class MainActivity extends AppCompatActivity {
     public File getLeftDir() {
         return currentDirectoryLeft;
     }
-    
+
     public File getRightDir() {
         return currentDirectoryRight;
     }
-    
+
     public File getCurrentDir() {
         if (activePanel == ActivePanel.LEFT) {
             return currentDirectoryLeft;
@@ -696,7 +732,7 @@ public class MainActivity extends AppCompatActivity {
             return currentDirectoryRight;
         }
     }
-    
+
     public Sence getCurrentSence() {
         if (activePanel == ActivePanel.LEFT) {
             return adapterLeft.getSence();
@@ -704,11 +740,11 @@ public class MainActivity extends AppCompatActivity {
             return adapterRight.getSence();
         }
     }
-    
+
     public CompressFileManager getCompressFileManager() {
         return compressFileManager;
     }
-    
+
     public void loadDirectory(File directory, ActivePanel panel) {
         executorService.submit(() -> {
             List<FileItem> newItems = new ArrayList<>();
@@ -728,11 +764,11 @@ public class MainActivity extends AppCompatActivity {
                 // 优先处理".."目录
                 boolean aIsParent = "..".equals(a.getName());
                 boolean bIsParent = "..".equals(b.getName());
-            
+
                 if (aIsParent && bIsParent) return 0;
-                if (aIsParent) return -1;  // a是".."则排在前面
-                if (bIsParent) return 1;   // b是".."则a排在后面
-            
+                if (aIsParent) return -1; // a是".."则排在前面
+                if (bIsParent) return 1; // b是".."则a排在后面
+
                 // 原始排序规则
                 if (a.isDirectory() && !b.isDirectory()) return -1;
                 if (!a.isDirectory() && b.isDirectory()) return 1;
@@ -745,21 +781,21 @@ public class MainActivity extends AppCompatActivity {
             });
         }, TaskTypes.LOAD_FILES);
     }
-    
+
     public void onBackPressedCall() {
-        
+
         // 如果侧边栏是打开的，先关闭侧边栏
         if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
             return;
         }
-        
+
         // 如果当前在压缩文件浏览模式，先退出压缩文件
         if (compressFileManager.isInCompressMode(activePanel)) {
             compressFileManager.exitCompressFile(activePanel);
             return;
         }
-        
+
         File willLoad;
         switch (activePanel) {
             case LEFT:
@@ -780,12 +816,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
     }
-    
+
     // 定位并高亮项目
     public void locateAndHighlightItem(String itemPath, ActivePanel panel) {
         // 清除之前的高亮
         clearAllHighlights();
-    
+
         // 根据面板设置高亮
         switch (panel) {
             case LEFT:
@@ -807,24 +843,24 @@ public class MainActivity extends AppCompatActivity {
     public boolean isItemInCurrentDirectory(String itemPath, ActivePanel panel) {
         File currentDir = getCurrentDirectory();
         File itemFile = new File(itemPath);
-    
+
         // 检查项目是否在当前目录中
-        return itemFile.getParent() != null && 
-               itemFile.getParent().equals(currentDir.getAbsolutePath());
+        return itemFile.getParent() != null &&
+                itemFile.getParent().equals(currentDir.getAbsolutePath());
     }
 
     private void showExitDialog() {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setTitle(getString(R.string.exit_dialog))
-               .setMessage(getString(R.string.exit_dialog_c))
-               .setPositiveButton(R.string.ok, (dialog, which) -> exitTheApp())
-               .setNegativeButton(R.string.cancel, null)
-               .show();
+                .setMessage(getString(R.string.exit_dialog_c))
+                .setPositiveButton(R.string.ok, (dialog, which) -> exitTheApp())
+                .setNegativeButton(R.string.cancel, null)
+                .show();
     }
-    
+
     public void exitTheApp() {
-        notificationManager.clearAll(); //清除通知
-        finish(); //完成退出
+        notificationManager.clearAll(); // 清除通知
+        finish(); // 完成退出
     }
 
     @Override
@@ -833,7 +869,7 @@ public class MainActivity extends AppCompatActivity {
         binding = null;
         executorService.shutdownNow(); // 关闭线程池
     }
-    
+
     @Override
     public void onBackPressed() {
         onBackPressedCall();

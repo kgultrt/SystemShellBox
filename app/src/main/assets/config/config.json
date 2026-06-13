@@ -1,5 +1,9 @@
 {
     "appName": "System Shell Box",
+    "appData": {
+        "root_folder_name": "SSB",
+        "pulgin_folder_name": "pulgin"
+    },
     "appearance": {
         "theme": "system"
     },

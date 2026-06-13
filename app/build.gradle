@@ -264,6 +264,9 @@ dependencies {
     // libarchive
     implementation 'me.zhanghai.android.libarchive:library:1.1.6'
     
+    // Lua 脚本引擎, 用于plugin
+    implementation 'org.luaj:luaj-jse:3.0.1'
+    
     // 项目模块
     api project(":terminal-view")
 }
