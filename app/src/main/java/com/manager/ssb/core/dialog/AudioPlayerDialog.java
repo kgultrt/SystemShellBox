@@ -33,7 +33,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.slider.Slider;   // 导入 Slider
+import com.google.android.material.slider.Slider; // 导入 Slider
 import com.manager.ssb.R;
 
 import java.util.Locale;
@@ -49,7 +49,7 @@ public class AudioPlayerDialog {
     private TextView tvCurrentTime;
     private TextView tvTotalTime;
     private Button btnPlayPause;
-    private Slider slider;   // 替换原来的 SeekBar
+    private Slider slider; // 替换原来的 SeekBar
 
     public AudioPlayerDialog(@NonNull Context context, String filePath, String fileName) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
@@ -86,7 +86,7 @@ public class AudioPlayerDialog {
         tvCurrentTime = view.findViewById(R.id.tv_current_time);
         tvTotalTime = view.findViewById(R.id.tv_total_time);
         btnPlayPause = view.findViewById(R.id.btn_play_pause);
-        slider = view.findViewById(R.id.slider);   // 初始化 Slider
+        slider = view.findViewById(R.id.slider); // 初始化 Slider
 
         tvFileName.setText(fileName);
         btnPlayPause.setOnClickListener(v -> togglePlayPause());
@@ -158,12 +158,16 @@ public class AudioPlayerDialog {
         progressHandler.postDelayed(() -> {
             if (mediaPlayer != null && isPlaying) {
                 int currentPosition = mediaPlayer.getCurrentPosition();
-                // 更新滑块位置（自动转换为 float）
-                slider.setValue(currentPosition);
+
+                // 钳制到合法范围
+                float clamped = Math.max(slider.getValueFrom(),
+                        Math.min(slider.getValueTo(), (float) currentPosition));
+                slider.setValue(clamped);
+
                 tvCurrentTime.setText(formatTime(currentPosition));
                 updateProgress();
             }
-        }, 10);  // 10ms 刷新一次，与之前一致
+        }, 10);
     }
 
     private String formatTime(int milliseconds) {

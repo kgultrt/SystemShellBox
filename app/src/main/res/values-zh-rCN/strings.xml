@@ -29,6 +29,7 @@
 
     <string name="root_directory">根目录</string>
     <string name="internal_storage">内部存储</string>
+    <string name="previous_folder_tip">(返回上一级)</string>
 
     <!-- Welcome Activity -->
     <string name="welcome_title_1">欢迎使用 System Shell Box</string>

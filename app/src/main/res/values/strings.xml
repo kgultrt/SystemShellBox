@@ -27,9 +27,10 @@
     <string name="signature_APK">From APK md5</string>
     <string name="signature_API">From API md5</string>
     <string name="signature_SVC">From SVC md5</string>
-    
+
     <string name="root_directory">Root Directory</string>
     <string name="internal_storage">Internal Storage</string>
+    <string name="previous_folder_tip">(Return to the previous)</string>
 
     <!-- Welcome Activity -->
     <string name="welcome_title_1">Welcome to System Shell Box</string>
@@ -54,7 +55,7 @@
 
     <string name="english">English</string>
     <string name="chinese">中文</string>
-    
+
     <string name="license_title">GNU General Public License v3.0</string>
     <string name="permission_title">Required Permissions</string>
     <string name="permission_desc">In order to use the application function normally, the following permissions are required:</string>

@@ -81,13 +81,13 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
     private Drawable defaultBackground;
 
-    private static final ThreadLocal<SimpleDateFormat> dateFormat =
-            new ThreadLocal<SimpleDateFormat>() {
-                @Override
-                protected SimpleDateFormat initialValue() {
-                    return new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
-                }
-            };
+    private static final ThreadLocal<SimpleDateFormat> dateFormat = new ThreadLocal<
+            SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+        }
+    };
 
     public interface OnItemClickListener {
         void onItemClick(FileItem item);
@@ -104,8 +104,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             String panel,
             Sence sence,
             ExecutorService executorService,
-            Handler mainHandler
-    ) {
+            Handler mainHandler) {
         this.fileList = fileList;
         this.listener = listener;
         this.longClickListener = longClickListener;
@@ -236,7 +235,11 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
         holder.tvName.setText(item.getName());
         holder.tvSize.setText(item.isDirectory() ? "" : formatSize(context, item.getSize()));
-        holder.tvTime.setText(formatDate(item.getLastModified()));
+        if ("..".equals(item.getName())) {
+            holder.tvTime.setText(R.string.previous_folder_tip);
+        } else {
+            holder.tvTime.setText(formatDate(item.getLastModified()));
+        }
         holder.ivIcon.setImageResource(item.isDirectory() ? R.drawable.ic_folder : R.drawable.ic_file);
 
         // 设置背景优先级：多选选中 > 高亮（且不是".."） > 默认
@@ -345,7 +348,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
                             isSwiping = true;
                             v.setTranslationX(dx);
                             v.setAlpha(1f - Math.min(0.3f,
-                                    Math.abs(dx) / v.getWidth()));
+                                            Math.abs(dx) / v.getWidth()));
                             return true;
                         }
                         return false;
@@ -380,7 +383,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         int group = (int) (Math.log(size) / Math.log(1024));
         if (group >= units.length) group = units.length - 1;
         return new DecimalFormat("#,##0.#")
-                .format(size / Math.pow(1024, group)) + units[group] + " ";
+                        .format(size / Math.pow(1024, group)) + units[group] + " ";
     }
 
     static String formatDate(long time) {
