@@ -57,6 +57,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 
+import com.mikepenz.aboutlibraries.LibsBuilder;
+
 import com.manager.ssb.Application;
 import com.manager.ssb.adapter.FileAdapter;
 import com.manager.ssb.enums.ActivePanel;
@@ -229,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
         menuActionMap.put(R.id.action_storage_info, this::showStorageDetails);
         menuActionMap.put(R.id.action_about, this::showAboutDialog);
         menuActionMap.put(R.id.action_terminal, this::startTerminal);
+        menuActionMap.put(R.id.action_licenses, this::showLicensesDialog);
         menuActionMap.put(R.id.action_exit, this::exitTheApp);
     }
 
@@ -702,6 +705,12 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage(sb.toString())
                 .setPositiveButton(android.R.string.ok, null)
                 .show();
+    }
+
+    private void showLicensesDialog() {
+        new LibsBuilder()
+                .withLicenseShown(true) // 可以点开查看全文
+                .start(this); // 直接打开 Activity
     }
 
     // 一些公共方法

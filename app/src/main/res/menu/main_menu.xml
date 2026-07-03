@@ -19,6 +19,9 @@
         android:id="@+id/action_about"
         android:title="@string/about" />
     <item
+        android:id="@+id/action_licenses"
+        android:title="@string/licenses" />
+    <item
         android:id="@+id/action_exit"
         android:title="@string/exit" />
 </menu>

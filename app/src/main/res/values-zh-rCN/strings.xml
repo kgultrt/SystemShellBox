@@ -187,6 +187,10 @@
 
     <string name="dialog_play">播放</string>
     <string name="dialog_pause">暂停</string>
+    
+    <string name="dialog_open_src">没有这些项目，就不会有今天的SSB！</string>
+    
+    <string name="licenses">开源许可</string>
 
     <string name="cannot_open">无法打开文件</string>
     <string name="cannot_reading">读取失败：</string>

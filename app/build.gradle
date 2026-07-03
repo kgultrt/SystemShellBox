@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'com.mikepenz.aboutlibraries.plugin'
 }
 
 android {
@@ -267,6 +268,36 @@ dependencies {
     // Lua 脚本引擎, 用于plugin
     implementation 'org.luaj:luaj-jse:3.0.1'
     
+    implementation 'com.mikepenz:aboutlibraries:10.0.0'
+    implementation "com.mikepenz:aboutlibraries-core:10.0.0"
+    
     // 项目模块
     api project(":terminal-view")
+}
+
+afterEvaluate {
+    // 为每个变体创建复制任务，并确保在 preBuild 之前执行
+    android.applicationVariants.all { variant ->
+        def variantName = variant.name.capitalize()
+        def variantNameLower = variant.name
+
+        // 插件实际生成 JSON 的任务
+        def prepareTask = tasks.findByName("prepareLibraryDefinitions${variantName}")
+
+        if (prepareTask) {
+            def copyTask = tasks.register("copyAboutLibrariesJson${variantName}", Copy) {
+                dependsOn prepareTask
+                from "$buildDir/generated/aboutLibraries/${variantNameLower}/res/raw/aboutlibraries.json"
+                into "src/main/res/raw/"
+            }
+
+            // 让 preBuild 任务等待复制完成
+            tasks.named('preBuild').configure {
+                dependsOn copyTask
+            }
+        } else {
+            // 如果找不到 prepare 任务（理论上不会），打印警告并尝试手动指定源
+            logger.warn("prepareLibraryDefinitions${variantName} task not found, AboutLibraries may not show data.")
+        }
+    }
 }

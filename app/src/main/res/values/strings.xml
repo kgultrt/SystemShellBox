@@ -188,8 +188,12 @@
     <string name="disk_info_used">Used</string>
     <string name="disk_info_available">Available</string>
 
+    <string name="dialog_open_src">Without these projects, there would be no SSB today!</string>
+
     <string name="dialog_play">Play</string>
     <string name="dialog_pause">Pause</string>
+
+    <string name="licenses">Open Source License</string>
 
     <string name="cannot_open">Unable to open file</string>
     <string name="cannot_reading">Reading failed: </string>
