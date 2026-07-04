@@ -18,16 +18,11 @@
 package com.manager.ssb.core.openmethod;
 
 import android.content.Context;
-import android.widget.Toast;
 
 import com.manager.ssb.R;
-import com.manager.ssb.Application;
 import com.manager.ssb.core.FileHandler;
 import com.manager.ssb.MainActivity;
 import com.manager.ssb.enums.ActivePanel;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class CompressFileHandler implements FileHandler {
 
@@ -35,18 +30,19 @@ public class CompressFileHandler implements FileHandler {
     public void handle(Context context, String filePath, String fileName) {
         MainActivity activity = (MainActivity) context;
         ActivePanel activePanel = activity.activePanel;
-
         String format = extractFormat(fileName.toLowerCase());
-
-        // 使用压缩文件管理器进入压缩文件浏览
         activity.getCompressFileManager().enterCompressFile(filePath, activePanel);
     }
 
     private String extractFormat(String fileName) {
         if (fileName.endsWith(".tar.gz")) return "tar.gz";
         if (fileName.endsWith(".tar.bz2")) return "tar.bz2";
-
         int lastDot = fileName.lastIndexOf('.');
         return (lastDot > 0) ? fileName.substring(lastDot + 1) : "";
+    }
+
+    @Override
+    public int getDisplayNameResId() {
+        return R.string.option_compressed_file_viewer;
     }
 }

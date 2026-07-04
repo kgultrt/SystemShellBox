@@ -21,8 +21,8 @@ package com.manager.ssb.core.openmethod;
 
 import android.content.Context;
 import android.content.Intent;
-import android.widget.Toast;
 
+import com.manager.ssb.R;
 import com.manager.ssb.core.FileHandler;
 import com.manager.ssb.core.editor.MainActivity;
 
@@ -33,5 +33,10 @@ public class TextFileHandler implements FileHandler {
         intent.putExtra("file_path", filePath);
         intent.putExtra("file_name", fileName);
         context.startActivity(intent);
+    }
+
+    @Override
+    public int getDisplayNameResId() {
+        return R.string.option_text_editor;
     }
 }

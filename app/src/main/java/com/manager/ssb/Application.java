@@ -19,19 +19,20 @@ package com.manager.ssb;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.AssetManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Build;
-import android.text.TextUtils;
 import android.util.Log;
 
-import androidx.preference.PreferenceManager;
 import androidx.annotation.StringRes;
 
-import java.io.File;
+import com.manager.ssb.core.config.Config;
+import com.manager.ssb.core.HandlerInitializer;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.Locale;
 
 public class Application extends android.app.Application {
 
@@ -42,11 +43,11 @@ public class Application extends android.app.Application {
     public static Context getAppContext() {
         return instance;
     }
-    
+
     public static String getStringQuick(@StringRes int stringRes) {
         return instance.getString(stringRes);
     }
-    
+
     public static String getStringQuick(@StringRes int stringRes, Object... formatArgs) {
         return instance.getString(stringRes, formatArgs);
     }
@@ -55,46 +56,82 @@ public class Application extends android.app.Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-        
+
+        // 应用已保存的语言偏好
+        applySavedLanguage();
+        // 初始化文件处理
+        HandlerInitializer.init();
+
+        // 设置全局异常捕获
         Thread.setDefaultUncaughtExceptionHandler((thread, ex) -> {
-            // 1. 将崩溃信息写入日志文件（即使后面所有步骤都失败，我们仍有备份）
             String crashInfo = getCrashReport(ex);
             Log.e(TAG, "Application crash:\n" + crashInfo);
-            
-            // 2. 启动崩溃显示Activity（使用最低限度的系统功能）
+
             Intent intent = new Intent();
             intent.setClassName("com.manager.ssb", "com.manager.ssb.CrashActivity");
             intent.putExtra(EXTRA_CRASH_INFO, crashInfo);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | 
-                           Intent.FLAG_ACTIVITY_CLEAR_TASK |
-                           Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            
-            // 避免任何可能的资源访问错误
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                    Intent.FLAG_ACTIVITY_NO_ANIMATION);
             intent.setPackage(getPackageName());
-            
+
             try {
                 startActivity(intent);
-            } catch (Exception e) {
-                
+            } catch (Exception ignored) {
             }
-            
-            // 3. 结束当前进程
+
             android.os.Process.killProcess(android.os.Process.myPid());
             System.exit(1);
         });
     }
 
-    // 获取崩溃报告（更加详细）
+    /** 从 Config 读取语言设置并应用到全局 */
+    private void applySavedLanguage() {
+        String lang = Config.get("general.language", "system");
+        if (!"system".equals(lang)) {
+            setAppLocale(lang);
+        }
+        // 如果是 "system"，则不干预，跟随系统
+    }
+
+    // Application.java 中替换原来的 setAppLocale 和 clearAppLocale
+
+    public static void setAppLocale(String lang) {
+        Locale locale = new Locale(lang);
+        Locale.setDefault(locale);
+        updateAppResources(instance);
+    }
+
+    public static void clearAppLocale() {
+        // 获取真正的系统默认 Locale（不受应用设置影响）
+        Locale systemLocale = Resources.getSystem().getConfiguration().getLocales().get(0);
+        Locale.setDefault(systemLocale);
+        updateAppResources(instance);
+    }
+
+    /** 强制更新 Application 的全局资源 */
+    private static void updateAppResources(Context context) {
+        Resources res = context.getResources();
+        Configuration config = res.getConfiguration();
+        // 兼容 API 24+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            config.setLocales(new android.os.LocaleList(Locale.getDefault()));
+        } else {
+            config.locale = Locale.getDefault();
+        }
+        res.updateConfiguration(config, res.getDisplayMetrics());
+    }
+
+    // ========= 崩溃报告相关 =========
+
     private String getCrashReport(Throwable ex) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
 
-       // 基本信息
         pw.println("====== Fatal app crash ======");
         pw.println("Time: " + new Date());
         pw.println();
 
-        // 设备信息
         pw.println("====== Device information ======");
         pw.println("Application Version: " + getAppVersion());
         pw.println("Android Version: " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")");
@@ -103,26 +140,21 @@ public class Application extends android.app.Application {
         pw.println("Available Memory: " + Runtime.getRuntime().maxMemory() / (1024 * 1024) + "MB");
         pw.println();
 
-        // 处理主异常及其相关异常
         printStackTraceRecursive(pw, ex, 0);
 
         return sw.toString();
     }
 
-    // 递归打印所有Caused by和Suppressed异常（已修复）
     private void printStackTraceRecursive(PrintWriter pw, Throwable ex, int depth) {
         if (ex == null) return;
-    
-        // 打印异常头（带深度缩进）
+
         String indent = getIndent(depth);
         pw.print(indent);
         pw.println("====== [" + ex.getClass().getSimpleName() + "] ======");
-    
-        // 打印异常信息
+
         pw.print(indent);
         pw.println(ex.getClass().getName() + ": " + ex.getMessage());
-    
-        // 打印堆栈跟踪（带缩进）
+
         StackTraceElement[] stackTrace = ex.getStackTrace();
         for (int i = 0; i < Math.min(stackTrace.length, 30); i++) {
             pw.print(indent);
@@ -133,15 +165,13 @@ public class Application extends android.app.Application {
             pw.println("    ... (additional " + (stackTrace.length - 30) + " frames)");
         }
         pw.println();
-    
-        // 打印Suppressed异常（递归处理）
+
         for (Throwable suppressed : ex.getSuppressed()) {
             pw.print(indent);
             pw.println("Suppressed: ");
             printStackTraceRecursive(pw, suppressed, depth + 1);
         }
-    
-        // 递归处理Cause（正确实现）
+
         Throwable cause = ex.getCause();
         if (cause != null) {
             pw.print(indent);
@@ -150,22 +180,19 @@ public class Application extends android.app.Application {
         }
     }
 
-    // 生成缩进字符串
     private String getIndent(int depth) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < depth; i++) {
-            sb.append("  ");  // 每级缩进2个空格
+            sb.append("  ");
         }
         return sb.toString();
     }
 
-    
-    // 获取应用版本信息
     private String getAppVersion() {
         try {
             return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
         } catch (Exception e) {
-            return "Unknow";
+            return "Unknown";
         }
     }
 }

@@ -21,6 +21,7 @@ package com.manager.ssb.core.openmethod;
 
 import android.content.Context;
 
+import com.manager.ssb.R;
 import com.manager.ssb.core.FileHandler;
 import com.manager.ssb.core.dialog.AudioPlayerDialog;
 
@@ -28,5 +29,10 @@ public class AudioFileHandler implements FileHandler {
     @Override
     public void handle(Context context, String filePath, String fileName) {
         new AudioPlayerDialog(context, filePath, fileName).show();
+    }
+
+    @Override
+    public int getDisplayNameResId() {
+        return R.string.option_audio_player;
     }
 }

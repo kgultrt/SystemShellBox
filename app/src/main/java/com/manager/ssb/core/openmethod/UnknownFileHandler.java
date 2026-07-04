@@ -32,48 +32,56 @@ import androidx.core.content.FileProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.manager.ssb.core.FileHandler;
+import com.manager.ssb.core.HandlerRegistry;
 import com.manager.ssb.R;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class UnknownFileHandler implements FileHandler {
-    private static final Map<String, FileHandler> CUSTOM_HANDLERS = new HashMap<>();
-
-    static {
-        CUSTOM_HANDLERS.put("text_editor", new TextFileHandler());
-        CUSTOM_HANDLERS.put("audio_player", new AudioFileHandler());
-        CUSTOM_HANDLERS.put("compressed_file_viewer", new CompressFileHandler());
-        CUSTOM_HANDLERS.put("browser", new HtmlFileHandler());
-    }
 
     @Override
     public void handle(Context context, String filePath, String fileName) {
-        showOpenWithDialog(context, filePath, fileName);
+        // 获取所有已注册的处理器（不包括自身，因为自身不会注册）
+        List<FileHandler> allHandlers = HandlerRegistry.getAllHandlers();
+        showOpenWithDialog(context, filePath, fileName, allHandlers);
     }
 
-    private void showOpenWithDialog(final Context context, final String filePath, final String fileName) {
-        // 创建选项列表（使用字符串资源）
-        final List<String> options = new ArrayList<>();
-        options.add(context.getString(R.string.option_text_editor));    // 文本编辑器
-        options.add(context.getString(R.string.option_audio_player));   // 音频播放器
-        options.add(context.getString(R.string.option_compressed_file_viewer));   // 压缩文件查看器
-        options.add(context.getString(R.string.option_browser));   // 内置浏览器
-        options.add(context.getString(R.string.option_system_default)); // 系统默认方式
-        options.add(context.getString(R.string.cancel));                // 取消
+    @Override
+    public int getDisplayNameResId() {
+        // UnknownFileHandler 不显示在菜单中，返回 0
+        return 0;
+    }
 
-        // 使用字符串资源设置标题
+    private void showOpenWithDialog(final Context context, final String filePath,
+                                    final String fileName, final List<FileHandler> handlers) {
+        // 动态构建选项名称列表
+        final List<String> optionNames = new ArrayList<>();
+        final List<FileHandler> handlerMapping = new ArrayList<>(handlers); // 用于点击时定位
+
+        for (FileHandler handler : handlers) {
+            int resId = handler.getDisplayNameResId();
+            if (resId != 0) {
+                optionNames.add(context.getString(resId));
+            } else {
+                // 如果处理器没有提供显示名称，用类名作为后备
+                optionNames.add(handler.getClass().getSimpleName());
+            }
+        }
+
+        // 添加系统默认和取消选项（它们不是 FileHandler）
+        optionNames.add(context.getString(R.string.option_system_default));
+        optionNames.add(context.getString(R.string.cancel));
+
+        // 构建对话框
         String title = context.getString(R.string.open_with_title, fileName);
-        
-        // 使用MaterialAlertDialogBuilder
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setTitle(title);
 
         ListView listView = new ListView(context);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, options);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(context,
+                android.R.layout.simple_list_item_1, optionNames);
         listView.setAdapter(adapter);
         builder.setView(listView);
 
@@ -83,21 +91,16 @@ public class UnknownFileHandler implements FileHandler {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 dialog.dismiss();
-                String selectedOption = options.get(position);
-                
-                // 使用资源ID进行比较
-                if (selectedOption.equals(context.getString(R.string.option_text_editor))) {
-                    CUSTOM_HANDLERS.get("text_editor").handle(context, filePath, fileName);
-                } else if (selectedOption.equals(context.getString(R.string.option_audio_player))) {
-                    CUSTOM_HANDLERS.get("audio_player").handle(context, filePath, fileName);
-                } else if (selectedOption.equals(context.getString(R.string.option_compressed_file_viewer))) {
-                    CUSTOM_HANDLERS.get("compressed_file_viewer").handle(context, filePath, fileName);
-                } else if (selectedOption.equals(context.getString(R.string.option_browser))) {
-                    CUSTOM_HANDLERS.get("browser").handle(context, filePath, fileName);
-                } else if (selectedOption.equals(context.getString(R.string.option_system_default))) {
+
+                if (position < handlerMapping.size()) {
+                    // 用户选择了一个处理器
+                    FileHandler selectedHandler = handlerMapping.get(position);
+                    selectedHandler.handle(context, filePath, fileName);
+                } else if (position == handlerMapping.size()) {
+                    // 系统默认
                     openWithSystemDefault(context, filePath);
                 }
-                // 取消选项不需要处理
+                // 最后一个位置是取消，不做任何事
             }
         });
 
@@ -107,7 +110,6 @@ public class UnknownFileHandler implements FileHandler {
     private void openWithSystemDefault(Context context, String filePath) {
         File file = new File(filePath);
         Uri uri;
-        
         try {
             String authority = context.getPackageName() + ".fileprovider";
             uri = FileProvider.getUriForFile(context, authority, file);

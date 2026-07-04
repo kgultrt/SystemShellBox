@@ -642,7 +642,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showAboutDialog() {
         StringBuilder sb = new StringBuilder("System Shell Box (C) 2025-2026 by kgultrt\n");
-        sb.append("Handle all documents.\nDevelop on MT manager Text Editor and Termux.\nmade on android\n\n");
+        sb.append("Becoming perfect is the first goal at present.\nDevelop on MT manager Text Editor and Termux.\nmade on android\n\n");
 
         // 应用信息
         try {
@@ -709,8 +709,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void showLicensesDialog() {
         new LibsBuilder()
-                .withLicenseShown(true) // 可以点开查看全文
-                .start(this); // 直接打开 Activity
+                // 设置顶栏标题
+                .withActivityTitle(getString(R.string.licenses))
+                // 应用图标
+                .withAboutIconShown(true)
+                // 显示版本名称
+                .withAboutVersionShown(true)
+                // 描述文字
+                .withAboutDescription(getString(R.string.dialog_open_src))
+                // 设置许可证是否可展开查看全文
+                .withLicenseShown(true)
+                .start(this);
     }
 
     // 一些公共方法

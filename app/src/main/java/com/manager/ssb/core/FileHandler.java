@@ -23,4 +23,9 @@ import android.content.Context;
 
 public interface FileHandler {
     void handle(Context context, String filePath, String fileName);
+
+    /**
+     * 返回该处理器的显示名称（字符串资源ID），用于“打开方式”对话框。
+     */
+    int getDisplayNameResId();
 }

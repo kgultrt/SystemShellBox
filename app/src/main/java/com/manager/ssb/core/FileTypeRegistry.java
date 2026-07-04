@@ -23,26 +23,25 @@ import java.util.Map;
 
 public class FileTypeRegistry {
     private static final Map<String, FileType> EXTENSION_MAP = new HashMap<>();
-    
+
     // 文件类型配置
     private static final String[][] FILE_TYPE_CONFIG = {
-        // {扩展名, 文件类型名称}
-        {".mp3", "AUDIO"}, {".wav", "AUDIO"}, {".ogg", "AUDIO"}, 
+        {".mp3", "AUDIO"}, {".wav", "AUDIO"}, {".ogg", "AUDIO"},
         {".m4a", "AUDIO"}, {".mid", "AUDIO"}, {".flac", "AUDIO"},
-        
-        {".txt", "TEXT"}, {".java", "TEXT"}, {".c", "TEXT"}, 
+
+        {".txt", "TEXT"}, {".java", "TEXT"}, {".c", "TEXT"},
         {".cpp", "TEXT"}, {".cs", "TEXT"}, {".py", "TEXT"},
         {".cxx", "TEXT"}, {".js", "TEXT"}, {".css", "TEXT"},
         {".md", "TEXT"}, {".go", "TEXT"}, {".log", "TEXT"},
         {".sh", "TEXT"}, {".rs", "TEXT"}, {".bat", "TEXT"},
         {".kt", "TEXT"}, {".h", "TEXT"}, {".lua", "TEXT"},
         {".json", "TEXT"}, {".properties", "TEXT"},
-        
+
         {".zip", "COMPRESS"}, {".tar", "COMPRESS"}, {".gz", "COMPRESS"},
         {".bz2", "COMPRESS"}, {".7z", "COMPRESS"}, {".rar", "COMPRESS"},
-        
+
         {".html", "HTML"}, {".htm", "HTML"},
-        
+
         {".apk", "APK"}
     };
 
@@ -86,11 +85,9 @@ public class FileTypeRegistry {
         if (filePath == null) {
             return FileType.UNKNOWN;
         }
-        
+
         String ext = getFileExtension(filePath);
         FileType fileType = EXTENSION_MAP.get(ext);
-        
-        // 兼容低版本 Android
         return fileType != null ? fileType : FileType.UNKNOWN;
     }
 
@@ -98,19 +95,19 @@ public class FileTypeRegistry {
         if (filePath == null || filePath.isEmpty()) {
             return "";
         }
-        
+
         int lastDotIndex = filePath.lastIndexOf('.');
         if (lastDotIndex == -1 || lastDotIndex == filePath.length() - 1) {
             return "";
         }
-        
+
         return filePath.substring(lastDotIndex).toLowerCase();
     }
-    
+
     public static boolean isRegisteredExtension(String extension) {
         return extension != null && EXTENSION_MAP.containsKey(extension.toLowerCase());
     }
-    
+
     public static void clearAllExtensions() {
         EXTENSION_MAP.clear();
     }

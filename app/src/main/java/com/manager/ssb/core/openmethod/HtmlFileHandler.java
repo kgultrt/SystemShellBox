@@ -87,4 +87,9 @@ public class HtmlFileHandler implements FileHandler {
             Toast.makeText(context, R.string.no_browser_found, Toast.LENGTH_SHORT).show();
         }
     }
+    
+    @Override
+    public int getDisplayNameResId() {
+        return R.string.option_browser;
+    }
 }
