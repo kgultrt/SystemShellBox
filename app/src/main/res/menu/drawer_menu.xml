@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    
+
+    <!-- 基础导航 -->
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_root"
             android:title="@string/root_directory"
             android:icon="@drawable/ic_root" />
-            
         <item
             android:id="@+id/nav_storage"
             android:title="@string/internal_storage"

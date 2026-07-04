@@ -19,6 +19,9 @@
 package com.manager.ssb.core.dialog;
 
 import android.content.Context;
+import android.media.AudioAttributes;
+import android.media.AudioFormat;
+import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
@@ -33,65 +36,96 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.slider.Slider; // 导入 Slider
+import com.google.android.material.slider.Slider;
 import com.manager.ssb.R;
+import com.manager.ssb.core.FileTypeRegistry;
+
+import com.manager.nativelayer.XmpPlayer;
 
 import java.util.Locale;
 
 public class AudioPlayerDialog {
     private final AlertDialog dialog;
     private MediaPlayer mediaPlayer;
+    private XmpPlayer xmpPlayer;
+    private AudioTrack audioTrack;
+    private Thread trackerThread;
     private final Handler progressHandler = new Handler();
     private boolean isPlaying = true;
+    private final boolean isTracker;
 
     // UI 控件
     private TextView tvFileName;
     private TextView tvCurrentTime;
     private TextView tvTotalTime;
     private Button btnPlayPause;
-    private Slider slider; // 替换原来的 SeekBar
+    private Slider slider;
 
     public AudioPlayerDialog(@NonNull Context context, String filePath, String fileName) {
+        isTracker = isTrackerModule(filePath);
+
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         View view = LayoutInflater.from(context).inflate(R.layout.dialog_audio_player, null);
         builder.setView(view);
         dialog = builder.create();
 
-        dialog.setOnDismissListener(dialogInterface -> releaseMediaPlayer());
-        dialog.setOnCancelListener(dialogInterface -> releaseMediaPlayer());
+        dialog.setOnDismissListener(dialogInterface -> releasePlayer());
+        dialog.setOnCancelListener(dialogInterface -> releasePlayer());
 
         initView(view, fileName);
-        initMediaPlayer(context, Uri.parse(filePath));
+
+        if (isTracker) {
+            initTrackerPlayer(filePath);
+        } else {
+            initMediaPlayer(context, Uri.parse(filePath));
+        }
+
         startAudio();
 
         Window window = dialog.getWindow();
         if (window != null) {
-            window.setLayout(
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT
-            );
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
         }
     }
 
-    public void show() {
-        dialog.show();
+    // ============ 工具方法 ============
+
+    private boolean isTrackerModule(String path) {
+        String ext = FileTypeRegistry.getFileExtension(path);
+        // 这里列出 xmp 常用支持的扩展名，可按需增减
+        String[] trackerExts = {
+                ".mod", ".xm", ".s3m", ".it", ".stm", ".far", ".669",
+                ".mtm", ".ptm", ".ult", ".mdl", ".okt", ".stx", ".pt3",
+                ".dbm", ".gdm", ".med", ".umx", ".abk", ".amf",
+                ".digi", ".flt", ".fnk", ".ice", ".imf", ".ims",
+                ".liq", ".masi", ".mfp", ".mgt", ".mmd1", ".mmd3",
+                ".no", ".rtm", ".sfx", ".stim", ".sym", ".xmf",
+                ".coco", ".dt", ".emod", ".gal4", ".gal5", ".hmn",
+                ".masi16", ".mmd_common", ".pw", ".hrt", ".arch",
+                ".noiserun", ".skyt", ".titanics", ".novotrade",
+                ".ptp", ".p60a", ".p61a", ".p40", ".xann", ".zen"
+        };
+        for (String e : trackerExts) {
+            if (e.equalsIgnoreCase(ext)) return true;
+        }
+        return false;
     }
 
-    public void dismiss() {
-        dialog.dismiss();
-    }
+    // ============ 初始化 UI ============
 
     private void initView(View view, String fileName) {
         tvFileName = view.findViewById(R.id.tv_file_name);
         tvCurrentTime = view.findViewById(R.id.tv_current_time);
         tvTotalTime = view.findViewById(R.id.tv_total_time);
         btnPlayPause = view.findViewById(R.id.btn_play_pause);
-        slider = view.findViewById(R.id.slider); // 初始化 Slider
+        slider = view.findViewById(R.id.slider);
 
         tvFileName.setText(fileName);
         btnPlayPause.setOnClickListener(v -> togglePlayPause());
         btnPlayPause.setText(isPlaying ? R.string.dialog_pause : R.string.dialog_play);
     }
+
+    // ============ 普通音频播放（MediaPlayer）============
 
     private void initMediaPlayer(Context context, Uri audioUri) {
         mediaPlayer = MediaPlayer.create(context, audioUri);
@@ -100,7 +134,6 @@ public class AudioPlayerDialog {
             mediaPlayer.setOnCompletionListener(mp -> {
                 isPlaying = false;
                 btnPlayPause.setText(R.string.dialog_play);
-                // 播放完成后滑块停留在末尾，更新时间
                 int duration = mp.getDuration();
                 slider.setValue(duration);
                 tvCurrentTime.setText(formatTime(duration));
@@ -110,65 +143,150 @@ public class AudioPlayerDialog {
             int duration = mediaPlayer.getDuration();
             tvTotalTime.setText(formatTime(duration));
 
-            // 设置 Slider 的范围（从 0 到 音频总时长，单位毫秒）
             slider.setValueFrom(0f);
             slider.setValueTo(duration);
             slider.setValue(0f);
 
-            // 添加 Slider 的监听器（代替 SeekBar 的 setOnSeekBarChangeListener）
             slider.addOnChangeListener((slider, value, fromUser) -> {
                 if (fromUser && mediaPlayer != null) {
-                    // 将滑块的 float 值转为 int 并跳转
                     mediaPlayer.seekTo((int) value);
                 }
             });
         }
     }
 
-    private void togglePlayPause() {
-        if (isPlaying) pauseAudio();
-        else startAudio();
-    }
-
-    private void startAudio() {
+    private void startMediaPlayer() {
         if (mediaPlayer != null) {
-            // 如果已播放到结尾，重置到开头
             if (mediaPlayer.getCurrentPosition() >= mediaPlayer.getDuration()) {
                 mediaPlayer.seekTo(0);
                 slider.setValue(0f);
                 tvCurrentTime.setText(formatTime(0));
             }
-
             mediaPlayer.start();
-            isPlaying = true;
-            btnPlayPause.setText(R.string.dialog_pause);
-            updateProgress();
+            updateMediaProgress();
         }
     }
 
-    private void pauseAudio() {
+    private void pauseMediaPlayer() {
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
-            isPlaying = false;
-            btnPlayPause.setText(R.string.dialog_play);
         }
     }
 
-    private void updateProgress() {
+    private void updateMediaProgress() {
         progressHandler.postDelayed(() -> {
-            if (mediaPlayer != null && isPlaying) {
+            if (mediaPlayer != null && isPlaying && !isTracker) {
                 int currentPosition = mediaPlayer.getCurrentPosition();
-
-                // 钳制到合法范围
                 float clamped = Math.max(slider.getValueFrom(),
                         Math.min(slider.getValueTo(), (float) currentPosition));
                 slider.setValue(clamped);
-
                 tvCurrentTime.setText(formatTime(currentPosition));
-                updateProgress();
+                updateMediaProgress();
             }
         }, 10);
     }
+
+    // ============ Tracker 播放（xmp）============
+
+    private void initTrackerPlayer(String filePath) {
+        xmpPlayer = new XmpPlayer();
+        if (!xmpPlayer.nativeInit(filePath)) {
+            // 加载失败，可以简单提示
+            return;
+        }
+
+        int sampleRate = 44100;
+        int bufSize = AudioTrack.getMinBufferSize(sampleRate,
+                AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT);
+
+        audioTrack = new AudioTrack.Builder()
+                .setAudioAttributes(new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build())
+                .setAudioFormat(new AudioFormat.Builder()
+                        .setSampleRate(sampleRate)
+                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                        .setChannelMask(AudioFormat.CHANNEL_OUT_STEREO)
+                        .build())
+                .setBufferSizeInBytes(bufSize)
+                .build();
+
+        // 对于 tracker 没有固定总时长，这里做如下处理
+        slider.setEnabled(false);           // 禁止拖动
+        tvTotalTime.setText("∞");           // 显示无限
+        slider.setValueFrom(0f);
+        slider.setValueTo(100f);            // 不用更新
+    }
+
+    private void startTracker() {
+        if (audioTrack == null || xmpPlayer == null) return;
+        audioTrack.play();
+        trackerThread = new Thread(() -> {
+            int bufSize = AudioTrack.getMinBufferSize(44100,
+                    AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT);
+            short[] buffer = new short[bufSize / 2];
+            while (isPlaying && !Thread.currentThread().isInterrupted()) {
+                int ret = xmpPlayer.nativeFillBuffer(buffer, buffer.length);
+                if (ret != 0) break; // 播放结束或出错
+                audioTrack.write(buffer, 0, buffer.length);
+            }
+            progressHandler.post(() -> {
+                isPlaying = false;
+                btnPlayPause.setText(R.string.dialog_play);
+            });
+        });
+        trackerThread.start();
+    }
+
+    private void pauseTracker() {
+        if (audioTrack != null && audioTrack.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
+            audioTrack.pause();
+        }
+        if (trackerThread != null) {
+            trackerThread.interrupt();
+        }
+    }
+
+    // ============ 通用播放控制 ============
+
+    public void show() {
+        dialog.show();
+    }
+
+    public void dismiss() {
+        dialog.dismiss();
+    }
+
+    private void togglePlayPause() {
+        if (isPlaying) {
+            pauseAudio();
+        } else {
+            startAudio();
+        }
+    }
+
+    private void startAudio() {
+        if (isTracker) {
+            startTracker();
+        } else {
+            startMediaPlayer();
+        }
+        isPlaying = true;
+        btnPlayPause.setText(R.string.dialog_pause);
+    }
+
+    private void pauseAudio() {
+        if (isTracker) {
+            pauseTracker();
+        } else {
+            pauseMediaPlayer();
+        }
+        isPlaying = false;
+        btnPlayPause.setText(R.string.dialog_play);
+    }
+
+    // ============ 格式化时间 ============
 
     private String formatTime(int milliseconds) {
         int seconds = (milliseconds / 1000) % 60;
@@ -176,13 +294,34 @@ public class AudioPlayerDialog {
         return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
     }
 
-    private void releaseMediaPlayer() {
-        if (mediaPlayer != null) {
-            if (mediaPlayer.isPlaying()) {
-                mediaPlayer.stop();
+    // ============ 资源释放 ============
+
+    private void releasePlayer() {
+        if (isTracker) {
+            if (trackerThread != null) {
+                trackerThread.interrupt();
+                try {
+                    trackerThread.join(200); // 等待线程退出
+                } catch (InterruptedException ignored) { }
+                trackerThread = null;
             }
-            mediaPlayer.release();
-            mediaPlayer = null;
+            if (audioTrack != null) {
+                audioTrack.stop();
+                audioTrack.release();
+                audioTrack = null;
+            }
+            if (xmpPlayer != null) {
+                xmpPlayer.nativeRelease();
+                xmpPlayer = null;
+            }
+        } else {
+            if (mediaPlayer != null) {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.stop();
+                }
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
         }
         progressHandler.removeCallbacksAndMessages(null);
     }

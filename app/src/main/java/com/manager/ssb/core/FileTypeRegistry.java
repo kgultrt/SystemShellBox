@@ -26,23 +26,27 @@ public class FileTypeRegistry {
 
     // 文件类型配置
     private static final String[][] FILE_TYPE_CONFIG = {
-        {".mp3", "AUDIO"}, {".wav", "AUDIO"}, {".ogg", "AUDIO"},
-        {".m4a", "AUDIO"}, {".mid", "AUDIO"}, {".flac", "AUDIO"},
-
-        {".txt", "TEXT"}, {".java", "TEXT"}, {".c", "TEXT"},
-        {".cpp", "TEXT"}, {".cs", "TEXT"}, {".py", "TEXT"},
-        {".cxx", "TEXT"}, {".js", "TEXT"}, {".css", "TEXT"},
-        {".md", "TEXT"}, {".go", "TEXT"}, {".log", "TEXT"},
-        {".sh", "TEXT"}, {".rs", "TEXT"}, {".bat", "TEXT"},
-        {".kt", "TEXT"}, {".h", "TEXT"}, {".lua", "TEXT"},
-        {".json", "TEXT"}, {".properties", "TEXT"},
-
-        {".zip", "COMPRESS"}, {".tar", "COMPRESS"}, {".gz", "COMPRESS"},
-        {".bz2", "COMPRESS"}, {".7z", "COMPRESS"}, {".rar", "COMPRESS"},
-
-        {".html", "HTML"}, {".htm", "HTML"},
-
-        {".apk", "APK"}
+            {".mp3", "AUDIO"}, {".wav", "AUDIO"}, {".ogg", "AUDIO"},
+            {".m4a", "AUDIO"}, {".mid", "AUDIO"}, {".flac", "AUDIO"},
+            {".mod", "AUDIO"}, {".xm", "AUDIO"}, {".s3m", "AUDIO"},
+            {".it", "AUDIO"}, {".stm", "AUDIO"}, {".far", "AUDIO"},
+            {".669", "AUDIO"}, {".mtm", "AUDIO"}, {".ptm", "AUDIO"},
+            {".ult", "AUDIO"}, {".mdl", "AUDIO"}, {".okt", "AUDIO"},
+            {".stx", "AUDIO"}, {".pt3", "AUDIO"}, {".dbm", "AUDIO"},
+            {".med", "AUDIO"}, {".gdm", "AUDIO"},
+            
+            {".txt", "TEXT"}, {".java", "TEXT"}, {".c", "TEXT"},
+            {".cpp", "TEXT"}, {".cs", "TEXT"}, {".py", "TEXT"},
+            {".cxx", "TEXT"}, {".js", "TEXT"}, {".css", "TEXT"},
+            {".md", "TEXT"}, {".go", "TEXT"}, {".log", "TEXT"},
+            {".sh", "TEXT"}, {".rs", "TEXT"}, {".bat", "TEXT"},
+            {".kt", "TEXT"}, {".h", "TEXT"}, {".lua", "TEXT"},
+            {".json", "TEXT"}, {".properties", "TEXT"},
+            
+            {".zip", "COMPRESS"}, {".tar", "COMPRESS"}, {".gz", "COMPRESS"},
+            {".bz2", "COMPRESS"}, {".7z", "COMPRESS"}, {".rar", "COMPRESS"},
+            {".html", "HTML"}, {".htm", "HTML"},
+            {".apk", "APK"}
     };
 
     static {

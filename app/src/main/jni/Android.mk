@@ -72,3 +72,47 @@ LOCAL_SRC_FILES := file_action/main.c
 LOCAL_CFLAGS := -Wall -Wextra -O2 -D_FILE_OFFSET_BITS=64 -D_BSD_SOURCE
 LOCAL_LDLIBS := -llog -landroid
 include $(BUILD_SHARED_LIBRARY)
+
+# xmp
+include $(CLEAR_VARS)
+
+SRC_DIR := $(LOCAL_PATH)/xmp
+
+include $(SRC_DIR)/src/Makefile
+include $(SRC_DIR)/src/loaders/Makefile
+include $(SRC_DIR)/src/loaders/prowizard/Makefile
+include $(SRC_DIR)/src/depackers/Makefile
+include $(SRC_DIR)/src/depackers/lhasa/Makefile
+
+SRC_SOURCES      := $(addprefix xmp/src/,$(SRC_OBJS))
+LOADERS_SOURCES  := $(addprefix xmp/src/loaders/,$(LOADERS_OBJS))
+PROWIZ_SOURCES   := $(addprefix xmp/src/loaders/prowizard/,$(PROWIZ_OBJS))
+LHASA_SOURCES    := $(addprefix xmp/src/depackers/lhasa/,$(LHASA_OBJS))
+DEPACKERS_SOURCES:= $(addprefix xmp/src/depackers/,$(DEPACKERS_OBJS))
+
+LOCAL_MODULE    := xmp
+LOCAL_CFLAGS    := -O3 -DHAVE_MKSTEMP -DHAVE_FNMATCH -DHAVE_DIRENT -DHAVE_POWF \
+                   -I$(LOCAL_PATH)/xmp/include
+LOCAL_SRC_FILES := $(SRC_SOURCES:.o=.c) \
+                   $(LOADERS_SOURCES:.o=.c) \
+                   $(PROWIZ_SOURCES:.o=.c) \
+                   $(LHASA_SOURCES:.o=.c) \
+                   $(DEPACKERS_SOURCES:.o=.c)
+
+include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE    := xmp_jni
+LOCAL_SRC_FILES := xmp_jni/xmp_jni.c
+
+# 头文件路径（xmp.h 在 ../xmp/include 下）
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/xmp/include
+
+# 必须声明依赖 libxmp.so
+LOCAL_SHARED_LIBRARIES := xmp
+
+# 链接 Android log 库
+LOCAL_LDLIBS := -llog
+
+include $(BUILD_SHARED_LIBRARY)
