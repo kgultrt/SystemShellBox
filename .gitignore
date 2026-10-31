@@ -85,6 +85,4 @@ lint/tmp/
 local.properties
 keystore.properties
 
-*Number.txt
-
 key.jks
